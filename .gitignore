@@ -1,0 +1,13 @@
+# Root dependencies
+node_modules/
+
+# Backend patterns
+project/backend/.env
+project/backend/venv/
+**/__pycache__/
+*.pyc
+
+# Frontend patterns
+project/my-react-app/.env
+project/my-react-app/build/
+project/my-react-app/node_modules/

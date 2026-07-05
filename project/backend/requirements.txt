@@ -1,0 +1,10 @@
+flask
+flask-cors
+textblob
+pyspellchecker
+google-generativeai
+google-genai
+python-dotenv
+python-docx
+PyPDF2
+gunicorn
