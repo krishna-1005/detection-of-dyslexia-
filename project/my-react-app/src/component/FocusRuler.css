@@ -1,0 +1,29 @@
+/* Focus Ruler Styles */
+.focus-ruler-overlay-top,
+.focus-ruler-overlay-bottom {
+  position: fixed;
+  left: 0;
+  width: 100vw;
+  background: rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  z-index: 9998;
+  transition: height 0.05s linear, top 0.05s linear;
+}
+
+.focus-ruler-overlay-bottom {
+  bottom: 0;
+}
+
+.focus-ruler-highlight {
+  position: fixed;
+  left: 0;
+  width: 100vw;
+  height: 80px;
+  background: rgba(255, 255, 255, 0);
+  border-top: 2px solid var(--accent-gold, #c5a059);
+  border-bottom: 2px solid var(--accent-gold, #c5a059);
+  pointer-events: none;
+  z-index: 9999;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.2);
+  transition: top 0.05s linear;
+}

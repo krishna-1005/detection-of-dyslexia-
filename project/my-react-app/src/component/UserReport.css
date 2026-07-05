@@ -1,0 +1,134 @@
+/* User Analysis Report Styles */
+.report-modal {
+  background: white;
+  width: 1000px;
+  max-width: 95%;
+  height: 85vh;
+  padding: 3rem;
+  border-radius: 32px;
+  position: relative;
+  overflow-y: auto;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.4);
+}
+
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 3rem;
+  border-bottom: 2px solid var(--border-soft);
+  padding-bottom: 2rem;
+}
+
+.report-header h1 {
+  color: var(--primary-teal);
+  margin: 0;
+  font-size: 2.2rem;
+}
+
+.close-report {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-sub);
+}
+
+.report-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.report-card {
+  background: #f8fafc;
+  padding: 2rem;
+  border-radius: 24px;
+  border: 1px solid var(--border-soft);
+}
+
+.report-card h3 {
+  color: var(--primary-teal);
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.mod-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.mod-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.mod-stats {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+}
+
+.mod-score {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.trend.pos { color: #10b981; }
+.trend.neg { color: #ef4444; }
+
+.marker-item {
+  margin-bottom: 1.5rem;
+}
+
+.progress-bg {
+  background: #e2e8f0;
+  height: 8px;
+  border-radius: 4px;
+}
+
+.progress-bar {
+  background: var(--primary-teal);
+  height: 100%;
+  border-radius: 4px;
+}
+
+.insight-box {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+  line-height: 1.6;
+  color: #4b5563;
+  margin-bottom: 1.5rem;
+}
+
+.recommendation-chips {
+  display: flex;
+  gap: 1rem;
+}
+
+.recommendation-chips span {
+  background: #f1f5f9;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--primary-teal);
+}
+
+.report-footer {
+  margin-top: 3rem;
+  display: flex;
+  justify-content: center;
+}
+
+@media print {
+  .report-modal { width: 100%; height: auto; position: static; box-shadow: none; }
+  .close-report, .btn-print { display: none; }
+  .exercise-overlay { background: white; }
+}

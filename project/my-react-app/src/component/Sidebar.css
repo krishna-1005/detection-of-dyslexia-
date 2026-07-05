@@ -1,0 +1,110 @@
+/* Sidebar.css - Clinical Navigation */
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  flex-shrink: 0;
+  background: var(--med-white);
+  border-right: 1px solid var(--med-border);
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  height: calc(100vh - 64px);
+  position: sticky;
+  top: 64px;
+  overflow-y: auto;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-radius: 10px;
+  color: var(--med-blue-dark);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.sidebar-item:hover {
+  background: var(--med-blue-light);
+  color: var(--med-blue-primary);
+}
+
+.sidebar-item.active {
+  background: var(--med-blue-primary);
+  color: white;
+}
+
+.sidebar-icon {
+  margin-right: 1rem;
+  font-size: 1.1rem;
+}
+
+.visited-tick {
+  background: var(--med-teal);
+  color: white;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
+.sidebar-section-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--med-gray);
+  text-transform: uppercase;
+  margin: 1.5rem 0 0.5rem 1rem;
+  letter-spacing: 0.05em;
+}
+
+.sidebar-guide-card {
+  margin: 0.5rem 0.5rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border: 1px dashed var(--med-border);
+  border-radius: 12px;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s ease;
+}
+
+.sidebar-guide-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-guide-step-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.sidebar-guide-btn {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--med-border);
+  background: white;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.sidebar-guide-btn:hover:not(:disabled) {
+  background: var(--med-blue-light);
+  border-color: var(--med-blue-primary);
+}
+
+.sidebar-guide-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

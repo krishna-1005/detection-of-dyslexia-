@@ -1,0 +1,229 @@
+/* Home.css - Professional Landing */
+.home-container {
+  min-height: 100vh;
+  background: var(--med-white);
+}
+.hero-section {
+  padding: 6rem 5% 4rem;
+  background: #f8fafc;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.hero-container-inner {
+  max-width: 1200px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+}
+
+.hero-content-left {
+  flex: 1.2;
+  text-align: left;
+}
+
+.medical-label-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  background: var(--med-blue-light);
+  color: var(--med-blue-primary);
+  border-radius: 30px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+
+.hero-title {
+  font-size: 3.5rem;
+  line-height: 1.3;
+  color: #1e293b;
+  font-weight: 900;
+  margin-bottom: 2rem;
+  letter-spacing: -0.02em;
+}
+
+.highlight-text {
+  position: relative;
+  color: #1e293b;
+  display: inline-block;
+}
+
+.highlight-text::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 8px;
+  background: #2dd4bf;
+  border-radius: 4px;
+  z-index: -1;
+  opacity: 0.6;
+}
+
+.hero-subtitle {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: #475569;
+  max-width: 550px;
+  margin-bottom: 3rem !important;
+}
+
+.hero-btn-group {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.btn-orange-solid {
+  background: #ff7e54;
+  color: white;
+  padding: 1rem 2.5rem;
+  border-radius: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 15px rgba(255, 126, 84, 0.3);
+  transition: transform 0.2s;
+}
+
+.btn-orange-outline {
+  background: transparent;
+  color: #ff7e54;
+  padding: 1rem 2.5rem;
+  border-radius: 12px;
+  font-weight: 800;
+  border: 2px solid #ff7e54;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-orange-solid:hover, .btn-orange-outline:hover {
+  transform: translateY(-3px);
+}
+
+.hero-content-right {
+  flex: 1;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-illustration {
+  position: relative;
+  width: 100%;
+  height: 450px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.blob-bg {
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  background: #4f46e5;
+  border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+  z-index: 1;
+  opacity: 0.9;
+}
+
+.blob-secondary {
+  position: absolute;
+  width: 350px;
+  height: 350px;
+  background: #818cf8;
+  border-radius: 60% 40% 30% 70% / 50% 30% 70% 50%;
+  z-index: 0;
+  top: 20%;
+  right: -10%;
+  opacity: 0.5;
+}
+
+.swirl {
+  position: absolute;
+  border: 3px solid #2dd4bf;
+  border-radius: 50%;
+  z-index: 3;
+}
+
+.swirl.s1 {
+  width: 60px;
+  height: 60px;
+  top: 10%;
+  left: 10%;
+  border-top-color: transparent;
+  transform: rotate(-45deg);
+}
+
+.swirl.s2 {
+  width: 40px;
+  height: 40px;
+  bottom: 15%;
+  right: 15%;
+  border-bottom-color: transparent;
+  transform: rotate(120deg);
+}
+
+.child-image-container {
+  position: relative;
+  z-index: 2;
+  width: 380px;
+  height: 380px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 8px solid white;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+  animation: float 4s ease-in-out infinite;
+}
+
+.hero-child-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+/* Feature section adjustment */
+.features-grid {
+
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  padding: 4rem 10%;
+  background: var(--med-blue-light);
+}
+
+.feature-card {
+  background: var(--med-white);
+  padding: 2.5rem;
+  border-radius: 20px;
+  border: 1px solid var(--med-border);
+  text-align: left;
+}
+
+.feature-icon {
+  width: 48px;
+  height: 48px;
+  background: var(--med-teal-soft);
+  color: var(--med-teal);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.feature-card h3 {
+  margin-bottom: 0.75rem;
+  color: var(--med-blue-dark);
+}

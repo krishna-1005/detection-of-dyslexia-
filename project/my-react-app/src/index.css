@@ -1,0 +1,87 @@
+/* Global Medical Theme Root */
+:root {
+  --med-blue-dark: #1e293b;   /* Professional Slate */
+  --med-blue-primary: #2563eb; /* Trust Blue */
+  --med-blue-light: #eff6ff;   /* Soft Background Blue */
+  --med-teal: #0d9488;         /* Clinical Teal */
+  --med-teal-soft: #f0fdfa;    /* Soft Teal BG */
+  --med-gray: #64748b;         /* Muted Labels */
+  --med-border: #e2e8f0;       /* Soft Dividers */
+  --med-white: #ffffff;
+  --med-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --med-radius: 12px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  transition: all 0.2s ease-in-out;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--med-blue-light);
+  color: var(--med-blue-dark);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.dyslexia-friendly {
+  font-family: 'OpenDyslexic', sans-serif !important;
+}
+
+/* Common Layout Components */
+.medical-card {
+  background: var(--med-white);
+  border-radius: var(--med-radius);
+  border: 1px solid var(--med-border);
+  box-shadow: var(--med-shadow);
+  padding: 2rem;
+}
+
+.medical-header {
+  margin-bottom: 2rem;
+  border-left: 4px solid var(--med-blue-primary);
+  padding-left: 1rem;
+}
+
+.medical-btn-primary {
+  background: var(--med-blue-primary);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.medical-btn-primary:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.medical-btn-secondary {
+  background: var(--med-white);
+  color: var(--med-blue-primary);
+  border: 1px solid var(--med-blue-primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.medical-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--med-gray);
+  margin-bottom: 0.5rem;
+  display: block;
+}

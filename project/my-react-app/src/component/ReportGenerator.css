@@ -1,0 +1,99 @@
+/* Report Generator Styles */
+.report-generator {
+  background: white;
+  padding: 3rem;
+  border-radius: 24px;
+  border: 2px solid var(--border-soft);
+  margin-top: 3rem;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+}
+
+.clinical-header {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 3px solid var(--primary-teal);
+  padding-bottom: 2rem;
+  margin-bottom: 2rem;
+}
+
+.hospital-branding h2 {
+  color: var(--primary-teal);
+  margin: 0;
+  letter-spacing: 2px;
+}
+
+.patient-meta p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  color: var(--text-sub);
+}
+
+.clinical-summary h3, 
+.clinical-findings h3, 
+.clinical-recommendations h3 {
+  color: var(--primary-teal);
+  border-left: 5px solid var(--accent-gold);
+  padding-left: 1rem;
+  margin: 2rem 0 1rem;
+}
+
+.risk-indicator {
+  background: #f8fafc;
+  padding: 1.5rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-weight: 700;
+}
+
+.risk-indicator .value.high { color: var(--accent-red); }
+.risk-indicator .value.moderate { color: var(--accent-orange); }
+
+.clinical-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.clinical-table th {
+  text-align: left;
+  padding: 1rem;
+  background: var(--bg-app);
+  color: var(--primary-teal);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+}
+
+.clinical-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-soft);
+  font-size: 0.95rem;
+}
+
+.tag {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.tag.high { background: rgba(239, 68, 68, 0.1); color: var(--accent-red); }
+.tag.medium { background: rgba(245, 158, 11, 0.1); color: var(--accent-orange); }
+
+.btn-print {
+  margin-top: 3rem;
+  background: var(--primary-teal);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+}
+
+@media print {
+  .no-print { display: none !important; }
+  .report-generator { border: none; box-shadow: none; padding: 0; }
+  body { background: white !important; }
+}

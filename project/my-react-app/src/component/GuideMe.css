@@ -1,0 +1,84 @@
+/* Guide Me Styles */
+.guide-me-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.guide-toggle {
+  background: var(--accent-gold, #c5a059);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 30px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(197, 160, 89, 0.3);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.guide-toggle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(197, 160, 89, 0.4);
+}
+
+.guide-content {
+  background: white;
+  width: 300px;
+  padding: 1.5rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  border: 1px solid var(--border-soft);
+  animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.guide-content h3 {
+  color: var(--primary-teal);
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.guide-content p {
+  font-size: 0.9rem;
+  color: var(--text-sub);
+  line-height: 1.5;
+  margin-bottom: 1.25rem;
+}
+
+.guide-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.guide-nav button {
+  background: var(--bg-app);
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--primary-teal);
+}
+
+.guide-nav button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.guide-nav span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-sub);
+}
