@@ -1,99 +1,151 @@
-/* Report Generator Styles */
+/* ═══════════════════════════════════════════════════════
+   Report Generator — Clinical Glassmorphism
+   ═══════════════════════════════════════════════════════ */
+
 .report-generator {
-  background: white;
+  background: var(--lf-bg-glass);
+  backdrop-filter: var(--lf-blur-md);
+  -webkit-backdrop-filter: var(--lf-blur-md);
   padding: 3rem;
-  border-radius: 24px;
-  border: 2px solid var(--border-soft);
-  margin-top: 3rem;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+  border-radius: var(--lf-radius-lg);
+  border: 1px solid var(--lf-border);
+  margin-top: 2.5rem;
+  box-shadow: var(--lf-shadow-lg);
+  color: var(--lf-text-primary);
 }
 
 .clinical-header {
   display: flex;
   justify-content: space-between;
-  border-bottom: 3px solid var(--primary-teal);
-  padding-bottom: 2rem;
-  margin-bottom: 2rem;
+  border-bottom: 2px solid var(--lf-border);
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .hospital-branding h2 {
-  color: var(--primary-teal);
+  color: var(--lf-indigo-light);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
   margin: 0;
-  letter-spacing: 2px;
+  letter-spacing: 1px;
+  font-size: 1.4rem;
+}
+
+.hospital-branding p {
+  color: var(--lf-text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-top: 0.25rem;
 }
 
 .patient-meta p {
   margin: 0.25rem 0;
-  font-size: 0.9rem;
-  color: var(--text-sub);
+  font-size: 0.85rem;
+  color: var(--lf-text-secondary);
 }
 
 .clinical-summary h3, 
 .clinical-findings h3, 
 .clinical-recommendations h3 {
-  color: var(--primary-teal);
-  border-left: 5px solid var(--accent-gold);
-  padding-left: 1rem;
+  color: var(--lf-text-primary);
+  border-left: 4px solid var(--lf-indigo);
+  padding-left: 0.85rem;
   margin: 2rem 0 1rem;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
 }
 
 .risk-indicator {
-  background: #f8fafc;
-  padding: 1.5rem;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--lf-border);
+  padding: 1.25rem;
+  border-radius: var(--lf-radius-md);
   display: flex;
   align-items: center;
   gap: 1rem;
   font-weight: 700;
+  font-size: 0.95rem;
 }
 
-.risk-indicator .value.high { color: var(--accent-red); }
-.risk-indicator .value.moderate { color: var(--accent-orange); }
+.risk-indicator .label {
+  color: var(--lf-text-secondary);
+}
+
+.risk-indicator .value.high { color: var(--lf-rose); }
+.risk-indicator .value.moderate { color: var(--lf-amber); }
 
 .clinical-table {
   width: 100%;
   border-collapse: collapse;
+  margin-top: 1rem;
 }
 
 .clinical-table th {
   text-align: left;
-  padding: 1rem;
-  background: var(--bg-app);
-  color: var(--primary-teal);
-  font-size: 0.8rem;
+  padding: 0.85rem 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--lf-text-secondary);
+  font-size: 0.75rem;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  border-bottom: 1px solid var(--lf-border);
 }
 
 .clinical-table td {
   padding: 1rem;
-  border-bottom: 1px solid var(--border-soft);
-  font-size: 0.95rem;
+  border-bottom: 1px solid var(--lf-border);
+  font-size: 0.9rem;
+  color: var(--lf-text-secondary);
 }
 
 .tag {
   padding: 4px 10px;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 800;
+  text-transform: uppercase;
 }
 
-.tag.high { background: rgba(239, 68, 68, 0.1); color: var(--accent-red); }
-.tag.medium { background: rgba(245, 158, 11, 0.1); color: var(--accent-orange); }
+.tag.high { background: rgba(244, 63, 94, 0.12); color: var(--lf-rose); }
+.tag.medium { background: rgba(245, 158, 11, 0.12); color: var(--lf-amber); }
+.tag.low { background: rgba(13, 148, 136, 0.12); color: var(--lf-teal-light); }
+
+.clinical-recommendations ul {
+  padding-left: 1.25rem;
+}
+
+.clinical-recommendations li {
+  margin-bottom: 0.5rem;
+  color: var(--lf-text-secondary);
+  font-size: 0.9rem;
+}
 
 .btn-print {
-  margin-top: 3rem;
-  background: var(--primary-teal);
+  margin-top: 2.5rem;
+  background: var(--lf-gradient-primary);
   color: white;
   border: none;
-  padding: 1rem 2rem;
-  border-radius: 12px;
+  padding: 0.9rem;
+  border-radius: var(--lf-radius-sm);
   font-weight: 700;
   cursor: pointer;
   width: 100%;
+  box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+  transition: all 0.2s;
+}
+
+.btn-print:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.45);
 }
 
 @media print {
   .no-print { display: none !important; }
-  .report-generator { border: none; box-shadow: none; padding: 0; }
-  body { background: white !important; }
+  .report-generator { border: none; box-shadow: none; padding: 0; background: white !important; color: black !important; }
+  body { background: white !important; color: black !important; }
+  .clinical-table th { background: #f1f5f9 !important; color: #1e293b !important; }
+  .clinical-table td { border-bottom-color: #e2e8f0 !important; color: #334155 !important; }
 }

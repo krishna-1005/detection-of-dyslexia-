@@ -4,7 +4,7 @@ import Sidebar from './Sidebar';
 import './UserReport.css';
 
 const UserReport = () => {
-  const [reportData, setReportReportData] = useState(null);
+  const [reportData, setReportData] = useState(null);
   const user = JSON.parse(localStorage.getItem("lexiflow_user"));
 
   useEffect(() => {
@@ -12,7 +12,7 @@ const UserReport = () => {
     const exHistory = JSON.parse(localStorage.getItem('lexiflow_exercise_history') || '{}');
     
     if (history.length === 0 && Object.keys(exHistory).length === 0) {
-      setReportReportData({ isEmpty: true });
+      setReportData({ isEmpty: true });
       return;
     }
 
@@ -33,21 +33,21 @@ const UserReport = () => {
           sessions: exHistory.morphology?.sessions || 0,
           score: exHistory.morphology?.accuracy?.replace('%', '') || 0,
           trend: exHistory.morphology?.trend || 'Stable',
-          color: '#3b82f6'
+          color: '#818cf8'
         },
         { 
           name: 'Rapid Naming', 
           sessions: exHistory.naming?.sessions || 0,
           score: exHistory.naming?.accuracy?.replace('%', '') || 0,
           trend: exHistory.naming?.trend || 'Stable',
-          color: '#f59e0b'
+          color: '#fbbf24'
         },
         { 
           name: 'Visual Tracking', 
           sessions: exHistory.visual?.sessions || 0,
           score: exHistory.visual?.accuracy?.replace('%', '') || 0,
           trend: exHistory.visual?.trend || 'Stable',
-          color: '#ec4899'
+          color: '#f43f5e'
         },
         { 
           name: 'Auditory Processing', 
@@ -61,7 +61,7 @@ const UserReport = () => {
           sessions: exHistory.video?.sessions || 0,
           score: exHistory.video?.accuracy?.replace('%', '') || 0,
           trend: exHistory.video?.trend || 'Stable',
-          color: '#8b5cf6'
+          color: '#a78bfa'
         }
       ],
       cognitiveMarkers: [
@@ -76,22 +76,22 @@ const UserReport = () => {
         ? "User has initiated diagnostics. Patterns indicate initial cognitive markers consistent with linguistic transposition."
         : "Initial baseline established. Awaiting further interactive session data for comprehensive analysis."
     };
-    setReportReportData(report);
+    setReportData(report);
   }, []);
 
   if (!reportData) return null;
 
   if (reportData.isEmpty) {
     return (
-      <div className="page-container" style={{ background: 'var(--med-blue-light)', minHeight: '100vh' }}>
+      <div className="page-container">
         <Navbar user={user} />
         <div className="dashboard-layout" style={{ display: 'flex' }}>
           <Sidebar />
-          <main className="main-content" style={{ flex: 1, padding: '3rem' }}>
+          <main className="main-content" style={{ flex: 1, padding: '2.5rem' }}>
             <div className="medical-card" style={{ textAlign: 'center', padding: '5rem 2rem' }}>
               <span style={{ fontSize: '4rem' }}>📊</span>
-              <h2 style={{ color: 'var(--med-teal)', marginTop: '2rem' }}>No Diagnostic History Found</h2>
-              <p style={{ color: 'var(--med-gray)', maxWidth: '500px', margin: '1rem auto' }}>
+              <h2 style={{ color: 'var(--lf-indigo-light)', marginTop: '2rem', fontFamily: "'Outfit', sans-serif" }}>No Diagnostic History Found</h2>
+              <p style={{ color: 'var(--lf-text-muted)', maxWidth: '500px', margin: '1rem auto' }}>
                 Your clinical analysis report will be generated once you complete your first text analysis or therapeutic exercise.
               </p>
             </div>
@@ -102,34 +102,34 @@ const UserReport = () => {
   }
 
   return (
-    <div className="page-container" style={{ background: 'var(--med-blue-light)', minHeight: '100vh' }}>
+    <div className="page-container">
       <Navbar user={user} />
       <div className="dashboard-layout" style={{ display: 'flex' }}>
         <Sidebar />
-        <main className="main-content" style={{ flex: 1, padding: '3rem' }}>
+        <main className="main-content" style={{ flex: 1, padding: '2.5rem' }}>
           <header className="medical-header" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <span className="medical-label">Patient Analytics</span>
-              <h1 style={{ fontSize: '2.5rem', fontWeight: 800 }}>Comprehensive Therapy Analysis</h1>
-              <p style={{ color: 'var(--med-gray)' }}>Clinical Diagnostic Summary - {reportData.lastActive}</p>
+              <h1 style={{ fontSize: '2rem', fontWeight: 800, fontFamily: "'Outfit', sans-serif" }}>Comprehensive Therapy Analysis</h1>
+              <p style={{ color: 'var(--lf-text-muted)', fontSize: '0.9rem' }}>Clinical Diagnostic Summary - {reportData.lastActive}</p>
             </div>
             <button className="medical-btn-primary" onClick={() => window.print()}>🖨️ Download Report</button>
           </header>
 
-          <div className="report-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
             {/* Module Performance */}
-            <div className="medical-card performance-section">
-              <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem', fontWeight: 700 }}>Module Performance</h3>
-              <div className="performance-list">
+            <div className="medical-card">
+              <h3 style={{ marginBottom: '1.5rem', fontSize: '1.05rem', fontWeight: 700, color: 'var(--lf-text-primary)' }}>Module Performance</h3>
+              <div>
                 {reportData.modules.map(mod => (
-                  <div key={mod.name} className="mod-item" style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 0', borderBottom: '1px solid var(--med-border)' }}>
-                    <div className="mod-info">
-                      <strong style={{ display: 'block', fontSize: '1rem' }}>{mod.name}</strong>
-                      <small style={{ color: 'var(--med-gray)' }}>{mod.sessions} Sessions Completed</small>
+                  <div key={mod.name} style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 0', borderBottom: '1px solid var(--lf-border)' }}>
+                    <div>
+                      <strong style={{ display: 'block', fontSize: '0.95rem', color: 'var(--lf-text-primary)' }}>{mod.name}</strong>
+                      <small style={{ color: 'var(--lf-text-muted)' }}>{mod.sessions} Sessions Completed</small>
                     </div>
-                    <div className="mod-stats" style={{ textAlign: 'right' }}>
-                      <span className="mod-score" style={{ color: mod.color, fontWeight: 800, fontSize: '1.2rem', display: 'block' }}>{mod.score}%</span>
-                      <small className={`trend ${mod.trend.startsWith('+') ? 'pos' : 'neg'}`} style={{ fontWeight: 700, fontSize: '0.75rem' }}>{mod.trend}</small>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{ color: mod.color, fontWeight: 800, fontSize: '1.2rem', display: 'block' }}>{mod.score}%</span>
+                      <small style={{ fontWeight: 700, fontSize: '0.75rem', color: 'var(--lf-text-muted)' }}>{mod.trend}</small>
                     </div>
                   </div>
                 ))}
@@ -137,17 +137,17 @@ const UserReport = () => {
             </div>
 
             {/* Cognitive Profile */}
-            <div className="medical-card cognitive-section">
-              <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem', fontWeight: 700 }}>Cognitive Markers</h3>
-              <div className="marker-grid">
+            <div className="medical-card">
+              <h3 style={{ marginBottom: '1.5rem', fontSize: '1.05rem', fontWeight: 700, color: 'var(--lf-text-primary)' }}>Cognitive Markers</h3>
+              <div>
                 {reportData.cognitiveMarkers.map(marker => (
-                  <div key={marker.label} className="marker-item" style={{ marginBottom: '1.5rem' }}>
+                  <div key={marker.label} style={{ marginBottom: '1.25rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                      <small style={{ fontWeight: 700, color: 'var(--med-gray)' }}>{marker.label}</small>
-                      <small style={{ fontWeight: 800 }}>{marker.value}%</small>
+                      <small style={{ fontWeight: 700, color: 'var(--lf-text-muted)' }}>{marker.label}</small>
+                      <small style={{ fontWeight: 800, color: 'var(--lf-text-primary)' }}>{marker.value}%</small>
                     </div>
-                    <div className="progress-bg" style={{ height: '8px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div className="progress-bar" style={{ width: `${marker.value}%`, height: '100%', background: 'var(--med-teal)' }}></div>
+                    <div style={{ height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ width: `${marker.value}%`, height: '100%', background: 'var(--lf-gradient-primary)', borderRadius: '4px', transition: 'width 1s ease-out' }}></div>
                     </div>
                   </div>
                 ))}
@@ -155,15 +155,15 @@ const UserReport = () => {
             </div>
 
             {/* Clinical Insights */}
-            <div className="medical-card clinical-insights" style={{ gridColumn: 'span 2' }}>
-              <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem', fontWeight: 700 }}>Specialist Analysis & Recommendations</h3>
-              <div className="insight-box" style={{ background: 'var(--med-blue-light)', padding: '1.5rem', borderRadius: '12px', marginBottom: '1.5rem' }}>
-                <p style={{ lineHeight: '1.6', color: '#1e293b', fontWeight: 500 }}>{reportData.clinicianSummary}</p>
+            <div className="medical-card" style={{ gridColumn: 'span 2' }}>
+              <h3 style={{ marginBottom: '1.5rem', fontSize: '1.05rem', fontWeight: 700, color: 'var(--lf-text-primary)' }}>Specialist Analysis & Recommendations</h3>
+              <div style={{ background: 'rgba(79, 70, 229, 0.06)', padding: '1.5rem', borderRadius: '12px', marginBottom: '1.5rem', border: '1px solid rgba(79, 70, 229, 0.15)' }}>
+                <p style={{ lineHeight: '1.6', color: 'var(--lf-text-secondary)', fontWeight: 500 }}>{reportData.clinicianSummary}</p>
               </div>
-              <div className="recommendation-chips" style={{ display: 'flex', gap: '1rem' }}>
-                <span className="medical-label-badge" style={{ padding: '6px 12px' }}>Primary Goal: Ocular Tracking</span>
-                <span className="medical-label-badge" style={{ background: '#fef3c7', color: '#d97706', padding: '6px 12px' }}>Next Review: 15 Jun</span>
-                <span className="medical-label-badge" style={{ background: '#fee2e2', color: '#ef4444', padding: '6px 12px' }}>Therapy Intensity: High</span>
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <span style={{ padding: '6px 14px', background: 'rgba(79, 70, 229, 0.1)', color: 'var(--lf-indigo-light)', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, border: '1px solid rgba(79, 70, 229, 0.2)' }}>Primary Goal: Ocular Tracking</span>
+                <span style={{ padding: '6px 14px', background: 'rgba(245, 158, 11, 0.1)', color: 'var(--lf-amber)', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, border: '1px solid rgba(245, 158, 11, 0.2)' }}>Next Review: 15 Jun</span>
+                <span style={{ padding: '6px 14px', background: 'rgba(244, 63, 94, 0.1)', color: 'var(--lf-rose)', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, border: '1px solid rgba(244, 63, 94, 0.2)' }}>Therapy Intensity: High</span>
               </div>
             </div>
           </div>

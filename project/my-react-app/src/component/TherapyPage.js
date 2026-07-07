@@ -44,15 +44,15 @@ const TherapyPage = () => {
     const info = therapyInfo[type] || {};
 
     return (
-        <div className="page-container" style={{ background: 'var(--med-blue-light)', minHeight: '100vh' }}>
+        <div className="page-container">
             <Navbar user={user} />
             <div className="dashboard-layout" style={{ display: 'flex' }}>
                 <Sidebar />
-                <main className="main-content" style={{ flex: 1, padding: '3rem' }}>
+                <main className="main-content" style={{ flex: 1, padding: '2.5rem' }}>
                     <header className="medical-header" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
                             <span className="medical-label">Digital Intervention Suite</span>
-                            <h1 style={{ fontSize: '2.5rem', fontWeight: 800 }}>
+                            <h1 style={{ fontSize: '2rem', fontWeight: 800, fontFamily: "'Outfit', sans-serif" }}>
                                 {type === 'phoneme' && '🧩 Phoneme Matching'}
                                 {type === 'morphology' && '🧬 Morphology Builder'}
                                 {type === 'naming' && '⚡ Rapid Naming (RAN)'}
@@ -64,39 +64,39 @@ const TherapyPage = () => {
                         <button className="medical-btn-secondary" onClick={() => navigate('/dashboard')}>← Back to Dashboard</button>
                     </header>
 
-                    <div className="therapy-layout-stack" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                        {/* Interactive Exercise - Full Width */}
-                        <div className="medical-card" style={{ padding: '0', overflow: 'hidden', minHeight: type === 'video' ? 'auto' : '650px', background: 'white', width: '100%' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                        {/* Interactive Exercise */}
+                        <div className="medical-card" style={{ padding: '0', overflow: 'hidden', minHeight: type === 'video' ? 'auto' : '600px', width: '100%' }}>
                             <ExerciseSystem type={type} onComplete={() => navigate('/dashboard')} />
                         </div>
 
-                        {/* Clinical Information Panel - Stacked Below */}
-                        <div className="info-panel-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
+                        {/* Clinical Information Panel */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
                             <section className="medical-card">
-                                <h3 style={{ color: 'var(--med-blue-primary)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
+                                <h3 style={{ color: 'var(--lf-indigo-light)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
                                     🔬 The Science
                                 </h3>
-                                <p style={{ lineHeight: '1.6', color: '#475569', fontWeight: 500, fontSize: '0.9rem' }}>{info.science}</p>
+                                <p style={{ lineHeight: '1.6', color: 'var(--lf-text-secondary)', fontWeight: 500, fontSize: '0.9rem' }}>{info.science}</p>
                             </section>
 
                             <section className="medical-card">
-                                <h3 style={{ color: 'var(--med-teal)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
+                                <h3 style={{ color: 'var(--lf-teal-light)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
                                     ✅ Key Benefits
                                 </h3>
                                 <ul style={{ listStyle: 'none', padding: 0 }}>
                                     {info.benefits?.map((b, i) => (
-                                        <li key={i} style={{ marginBottom: '0.6rem', display: 'flex', gap: '10px', fontWeight: 600, color: '#1e293b', fontSize: '0.85rem' }}>
-                                            <span style={{ color: 'var(--med-teal)' }}>•</span> {b}
+                                        <li key={i} style={{ marginBottom: '0.6rem', display: 'flex', gap: '10px', fontWeight: 600, color: 'var(--lf-text-secondary)', fontSize: '0.85rem' }}>
+                                            <span style={{ color: 'var(--lf-teal-light)' }}>•</span> {b}
                                         </li>
                                     ))}
                                 </ul>
                             </section>
 
-                            <section className="medical-card" style={{ borderLeft: '4px solid #f59e0b' }}>
-                                <h3 style={{ color: '#d97706', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
+                            <section className="medical-card" style={{ borderLeft: '4px solid var(--lf-amber)' }}>
+                                <h3 style={{ color: 'var(--lf-amber)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
                                     💡 Instructions
                                 </h3>
-                                <p style={{ lineHeight: '1.6', color: '#475569', fontWeight: 600, fontSize: '0.9rem' }}>{info.instructions}</p>
+                                <p style={{ lineHeight: '1.6', color: 'var(--lf-text-secondary)', fontWeight: 600, fontSize: '0.9rem' }}>{info.instructions}</p>
                             </section>
                         </div>
                     </div>

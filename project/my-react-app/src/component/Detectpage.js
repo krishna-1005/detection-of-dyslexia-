@@ -36,9 +36,9 @@ const DetectPage = () => {
   useEffect(() => {
     if (!user) {
       navigate("/login");
-      return;
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navigate]);
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -100,22 +100,22 @@ const DetectPage = () => {
   const history = JSON.parse(localStorage.getItem("lexiflow_history") || "[]");
 
   return (
-    <div className={`page-container ${isDyslexiaFriendly ? "dyslexia-friendly" : ""}`} style={{ background: 'var(--med-blue-light)', minHeight: '100vh' }}>
+    <div className={`page-container ${isDyslexiaFriendly ? "dyslexia-friendly" : ""}`}>
       <Navbar user={user} showDropdown={showDropdown} setShowDropdown={setShowDropdown} />
       <FocusRuler isActive={isFocusRulerActive} />
 
       <div className="dashboard-layout" style={{ display: 'flex' }}>
         <Sidebar />
 
-        <main className="main-content" style={{ flex: 1, padding: '3rem' }}>
+        <main className="main-content" style={{ flex: 1, padding: '2.5rem' }}>
           <header className="medical-header">
             <span className="medical-label">Neural Engine v4.2</span>
-            <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Linguistic Diagnostic Engine</h1>
+            <h1 style={{ fontSize: '1.8rem', fontWeight: 800, fontFamily: "'Outfit', sans-serif" }}>Linguistic Diagnostic Engine</h1>
           </header>
 
           <section className="medical-card" style={{ marginBottom: '2rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>Session Input</h3>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--lf-text-primary)' }}>Session Input</h3>
               <button className="medical-btn-secondary" style={{ fontSize: '0.8rem' }} onClick={() => fileInputRef.current.click()}>📄 Upload Clinical Sample</button>
               <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept=".txt,.pdf,.docx" onChange={handleFileUpload} />
             </div>
@@ -126,8 +126,8 @@ const DetectPage = () => {
               value={text} 
               onChange={(e) => setText(e.target.value)}
               style={{ 
-                width: '100%', minHeight: '200px', padding: '1.5rem', borderRadius: '12px', border: '2px solid var(--med-border)', fontSize: '1.1rem', resize: 'vertical', background: '#fcfcfc',
-                letterSpacing: letterSpacing === "wide" ? "0.15em" : "normal", lineHeight: lineHeight
+                letterSpacing: letterSpacing === "wide" ? "0.15em" : "normal", 
+                lineHeight: lineHeight
               }}
             />
 
@@ -135,11 +135,11 @@ const DetectPage = () => {
               <div style={{ display: 'flex', gap: '1.5rem' }}>
                 <div className="medical-stat">
                   <small className="medical-label">Character Count</small>
-                  <strong>{text.length}</strong>
+                  <strong style={{ color: 'var(--lf-text-primary)' }}>{text.length}</strong>
                 </div>
                 <div className="medical-stat">
                   <small className="medical-label">Sample Status</small>
-                  <strong style={{ color: text.length >= 20 ? 'var(--med-teal)' : text.length >= 3 ? 'var(--med-blue-primary)' : '#ef4444' }}>
+                  <strong style={{ color: text.length >= 20 ? 'var(--lf-teal-light)' : text.length >= 3 ? 'var(--lf-indigo-light)' : 'var(--lf-rose)' }}>
                     {text.length >= 20 ? 'VALID' : text.length >= 3 ? 'LIMITED' : 'TOO SHORT'}
                   </strong>
                 </div>
@@ -150,39 +150,39 @@ const DetectPage = () => {
             </div>
           </section>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1.5rem' }}>
             {/* Analytics Trends */}
             <section className="medical-card">
-              <h3 style={{ marginBottom: '1.5rem', fontSize: '1rem', fontWeight: 700 }}>Session Diagnostics History</h3>
+              <h3 style={{ marginBottom: '1.5rem', fontSize: '1rem', fontWeight: 700, color: 'var(--lf-text-primary)' }}>Session Diagnostics History</h3>
               {history.length > 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {history.slice(0, 4).map((h, i) => (
-                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem', background: 'var(--med-blue-light)', borderRadius: '10px' }}>
-                      <span style={{ fontWeight: 600 }}>{h.date}</span>
-                      <span style={{ fontWeight: 800, color: h.score > 50 ? '#ef4444' : '#d97706' }}>{h.score}% RISK</span>
+                    <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.85rem 1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '10px', border: '1px solid var(--lf-border)' }}>
+                      <span style={{ fontWeight: 600, color: 'var(--lf-text-secondary)' }}>{h.date}</span>
+                      <span style={{ fontWeight: 800, color: h.score > 50 ? 'var(--lf-rose)' : 'var(--lf-amber)' }}>{h.score}% RISK</span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--med-gray)' }}>No historical data for this session.</div>
+                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--lf-text-muted)' }}>No historical data for this session.</div>
               )}
             </section>
 
             {/* Diagnostic Parameters */}
             <section className="medical-card">
-              <h3 style={{ marginBottom: '1.5rem', fontSize: '1rem', fontWeight: 700 }}>Analysis Parameters</h3>
+              <h3 style={{ marginBottom: '1.5rem', fontSize: '1rem', fontWeight: 700, color: 'var(--lf-text-primary)' }}>Analysis Parameters</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.9rem', color: 'var(--med-gray)' }}>Focus Ruler</span>
-                  <button onClick={() => setIsFocusRulerActive(!isFocusRulerActive)} style={{ padding: '4px 12px', borderRadius: '6px', border: '1px solid var(--med-border)', cursor: 'pointer', background: isFocusRulerActive ? 'var(--med-blue-primary)' : 'white', color: isFocusRulerActive ? 'white' : 'inherit' }}>{isFocusRulerActive ? 'ACTIVE' : 'INACTIVE'}</button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.9rem', color: 'var(--lf-text-secondary)' }}>Focus Ruler</span>
+                  <button onClick={() => setIsFocusRulerActive(!isFocusRulerActive)} style={{ padding: '4px 12px', borderRadius: '6px', border: '1px solid var(--lf-border)', cursor: 'pointer', background: isFocusRulerActive ? 'var(--lf-indigo)' : 'rgba(255,255,255,0.04)', color: isFocusRulerActive ? 'white' : 'var(--lf-text-secondary)', fontWeight: 600, fontSize: '0.8rem' }}>{isFocusRulerActive ? 'ACTIVE' : 'INACTIVE'}</button>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.9rem', color: 'var(--med-gray)' }}>Simulated Crowding</span>
-                  <button onClick={() => setIsOvercrowdingSimActive(!isOvercrowdingSimActive)} style={{ padding: '4px 12px', borderRadius: '6px', border: '1px solid var(--med-border)', cursor: 'pointer', background: isOvercrowdingSimActive ? '#ef4444' : 'white', color: isOvercrowdingSimActive ? 'white' : 'inherit' }}>{isOvercrowdingSimActive ? 'ON' : 'OFF'}</button>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.9rem', color: 'var(--lf-text-secondary)' }}>Simulated Crowding</span>
+                  <button onClick={() => setIsOvercrowdingSimActive(!isOvercrowdingSimActive)} style={{ padding: '4px 12px', borderRadius: '6px', border: '1px solid var(--lf-border)', cursor: 'pointer', background: isOvercrowdingSimActive ? 'var(--lf-rose)' : 'rgba(255,255,255,0.04)', color: isOvercrowdingSimActive ? 'white' : 'var(--lf-text-secondary)', fontWeight: 600, fontSize: '0.8rem' }}>{isOvercrowdingSimActive ? 'ON' : 'OFF'}</button>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: '0.9rem', color: 'var(--med-gray)' }}>Clinical Overlay</span>
-                  <select value={colorOverlay} onChange={(e) => setColorOverlay(e.target.value)} style={{ padding: '4px', borderRadius: '4px', border: '1px solid var(--med-border)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.9rem', color: 'var(--lf-text-secondary)' }}>Clinical Overlay</span>
+                  <select value={colorOverlay} onChange={(e) => setColorOverlay(e.target.value)} style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--lf-border)', background: 'rgba(255,255,255,0.04)', color: 'var(--lf-text-primary)', fontSize: '0.85rem' }}>
                     <option value="none">None</option>
                     <option value="yellow">Contrast Yellow</option>
                     <option value="blue">Calm Blue</option>
@@ -194,7 +194,7 @@ const DetectPage = () => {
           </div>
 
           {result && !loading && (
-            <div ref={resultsRef} style={{ marginTop: '3rem' }}>
+            <div ref={resultsRef} style={{ marginTop: '2rem' }}>
               <ResultDisplay result={result} />
               <ReportGenerator result={result} user={user} />
             </div>

@@ -54,85 +54,102 @@ const Dashboard = () => {
     }
   }, [userString, navigate]);
 
+  const statCards = [
+    { label: "Total Diagnostics", value: stats.totalTests, icon: "🧪", color: "#4f46e5" },
+    { label: "Average Risk Index", value: stats.avgRisk, icon: "📊", color: patientData.riskLevel === 'High' ? '#f43f5e' : '#0d9488' },
+    { label: "Therapy Progress", value: `${patientData.progress}%`, icon: "📈", color: "#7c3aed" },
+  ];
+
+  const therapyModules = [
+    { id: 'phoneme', name: 'Phoneme Matching', icon: '🧩', desc: 'Sound-letter association' },
+    { id: 'morphology', name: 'Morphology Builder', icon: '🧬', desc: 'Word structure training' },
+    { id: 'naming', name: "Rapid Naming (RAN)", icon: '⚡', desc: 'Speed recognition drills' },
+    { id: 'visual', name: 'Visual Tracking', icon: '📖', desc: 'Eye movement exercises' },
+    { id: 'auditory', name: 'Auditory Processing', icon: '🎧', desc: 'Sound discrimination' },
+    { id: 'video', name: 'Live Video Session', icon: '📹', desc: 'Interactive practice' }
+  ];
+
   return (
-    <div className="page-container" style={{ background: 'var(--med-blue-light)', minHeight: '100vh' }}>
+    <div className="page-container">
       <Navbar user={user} showDropdown={showDropdown} setShowDropdown={setShowDropdown} />
 
       <div className="dashboard-layout" style={{ display: 'flex' }}>
         <Sidebar />
 
-        <main className="main-content" style={{ flex: 1, padding: '3rem' }}>
-          <header className="medical-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <main className="main-content" style={{ flex: 1, padding: '2.5rem' }}>
+          <header className="dash-header">
             <div>
               <span className="medical-label">Clinical Overview</span>
-              <h1 style={{ fontSize: '2rem', fontWeight: 800 }}>Patient Dashboard</h1>
+              <h1 className="dash-title">Patient Dashboard</h1>
             </div>
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <button className="medical-btn-secondary" onClick={() => navigate('/analysis')}>📈 View User Analysis</button>
-              <Link to="/detect" className="medical-btn-primary">🧬 New Diagnostic Session</Link>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button className="medical-btn-secondary" onClick={() => navigate('/analysis')}>📈 View Analysis</button>
+              <Link to="/detect" className="medical-btn-primary">🧬 New Diagnostic</Link>
             </div>
           </header>
 
-          <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '3rem' }}>
-            <div className="medical-card">
-              <span className="medical-label">Total Diagnostics</span>
-              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--med-blue-primary)' }}>{stats.totalTests}</div>
-            </div>
-            <div className="medical-card">
-              <span className="medical-label">Average Risk Index</span>
-              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: patientData.riskLevel === 'High' ? '#ef4444' : 'var(--med-teal)' }}>{stats.avgRisk}</div>
-            </div>
-            <div className="medical-card">
-              <span className="medical-label">Therapy Progress</span>
-              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--med-blue-primary)' }}>{patientData.progress}%</div>
-            </div>
+          {/* Stats Grid */}
+          <div className="dash-stats-grid">
+            {statCards.map((card, i) => (
+              <div className="dash-stat-card" key={i} style={{ animationDelay: `${i * 0.1}s` }}>
+                <div className="dash-stat-icon" style={{ background: `${card.color}15`, color: card.color }}>
+                  {card.icon}
+                </div>
+                <div>
+                  <span className="medical-label">{card.label}</span>
+                  <div className="dash-stat-value" style={{ color: card.color }}>{card.value}</div>
+                </div>
+              </div>
+            ))}
           </div>
 
-          <div className="dashboard-grid" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '2rem' }}>
-            <section className="medical-card">
-              <h3 style={{ marginBottom: '2rem', fontSize: '1.1rem', fontWeight: 700 }}>Diagnostic History</h3>
-              <table className="medical-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="dash-main-grid">
+            {/* Diagnostic History */}
+            <section className="medical-card dash-history-card">
+              <h3 className="dash-card-title">Diagnostic History</h3>
+              <table className="dash-table">
                 <thead>
-                  <tr style={{ textAlign: 'left', borderBottom: '2px solid var(--med-border)' }}>
-                    <th style={{ padding: '1rem 0' }} className="medical-label">Session Date</th>
-                    <th style={{ padding: '1rem 0' }} className="medical-label">Risk Level</th>
-                    <th style={{ padding: '1rem 0' }} className="medical-label">Status</th>
+                  <tr>
+                    <th>Session Date</th>
+                    <th>Risk Level</th>
+                    <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {recentTests.map(test => (
-                    <tr key={test.id} style={{ borderBottom: '1px solid var(--med-border)' }}>
-                      <td style={{ padding: '1.25rem 0', fontWeight: 600 }}>{test.date}</td>
-                      <td style={{ padding: '1.25rem 0' }}>
-                        <span style={{ padding: '4px 10px', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800, background: test.score > 60 ? '#fee2e2' : '#fef3c7', color: test.score > 60 ? '#ef4444' : '#d97706' }}>
+                    <tr key={test.id}>
+                      <td style={{ fontWeight: 600 }}>{test.date}</td>
+                      <td>
+                        <span className={`dash-risk-badge ${test.score > 60 ? 'high' : 'moderate'}`}>
                           {test.score}% {test.score > 60 ? 'HIGH' : 'MODERATE'}
                         </span>
                       </td>
-                      <td style={{ padding: '1.25rem 0', color: 'var(--med-teal)', fontWeight: 700 }}>● COMPLETE</td>
+                      <td><span className="dash-status">● COMPLETE</span></td>
                     </tr>
                   ))}
-                  {recentTests.length === 0 && <tr><td colSpan="3" style={{ padding: '2rem', textAlign: 'center', color: 'var(--med-gray)' }}>No diagnostic records available.</td></tr>}
+                  {recentTests.length === 0 && (
+                    <tr>
+                      <td colSpan="3" className="dash-empty">No diagnostic records available.</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </section>
 
+            {/* Therapy Suite */}
             <section className="medical-card">
-              <h3 style={{ marginBottom: '2rem', fontSize: '1.1rem', fontWeight: 700 }}>Therapy Suite</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {[
-                  { id: 'phoneme', name: 'Phoneme Matching', icon: '🧩' },
-                  { id: 'morphology', name: 'Morphology Builder', icon: '🧬' },
-                  { id: 'naming', name: "Rapid Naming (RAN)", icon: '⚡' },
-                  { id: 'visual', name: 'Visual Tracking', icon: '📖' },
-                  { id: 'auditory', name: 'Auditory Processing', icon: '🎧' },
-                  { id: 'video', name: 'Live Video Session', icon: '📹' }
-                ].map(ex => (
-                  <div key={ex.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem', background: 'var(--med-blue-light)', borderRadius: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <span style={{ fontSize: '1.25rem' }}>{ex.icon}</span>
-                      <strong style={{ fontSize: '0.9rem' }}>{ex.name}</strong>
+              <h3 className="dash-card-title">Therapy Suite</h3>
+              <div className="dash-therapy-list">
+                {therapyModules.map(ex => (
+                  <div key={ex.id} className="dash-therapy-item">
+                    <div className="dash-therapy-info">
+                      <span className="dash-therapy-icon">{ex.icon}</span>
+                      <div>
+                        <strong>{ex.name}</strong>
+                        <small>{ex.desc}</small>
+                      </div>
                     </div>
-                    <button onClick={() => navigate(`/therapy/${ex.id}`)} className="medical-btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.75rem' }}>Start</button>
+                    <button onClick={() => navigate(`/therapy/${ex.id}`)} className="dash-therapy-btn">Start</button>
                   </div>
                 ))}
               </div>

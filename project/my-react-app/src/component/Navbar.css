@@ -1,8 +1,13 @@
-/* Navbar.css - Professional Medical Look */
+/* ═══════════════════════════════════════════════════════
+   Navbar — Frosted Glass Premium
+   ═══════════════════════════════════════════════════════ */
+
 .navbar {
   height: 64px;
-  background: var(--med-white);
-  border-bottom: 1px solid var(--med-border);
+  background: rgba(15, 11, 26, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--lf-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -20,63 +25,73 @@
 }
 
 .nav-logo-icon {
-  width: 32px;
-  height: 32px;
-  background: var(--med-blue-primary);
-  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  background: var(--lf-gradient-primary);
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-weight: 900;
+  font-size: 0.9rem;
+  box-shadow: 0 0 15px rgba(79, 70, 229, 0.3);
 }
 
 .nav-brand h2 {
-  color: var(--med-blue-dark);
-  font-size: 1.25rem;
+  color: var(--lf-text-primary);
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 800;
   letter-spacing: -0.02em;
 }
 
 .nav-links {
   display: flex;
-  gap: 2.5rem;
+  gap: 2rem;
+  align-items: center;
 }
 
 .nav-item {
   text-decoration: none;
-  color: var(--med-gray);
+  color: var(--lf-text-secondary);
   font-weight: 500;
   font-size: 0.9rem;
   position: relative;
   padding: 0.5rem 0;
+  transition: color 0.3s ease;
 }
 
-.nav-item:hover, .nav-item.active {
-  color: var(--med-blue-primary);
+.nav-item:hover,
+.nav-item.active {
+  color: var(--lf-text-primary);
 }
 
 .nav-item.active::after {
   content: '';
   position: absolute;
-  bottom: 0;
+  bottom: -2px;
   left: 0;
   width: 100%;
   height: 2px;
-  background: var(--med-blue-primary);
+  background: var(--lf-gradient-primary);
   border-radius: 2px;
 }
 
 .user-profile-nav {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.5rem 1rem;
-  border-radius: 50px;
-  background: var(--med-blue-light);
+  gap: 0.75rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--lf-radius-full);
+  background: rgba(255, 255, 255, 0.04);
   cursor: pointer;
-  border: 1px solid transparent;
+  border: 1px solid var(--lf-border);
+  transition: all 0.3s ease;
+  position: relative;
 }
 
 .user-profile-nav:hover {
-  border-color: var(--med-blue-primary);
+  border-color: rgba(79, 70, 229, 0.4);
+  background: rgba(79, 70, 229, 0.08);
 }

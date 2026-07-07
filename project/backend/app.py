@@ -62,7 +62,24 @@ def signup():
     users = load_users()
     if email in users:
         return jsonify({"error": "User with this email already exists"}), 400
-    # ... rest of signup
+
+    users[email] = {
+        "name": name,
+        "email": email,
+        "password": password,
+        "patientId": patient_id or "LX-" + str(uuid.uuid4())[:4].upper()
+    }
+    save_users(users)
+
+    return jsonify({
+        "user": {
+            "name": name,
+            "email": email,
+            "patientId": users[email]["patientId"]
+        },
+        "token": "mock-token-" + str(uuid.uuid4())
+    })
+
 @app.route("/api/login", methods=["POST"])
 def login():
     data = request.get_json()

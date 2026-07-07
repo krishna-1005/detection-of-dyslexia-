@@ -26,7 +26,7 @@ const VisualTracking = ({ onComplete, speedMultiplier = 1 }) => {
       setIsPlaying(false);
     }
     return () => clearInterval(interval);
-  }, [isPlaying, activeIndex, speed]);
+  }, [isPlaying, activeIndex, speed, words.length]);
 
   const handleAction = () => {
     if (!isPlaying || activeIndex === -1) return;
@@ -138,9 +138,9 @@ const VisualTracking = ({ onComplete, speedMultiplier = 1 }) => {
 
 const PhonemeMatching = ({ onComplete }) => {
   const pairs = [
-    { phoneme: 'CH', words: ['Chair', 'Chip', 'Catch'], audio: 'ch' },
-    { phoneme: 'SH', words: ['Ship', 'Shop', 'Fish'], audio: 'sh' },
-    { phoneme: 'TH', words: ['Thin', 'That', 'Math'], audio: 'th' },
+    { phoneme: 'CH', words: ['Chair', 'Chip', 'Catch'], options: ['Chair', 'Apple', 'Chip', 'Sun'], audio: 'ch' },
+    { phoneme: 'SH', words: ['Ship', 'Shop', 'Fish'], options: ['Ship', 'Book', 'Fish', 'Ball'], audio: 'sh' },
+    { phoneme: 'TH', words: ['Thin', 'That', 'Math'], options: ['Thin', 'Frog', 'Math', 'Star'], audio: 'th' },
   ];
   const [currentPair, setCurrentPair] = useState(0);
   const [score, setScore] = useState(0);
@@ -185,7 +185,7 @@ const PhonemeMatching = ({ onComplete }) => {
           </div>
 
           <div className="match-grid">
-            {['Chair', 'Apple', 'Chip', 'Sun'].map(word => (
+            {pairs[currentPair].options.map(word => (
               <button 
                 key={word} 
                 className="match-btn"
@@ -198,8 +198,8 @@ const PhonemeMatching = ({ onComplete }) => {
         </>
       ) : (
         <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <h4 style={{ color: 'var(--primary-teal)', marginBottom: '1rem' }}>Exercise Complete!</h4>
-          <p style={{ marginBottom: '2rem' }}>You scored {score} out of {pairs.length} correct.</p>
+          <h4 style={{ color: 'var(--lf-indigo-light)', marginBottom: '1rem', fontSize: '1.5rem', fontWeight: 800 }}>Exercise Complete!</h4>
+          <p style={{ marginBottom: '2rem', color: 'var(--lf-text-secondary)' }}>You scored {score} out of {pairs.length} correct.</p>
           <button className="btn-finish" onClick={onComplete}>Complete Session</button>
         </div>
       )}
@@ -272,8 +272,8 @@ const AuditoryProcessing = ({ onComplete }) => {
         </>
       ) : (
         <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <h4 style={{ color: 'var(--primary-teal)', marginBottom: '1rem' }}>Exercise Complete!</h4>
-          <p style={{ marginBottom: '2rem' }}>You scored {score} out of {tasks.length} correct.</p>
+          <h4 style={{ color: 'var(--lf-indigo-light)', marginBottom: '1rem', fontSize: '1.5rem', fontWeight: 800 }}>Exercise Complete!</h4>
+          <p style={{ marginBottom: '2rem', color: 'var(--lf-text-secondary)' }}>You scored {score} out of {tasks.length} correct.</p>
           <button className="btn-finish" onClick={onComplete}>Complete Session</button>
         </div>
       )}
@@ -301,7 +301,16 @@ const MorphologyBuilder = ({ onComplete }) => {
     } else {
       setFinished(true);
       const history = JSON.parse(localStorage.getItem('lexiflow_exercise_history') || '{}');
-      history['morphology'] = { pb: `${Math.max(nextScore, 0)} / 3`, sessions: 1, accuracy: `${Math.round((nextScore/3)*100)}%`, level: 'Level 1' };
+      const prevStats = history['morphology'] || { pb: 0, sessions: 0, accuracy: '0%', level: 'New User' };
+      const newSessions = (prevStats.sessions || 0) + 1;
+      const finalAccuracy = Math.round((nextScore / tasks.length) * 100);
+      const pb = Math.max(parseInt(prevStats.pb) || 0, nextScore);
+      history['morphology'] = { 
+        pb: `${pb} / ${tasks.length}`, 
+        sessions: newSessions, 
+        accuracy: `${finalAccuracy}%`, 
+        level: finalAccuracy > 80 ? 'Advanced' : 'Level 1' 
+      };
       localStorage.setItem('lexiflow_exercise_history', JSON.stringify(history));
     }
   };
@@ -322,7 +331,8 @@ const MorphologyBuilder = ({ onComplete }) => {
         </>
       ) : (
         <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <h4 style={{ color: 'var(--primary-teal)', marginBottom: '1rem' }}>Complete!</h4>
+          <h4 style={{ color: 'var(--lf-indigo-light)', marginBottom: '1rem', fontSize: '1.5rem', fontWeight: 800 }}>Complete!</h4>
+          <p style={{ marginBottom: '2rem', color: 'var(--lf-text-secondary)' }}>You scored {score} out of {tasks.length} correct.</p>
           <button className="btn-finish" onClick={onComplete}>Complete Session</button>
         </div>
       )}
@@ -346,7 +356,15 @@ const RapidNaming = ({ onComplete }) => {
     setElapsed(time);
     setIsActive(false);
     const history = JSON.parse(localStorage.getItem('lexiflow_exercise_history') || '{}');
-    history['naming'] = { pb: `${time}s`, sessions: 1, accuracy: '100%', level: 'Fast' };
+    const prevStats = history['naming'] || { pb: '99s', sessions: 0, accuracy: '100%', level: 'Normal' };
+    const newSessions = (prevStats.sessions || 0) + 1;
+    const bestTime = Math.min(parseFloat(prevStats.pb) || 99, parseFloat(time));
+    history['naming'] = { 
+      pb: `${bestTime}s`, 
+      sessions: newSessions, 
+      accuracy: '100%', 
+      level: bestTime < 10 ? 'Elite' : 'Fast' 
+    };
     localStorage.setItem('lexiflow_exercise_history', JSON.stringify(history));
   };
 
@@ -357,15 +375,15 @@ const RapidNaming = ({ onComplete }) => {
       
       <div className="naming-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1rem', margin: '2rem 0', fontSize: '3rem' }}>
         {items.map((item, idx) => (
-          <div key={idx} style={{ background: '#f1f5f9', borderRadius: '12px', padding: '1rem', textAlign: 'center' }}>{item}</div>
+          <div key={idx} style={{ background: 'rgba(255,255,255,0.03)', borderRadius: '12px', padding: '1rem', textAlign: 'center', border: '1px solid var(--lf-border)' }}>{item}</div>
         ))}
       </div>
 
       {!isActive && !elapsed && <button className="btn-finish" onClick={startTest}>Ready? Start Timer</button>}
-      {isActive && <button className="btn-finish" style={{ background: '#ef4444' }} onClick={finishTest}>Done! Stop Timer</button>}
+      {isActive && <button className="btn-finish" style={{ background: 'var(--lf-rose)' }} onClick={finishTest}>Done! Stop Timer</button>}
       {elapsed && (
         <div style={{ textAlign: 'center' }}>
-          <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary-teal)' }}>Time: {elapsed}s</p>
+          <p style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--lf-indigo-light)', marginBottom: '1.5rem' }}>Time: {elapsed}s</p>
           <button className="btn-finish" onClick={onComplete}>Complete Session</button>
         </div>
       )}
@@ -378,11 +396,9 @@ const ExerciseSystem = ({ type, onComplete }) => {
   const [isAdvanced, setIsAdvanced] = useState(false);
 
   useEffect(() => {
-    // Fetch real stats from localStorage
     const history = JSON.parse(localStorage.getItem('lexiflow_exercise_history') || '{}');
     const typeStats = history[type] || { pb: '0 / 3', sessions: 0, accuracy: '0%', level: 'New User', history: [] };
     
-    // Fix NaN display
     if (typeStats.pb === '--' || !typeStats.pb) {
         typeStats.pb = '0 / 3';
     }
@@ -395,17 +411,17 @@ const ExerciseSystem = ({ type, onComplete }) => {
   };
 
   return (
-    <div className="exercise-container-flat" style={{ display: 'flex', width: '100%', background: 'white', overflow: 'hidden' }}>
+    <div className="exercise-container-flat">
         {/* Exercise Stats Sidebar — hidden for video sessions */}
-        {type !== 'video' && <aside className="exercise-stats-sidebar" style={{ width: '320px', background: '#f8fafc', padding: '3rem 2rem', borderRight: '1px solid var(--border-soft)' }}>
+        {type !== 'video' && <aside className="exercise-stats-sidebar">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-            <h4 style={{ color: 'var(--primary-teal)', fontSize: '0.9rem', margin: 0 }}>PERFORMANCE</h4>
+            <h4 style={{ color: 'var(--lf-indigo-light)', fontSize: '0.85rem', margin: 0, fontWeight: 700, letterSpacing: '0.05em' }}>PERFORMANCE</h4>
             <button 
               onClick={toggleAdvanced}
               style={{
-                background: isAdvanced ? 'var(--primary-teal)' : '#e2e8f0',
-                color: isAdvanced ? 'white' : '#64748b',
-                border: 'none',
+                background: isAdvanced ? 'var(--lf-indigo)' : 'rgba(255,255,255,0.06)',
+                color: isAdvanced ? 'white' : 'var(--lf-text-secondary)',
+                border: '1px solid var(--lf-border)',
                 borderRadius: '8px',
                 padding: '4px 10px',
                 fontSize: '0.7rem',
@@ -418,40 +434,40 @@ const ExerciseSystem = ({ type, onComplete }) => {
           </div>
           
           <div className="ex-stat-item" style={{ marginBottom: '1.5rem' }}>
-            <small style={{ color: 'var(--text-sub)', fontWeight: 700, display: 'block', marginBottom: '0.5rem' }}>PERSONAL BEST</small>
-            <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary-teal)' }}>{exerciseStats?.pb || '0 / 3'}</span>
+            <small className="medical-label">PERSONAL BEST</small>
+            <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--lf-indigo-light)' }}>{exerciseStats?.pb || '0 / 3'}</span>
           </div>
 
           <div className="ex-stat-item" style={{ marginBottom: '1.5rem' }}>
-            <small style={{ color: 'var(--text-sub)', fontWeight: 700, display: 'block', marginBottom: '0.5rem' }}>ACCURACY RATE</small>
-            <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#10b981' }}>{exerciseStats?.accuracy || '0%'}</span>
+            <small className="medical-label">ACCURACY RATE</small>
+            <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--lf-teal-light)' }}>{exerciseStats?.accuracy || '0%'}</span>
           </div>
 
           <div className="ex-stat-item" style={{ marginBottom: '1.5rem' }}>
-            <small style={{ color: 'var(--text-sub)', fontWeight: 700, display: 'block', marginBottom: '0.5rem' }}>CURRENT LEVEL</small>
-            <span className="level-badge" style={{ background: isAdvanced ? '#8b5cf6' : 'var(--primary-teal)', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700 }}>
+            <small className="medical-label">CURRENT LEVEL</small>
+            <span className="level-badge" style={{ background: isAdvanced ? 'var(--lf-gradient-warm)' : 'var(--lf-gradient-primary)', color: 'white', padding: '4px 12px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 700 }}>
               {isAdvanced ? 'Advanced Tier' : (exerciseStats?.level || 'New')}
             </span>
           </div>
 
-          <div className="analysis-box" style={{ marginTop: '3rem', padding: '1.5rem', background: 'white', borderRadius: '16px', border: '1px solid var(--border-soft)' }}>
-            <h5 style={{ margin: '0 0 1rem 0', fontSize: '0.8rem', fontWeight: 800 }}>MODULE ANALYSIS</h5>
-            <div style={{ fontSize: '0.75rem', color: '#475569', lineHeight: '1.5' }}>
+          <div className="analysis-box">
+            <h5 style={{ margin: '0 0 1rem 0', fontSize: '0.8rem', fontWeight: 800, color: 'var(--lf-text-primary)' }}>MODULE ANALYSIS</h5>
+            <div style={{ fontSize: '0.75rem', color: 'var(--lf-text-secondary)', lineHeight: '1.6' }}>
               <p>• <strong>Frequency:</strong> {exerciseStats?.sessions || 0} sessions</p>
               <p>• <strong>Trend:</strong> {parseInt(exerciseStats?.accuracy) > 80 ? '📈 Improving' : '➡️ Stable'}</p>
               <p>• <strong>Focus Area:</strong> {type === 'phoneme' ? 'Phonological Decoding' : type === 'visual' ? 'Saccadic Eye Movement' : 'Linguistic Retrieval'}</p>
             </div>
             <div style={{ marginTop: '1rem', height: '60px', display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
                 {[40, 65, 55, 80, 75, 90].map((h, i) => (
-                    <div key={i} style={{ flex: 1, height: `${h}%`, background: 'var(--med-teal-soft)', borderRadius: '2px' }}></div>
+                    <div key={i} style={{ flex: 1, height: `${h}%`, background: 'rgba(79, 70, 229, 0.15)', borderRadius: '2px', border: '1px solid rgba(79, 70, 229, 0.2)' }}></div>
                 ))}
             </div>
-            <small style={{ display: 'block', textAlign: 'center', marginTop: '4px', fontSize: '0.65rem', color: 'var(--med-gray)' }}>Accuracy Velocity (Last 6 Sessions)</small>
+            <small style={{ display: 'block', textAlign: 'center', marginTop: '6px', fontSize: '0.65rem', color: 'var(--lf-text-muted)' }}>Accuracy Velocity (Last 6 Sessions)</small>
           </div>
         </aside>}
 
         {/* Main Exercise Content */}
-        <div className="exercise-content-area" style={{ flex: 1, padding: '3rem', position: 'relative' }}>
+        <div className="exercise-content-area" style={{ flex: 1, position: 'relative' }}>
           {type === 'visual' && <VisualTracking onComplete={onComplete} speedMultiplier={isAdvanced ? 0.6 : 1} />}
           {type === 'phoneme' && <PhonemeMatching onComplete={onComplete} advanced={isAdvanced} />}
           {type === 'auditory' && <AuditoryProcessing onComplete={onComplete} advanced={isAdvanced} />}
