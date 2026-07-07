@@ -1,14 +1,14 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './Navbar.css';
+import { clearUserSession } from './authSession';
 
 const Navbar = ({ user, showDropdown, setShowDropdown }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleLogout = () => {
-    localStorage.removeItem("lexiflow_user");
-    localStorage.removeItem("lexiflow_token");
+    clearUserSession();
     navigate("/");
   };
 

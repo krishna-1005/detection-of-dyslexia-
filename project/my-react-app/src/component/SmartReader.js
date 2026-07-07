@@ -1,11 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import SpeechAssistant from './SpeechAssistant';
 import FocusRuler from './FocusRuler';
 import './SmartReader.css';
+import { getUserSession } from './authSession';
 
 const SmartReader = () => {
+    const navigate = useNavigate();
     const [text, setText] = useState("");
     const [simplifiedText, setSimplifiedText] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -21,8 +24,14 @@ const SmartReader = () => {
     const [isReading, setIsReading] = useState(false);
     const [currentWordIndex, setCurrentWordIndex] = useState(-1);
     
-    const user = JSON.parse(localStorage.getItem("lexiflow_user"));
+    const user = getUserSession();
     const readingAreaRef = useRef(null);
+
+    useEffect(() => {
+        if (!user) {
+            navigate("/login");
+        }
+    }, [user, navigate]);
 
     const handleSimplify = async () => {
         if (!text.trim()) return;

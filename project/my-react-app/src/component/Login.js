@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Login.css";
+import { setUserSession } from "./authSession";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -24,8 +25,7 @@ const Login = () => {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("lexiflow_user", JSON.stringify(data.user));
-        localStorage.setItem("lexiflow_token", data.token);
+        setUserSession(data.user, data.token);
         navigate("/dashboard");
       } else {
         setError(data.error || "Login failed. Please check your credentials.");

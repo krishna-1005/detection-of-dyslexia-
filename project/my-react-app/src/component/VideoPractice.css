@@ -1,58 +1,45 @@
-/* ============================================
-   Live Practice Session — Premium Redesign
-   ============================================ */
+/* ═══════════════════════════════════════════════════════
+   Live Practice Session — Professional Light Redesign
+   ═══════════════════════════════════════════════════════ */
 
 .live-practice {
-  padding: 2.5rem;
+  padding: 1.5rem;
 }
 
 .live-practice h3 {
-  font-size: 1.75rem !important;
-  background: linear-gradient(135deg, #0d4d4d 0%, #14746f 60%, #0f766e 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.02em;
+  font-family: inherit;
+  font-size: 1.5rem !important;
+  font-weight: 700;
+  color: var(--lf-text-primary);
+  letter-spacing: -0.01em;
 }
 
 .live-practice .exercise-desc {
-  color: #64748b;
-  font-size: 0.95rem;
-  line-height: 1.6;
+  color: var(--lf-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
   max-width: 600px;
-  margin-bottom: 2.5rem;
+  margin-bottom: 1.5rem;
 }
 
-/* ---- Grid Layout ---- */
+/* ── Grid Layout ── */
 .live-practice-grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr;
-  gap: 2.5rem;
-  margin-bottom: 2.5rem;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
   align-items: start;
 }
 
-/* ---- Webcam Container ---- */
+/* ── Webcam Container ── */
 .webcam-container {
   aspect-ratio: 16/10;
-  background: linear-gradient(145deg, #0f172a 0%, #1e293b 100%);
-  border-radius: 24px;
+  background: #f8fafc;
+  border-radius: var(--lf-radius-sm);
   overflow: hidden;
   position: relative;
-  border: 3px solid rgba(15, 118, 110, 0.25);
-  box-shadow:
-    0 8px 32px rgba(13, 77, 77, 0.12),
-    0 2px 8px rgba(0, 0, 0, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
-}
-
-.webcam-container:hover {
-  border-color: rgba(15, 118, 110, 0.45);
-  box-shadow:
-    0 12px 40px rgba(13, 77, 77, 0.18),
-    0 4px 12px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--lf-border);
+  box-shadow: var(--lf-shadow-sm);
 }
 
 /* Camera placeholder */
@@ -62,39 +49,28 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.5rem;
-  color: #94a3b8;
-  background: radial-gradient(circle at 50% 40%, rgba(15, 118, 110, 0.08), transparent 70%);
+  gap: 1.25rem;
+  color: var(--lf-text-muted);
 }
 
 .camera-setup span {
-  font-size: 3.5rem;
-  filter: grayscale(0.3);
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  font-size: 2.5rem;
 }
 
 .camera-setup .btn-run {
-  background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+  background: var(--lf-primary);
   color: white;
   border: none;
-  padding: 0.85rem 2rem;
-  border-radius: 14px;
-  font-weight: 700;
-  font-size: 0.95rem;
+  padding: 0.55rem 1.5rem;
+  border-radius: var(--lf-radius-sm);
+  font-weight: 600;
+  font-size: 0.85rem;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(15, 118, 110, 0.3);
-  transition: all 0.25s ease;
-  letter-spacing: 0.02em;
+  transition: background-color 0.1s ease;
 }
 
 .camera-setup .btn-run:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(15, 118, 110, 0.4);
+  background: var(--lf-primary-hover);
 }
 
 .webcam-feed {
@@ -104,26 +80,23 @@
   transform: scaleX(-1);
 }
 
-/* ---- Practice Material Panel ---- */
+/* ── Practice Material Panel ── */
 .practice-material {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 /* Sentence Card */
 .sentence-card {
-  background: linear-gradient(145deg, #ffffff 0%, #f8fffe 100%);
-  padding: 2.5rem 2.5rem 2rem;
-  border-radius: 24px;
-  border: 1px solid rgba(15, 118, 110, 0.12);
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.03),
-    0 1px 3px rgba(0, 0, 0, 0.02);
+  background: #ffffff;
+  padding: 1.5rem;
+  border-radius: var(--lf-radius-sm);
+  border: 1px solid var(--lf-border);
+  box-shadow: var(--lf-shadow-sm);
   position: relative;
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .sentence-card::before {
@@ -132,237 +105,184 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #0f766e, #14b8a6, #2dd4bf);
-  border-radius: 4px 4px 0 0;
-}
-
-.sentence-card:hover {
-  transform: translateY(-2px);
-  box-shadow:
-    0 8px 30px rgba(0, 0, 0, 0.06),
-    0 2px 6px rgba(0, 0, 0, 0.03);
+  height: 3px;
+  background: var(--lf-primary);
 }
 
 .sentence-card small {
   display: inline-block;
   font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
+  font-weight: 700;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #0f766e;
-  background: rgba(15, 118, 110, 0.08);
-  padding: 4px 12px;
-  border-radius: 6px;
+  color: var(--lf-primary);
+  background: rgba(30, 64, 175, 0.06);
+  padding: 4px 10px;
+  border-radius: var(--lf-radius-sm);
 }
 
 .big-sentence {
-  font-size: 1.65rem;
+  font-size: 1.25rem;
   font-weight: 700;
-  color: #0f4c4c;
+  color: var(--lf-text-primary);
   line-height: 1.5;
-  margin-top: 1.25rem;
+  margin-top: 1rem;
   letter-spacing: -0.01em;
 }
 
 /* Navigation Buttons */
 .practice-nav {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
 }
 
 .practice-nav button {
   flex: 1;
-  padding: 0.9rem 1rem;
-  border-radius: 14px;
-  border: 2px solid #e2e8f0;
-  background: white;
-  font-weight: 700;
-  font-size: 0.9rem;
+  padding: 0.55rem 1rem;
+  border-radius: var(--lf-radius-sm);
+  border: 1px solid var(--lf-border);
+  background: #ffffff;
+  font-weight: 600;
+  font-size: 0.85rem;
   cursor: pointer;
-  transition: all 0.25s ease;
-  color: #475569;
+  transition: all 0.1s ease;
+  color: var(--lf-text-secondary);
 }
 
 .practice-nav button:hover:not(:disabled) {
-  border-color: #0f766e;
-  color: #0f766e;
-  background: #f0fdfa;
-  transform: translateY(-1px);
+  border-color: var(--lf-primary);
+  color: var(--lf-primary);
 }
 
 .practice-nav button:disabled {
-  opacity: 0.4;
+  opacity: 0.3;
   cursor: not-allowed;
 }
 
 .practice-nav button.btn-primary {
-  background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+  background: var(--lf-primary);
   color: white;
-  border: 2px solid transparent;
-  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.25);
+  border: 1px solid transparent;
 }
 
-.practice-nav button.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(15, 118, 110, 0.35);
-  background: linear-gradient(135deg, #0d6b63 0%, #0f9f97 100%);
-  color: white;
+.practice-nav button.btn-primary:hover:not(:disabled) {
+  background: var(--lf-primary-hover);
 }
 
-/* ---- Recording Indicator ---- */
+/* ── Recording Indicator ── */
 .recording-indicator {
-  color: #ef4444;
-  font-weight: 800;
-  font-size: 0.85rem;
+  color: var(--lf-rose);
+  font-weight: 700;
+  font-size: 0.75rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  background: rgba(239, 68, 68, 0.06);
-  padding: 6px 14px;
-  border-radius: 20px;
-  border: 1px solid rgba(239, 68, 68, 0.15);
-  animation: pulseRec 2s ease-in-out infinite;
+  gap: 0.35rem;
+  background: rgba(190, 18, 60, 0.06);
+  padding: 4px 10px;
+  border-radius: var(--lf-radius-sm);
+  border: 1px solid rgba(190, 18, 60, 0.15);
 }
 
-@keyframes pulseRec {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
-/* ---- Bottom Controls ---- */
+/* ── Bottom Controls ── */
 .live-controls {
   display: flex;
-  gap: 1.5rem;
+  gap: 1rem;
   align-items: center;
-  border-top: 1px solid #e2e8f0;
-  padding-top: 2rem;
+  border-top: 1px solid var(--lf-border);
+  padding-top: 1.25rem;
   margin-top: 0.5rem;
 }
 
 .record-toggle {
-  background: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+  background: var(--lf-rose);
   color: white;
   border: none;
-  padding: 0.85rem 2rem;
-  border-radius: 30px;
-  font-weight: 700;
-  font-size: 0.95rem;
+  padding: 0.55rem 1.5rem;
+  border-radius: var(--lf-radius-sm);
+  font-weight: 600;
+  font-size: 0.85rem;
   cursor: pointer;
-  box-shadow: 0 4px 18px rgba(239, 68, 68, 0.3);
-  transition: all 0.25s ease;
-  letter-spacing: 0.02em;
+  transition: background-color 0.1s ease;
 }
 
 .record-toggle:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(239, 68, 68, 0.4);
+  background: #9f1239;
 }
 
 .record-toggle.active {
-  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-  box-shadow: 0 4px 18px rgba(30, 41, 59, 0.25);
+  background: #ffffff;
+  border: 1px solid var(--lf-border);
+  color: var(--lf-text-primary);
 }
 
 .record-toggle.active:hover {
-  box-shadow: 0 8px 28px rgba(30, 41, 59, 0.35);
+  background: #f8fafc;
 }
 
 .live-controls .btn-text {
   background: none;
-  border: 2px solid #e2e8f0;
-  padding: 0.75rem 1.5rem;
-  border-radius: 14px;
-  color: #64748b;
-  font-weight: 700;
+  border: 1px solid var(--lf-border);
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--lf-radius-sm);
+  color: var(--lf-text-secondary);
+  font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.1s ease;
 }
 
 .live-controls .btn-text:hover {
-  border-color: #ef4444;
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.04);
+  border-color: var(--lf-rose);
+  color: var(--lf-rose);
+  background: rgba(190, 18, 60, 0.04);
 }
 
-/* ---- Live Transcript Overlay ---- */
+/* ── Live Transcript Overlay ── */
 .live-transcript-overlay {
   position: absolute;
-  bottom: 1.5rem;
-  left: 1.5rem;
-  right: 1.5rem;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  right: 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.35rem;
   pointer-events: none;
   z-index: 10;
 }
 
 .feedback-badge {
   align-self: flex-start;
-  padding: 0.5rem 1rem;
-  border-radius: 12px;
-  font-size: 0.85rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--lf-radius-sm);
+  font-size: 0.75rem;
   font-weight: 700;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  animation: fadeIn 0.3s ease-out;
+  box-shadow: var(--lf-shadow-sm);
 }
 
 .feedback-badge.neutral {
-  background: rgba(255, 255, 255, 0.9);
-  color: #1e293b;
+  background: #ffffff;
+  color: var(--lf-text-primary);
+  border: 1px solid var(--lf-border);
 }
 
 .feedback-badge.progress {
-  background: rgba(15, 118, 110, 0.9);
+  background: var(--lf-primary);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .feedback-badge.success {
-  background: rgba(34, 197, 94, 0.9);
+  background: var(--lf-emerald);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transform: scale(1.05);
 }
 
 .live-text {
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  padding: 0.75rem 1.25rem;
-  border-radius: 16px;
-  font-size: 1.1rem;
+  background: rgba(15, 23, 42, 0.9);
+  color: #ffffff;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--lf-radius-sm);
+  font-size: 0.95rem;
   font-weight: 500;
-  backdrop-filter: blur(12px);
   margin: 0;
-  border-left: 4px solid #14b8a6;
+  border-left: 3px solid var(--lf-primary);
   max-width: 90%;
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(-10px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-/* ---- Responsive ---- */
-@media (max-width: 900px) {
-  .live-practice-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .live-practice {
-    padding: 1.5rem;
-  }
-
-  .big-sentence {
-    font-size: 1.35rem;
-  }
 }

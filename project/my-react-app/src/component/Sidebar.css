@@ -1,22 +1,20 @@
 /* ═══════════════════════════════════════════════════════
-   Sidebar — Dark Glass Premium
+   Sidebar — Clean Solid Design
    ═══════════════════════════════════════════════════════ */
 
 .sidebar {
-  width: 260px;
-  min-width: 260px;
+  width: 250px;
+  min-width: 250px;
   flex-shrink: 0;
-  background: rgba(15, 11, 26, 0.6);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: var(--lf-bg-secondary);
   border-right: 1px solid var(--lf-border);
-  padding: 1.5rem 0.75rem;
+  padding: 1.5rem 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  height: calc(100vh - 64px);
+  gap: 0.25rem;
+  height: calc(100vh - 60px);
   position: sticky;
-  top: 64px;
+  top: 60px;
   overflow-y: auto;
 }
 
@@ -24,100 +22,87 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.8rem 1rem;
+  padding: 0.65rem 0.85rem;
   border-radius: var(--lf-radius-sm);
   color: var(--lf-text-secondary);
   text-decoration: none;
   font-weight: 500;
-  font-size: 0.9rem;
-  transition: all 0.25s ease;
-  border: 1px solid transparent;
+  font-size: 0.875rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .sidebar-item:hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.03);
   color: var(--lf-text-primary);
-  border-color: var(--lf-border);
 }
 
 .sidebar-item.active {
-  background: rgba(79, 70, 229, 0.12);
-  color: var(--lf-indigo-light);
-  border-color: rgba(79, 70, 229, 0.25);
+  background: rgba(59, 130, 246, 0.08);
+  color: var(--lf-primary-light);
   font-weight: 600;
-  box-shadow: 0 0 15px rgba(79, 70, 229, 0.1);
 }
 
 .sidebar-icon {
-  margin-right: 0.75rem;
-  font-size: 1rem;
+  margin-right: 0.65rem;
+  font-size: 0.95rem;
 }
 
 .visited-tick {
-  background: var(--lf-gradient-accent);
+  background: var(--lf-teal);
   color: white;
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.65rem;
   font-weight: bold;
-  box-shadow: 0 0 8px rgba(13, 148, 136, 0.3);
 }
 
 .sidebar-section-title {
-  font-size: 0.65rem;
-  font-weight: 800;
+  font-size: 0.7rem;
+  font-weight: 700;
   color: var(--lf-text-muted);
   text-transform: uppercase;
-  margin: 1.25rem 0 0.5rem 1rem;
-  letter-spacing: 0.1em;
+  margin: 1.25rem 0 0.5rem 0.85rem;
+  letter-spacing: 0.05em;
 }
 
 /* Guide Me Card */
 .sidebar-guide-card {
   margin: 0.5rem;
   padding: 1rem;
-  background: rgba(79, 70, 229, 0.06);
-  border: 1px solid rgba(79, 70, 229, 0.15);
+  background: var(--lf-bg-card);
+  border: 1px solid var(--lf-border);
   border-radius: var(--lf-radius-md);
   font-size: 0.85rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s ease;
-}
-
-.sidebar-guide-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(79, 70, 229, 0.3);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--lf-shadow-sm);
 }
 
 .sidebar-guide-step-bar {
   flex: 1;
-  height: 6px;
-  border-radius: 3px;
-  transition: all 0.3s ease;
+  height: 4px;
+  border-radius: 2px;
   cursor: pointer;
+  background: var(--lf-border);
 }
 
 .sidebar-guide-btn {
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: var(--lf-radius-sm);
   border: 1px solid var(--lf-border);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.02);
   color: var(--lf-text-secondary);
   cursor: pointer;
   font-size: 0.7rem;
   font-weight: 600;
-  transition: all 0.2s ease;
+  transition: background-color 0.15s ease;
 }
 
 .sidebar-guide-btn:hover:not(:disabled) {
-  background: rgba(79, 70, 229, 0.1);
-  border-color: rgba(79, 70, 229, 0.3);
-  color: var(--lf-indigo-light);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--lf-text-primary);
 }
 
 .sidebar-guide-btn:disabled {

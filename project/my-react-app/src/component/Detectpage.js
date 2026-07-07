@@ -8,10 +8,11 @@ import Sidebar from "./Sidebar";
 import FocusRuler from "./FocusRuler";
 import ReportGenerator from "./ReportGenerator";
 import ResultDisplay from "./ResultDisplay";
+import { getUserSession } from "./authSession";
 
 const DetectPage = () => {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("lexiflow_user"));
+  const user = getUserSession();
   const [text, setText] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -38,7 +39,7 @@ const DetectPage = () => {
       navigate("/login");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [navigate]);
+  }, [user, navigate]);
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];

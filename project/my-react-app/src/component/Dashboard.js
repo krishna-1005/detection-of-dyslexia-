@@ -3,11 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
+import { getUserSession } from "./authSession";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const userString = localStorage.getItem("lexiflow_user");
-  const user = React.useMemo(() => JSON.parse(userString), [userString]);
+  const user = getUserSession();
   const [showDropdown, setShowDropdown] = useState(false);
   
   const [patientData, setPatientData] = useState({
@@ -27,7 +27,7 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    if (!userString) {
+    if (!user) {
       navigate("/login");
       return;
     }
@@ -52,7 +52,7 @@ const Dashboard = () => {
         progress: Math.min(100, totalTests * 10),
       }));
     }
-  }, [userString, navigate]);
+  }, [user, navigate]);
 
   const statCards = [
     { label: "Total Diagnostics", value: stats.totalTests, icon: "🧪", color: "#4f46e5" },

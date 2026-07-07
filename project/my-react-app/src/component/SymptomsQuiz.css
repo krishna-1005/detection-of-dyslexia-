@@ -1,23 +1,20 @@
 /* ═══════════════════════════════════════════════════════
-   Symptoms Quiz — Premium Dark Theme
+   Symptoms Quiz — Clean Clinical Design
    ═══════════════════════════════════════════════════════ */
 
 .quiz-list-container {
   max-width: 900px;
   margin: 2rem auto;
-  background: var(--lf-bg-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: var(--lf-bg-card);
   border: 1px solid var(--lf-border);
-  border-radius: var(--lf-radius-xl);
+  border-radius: var(--lf-radius-lg);
   overflow: hidden;
-  box-shadow: var(--lf-shadow-lg);
-  animation: fadeInUp 0.6s ease-out;
+  box-shadow: var(--lf-shadow-md);
 }
 
 .quiz-header-bar {
-  background: rgba(79, 70, 229, 0.08);
-  padding: 1.5rem 2.5rem;
+  background: rgba(59, 130, 246, 0.04);
+  padding: 1.25rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -25,10 +22,10 @@
 }
 
 .quiz-header-bar h2 {
-  font-family: 'Outfit', sans-serif;
-  font-size: 1.6rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.25rem;
   color: var(--lf-text-primary);
-  font-weight: 800;
+  font-weight: 700;
   margin: 0;
 }
 
@@ -39,46 +36,35 @@
 }
 
 .quiz-body-content {
-  padding: 2.5rem;
+  padding: 2rem;
 }
 
 .instruction-text {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   color: var(--lf-text-secondary);
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
   font-weight: 500;
+  line-height: 1.5;
 }
 
 .questions-stack {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .quiz-row {
   text-align: left;
   border-bottom: 1px solid var(--lf-border);
-  padding-bottom: 1.5rem;
-  animation: fadeInUp 0.4s ease-out both;
+  padding-bottom: 1.25rem;
 }
 
 .quiz-row:last-child {
   border-bottom: none;
 }
 
-.quiz-row:nth-child(1) { animation-delay: 0.05s; }
-.quiz-row:nth-child(2) { animation-delay: 0.1s; }
-.quiz-row:nth-child(3) { animation-delay: 0.15s; }
-.quiz-row:nth-child(4) { animation-delay: 0.2s; }
-.quiz-row:nth-child(5) { animation-delay: 0.25s; }
-.quiz-row:nth-child(6) { animation-delay: 0.3s; }
-.quiz-row:nth-child(7) { animation-delay: 0.35s; }
-.quiz-row:nth-child(8) { animation-delay: 0.4s; }
-.quiz-row:nth-child(9) { animation-delay: 0.45s; }
-.quiz-row:nth-child(10) { animation-delay: 0.5s; }
-
 .row-text {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--lf-text-primary);
   margin-bottom: 0.75rem;
@@ -91,102 +77,102 @@
 }
 
 .row-btn {
-  padding: 0.55rem 2rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1.5px solid var(--lf-border);
+  padding: 0.45rem 1.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--lf-border);
   border-radius: var(--lf-radius-sm);
   font-weight: 600;
   color: var(--lf-text-secondary);
   cursor: pointer;
-  transition: all 0.25s ease;
-  font-size: 0.9rem;
+  transition: all 0.15s ease;
+  font-size: 0.85rem;
 }
 
 .row-btn:hover {
-  background: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.05);
   border-color: var(--lf-border-hover);
 }
 
 .row-btn.selected-yes {
-  background: rgba(79, 70, 229, 0.15);
-  color: var(--lf-indigo-light);
-  border-color: rgba(79, 70, 229, 0.4);
-  box-shadow: 0 0 12px rgba(79, 70, 229, 0.15);
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--lf-primary-light);
+  border-color: var(--lf-primary);
 }
 
 .row-btn.selected-no {
-  background: rgba(244, 63, 94, 0.12);
+  background: rgba(239, 68, 68, 0.08);
   color: var(--lf-rose);
-  border-color: rgba(244, 63, 94, 0.3);
-  box-shadow: 0 0 12px rgba(244, 63, 94, 0.1);
+  border-color: var(--lf-rose);
 }
 
 .quiz-footer {
-  margin-top: 2.5rem;
+  margin-top: 2rem;
   text-align: center;
 }
 
 .finish-btn {
-  padding: 1rem 3rem !important;
-  font-size: 1.05rem !important;
+  padding: 0.75rem 2.5rem !important;
+  font-size: 0.95rem !important;
 }
 
 /* ── Result Card ── */
 .quiz-result-card {
   max-width: 700px;
   margin: 2rem auto;
-  padding: 3rem !important;
+  padding: 2.5rem !important;
   text-align: left;
-  animation: fadeInScale 0.5s ease-out;
+  background: var(--lf-bg-card);
+  border: 1px solid var(--lf-border);
+  border-radius: var(--lf-radius-lg);
 }
 
 .result-header {
   text-align: center;
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
   border-bottom: 1px solid var(--lf-border);
 }
 
 .result-header h2 {
-  font-family: 'Outfit', sans-serif;
-  font-size: 1.8rem;
-  margin: 1rem 0;
-  background: var(--lf-gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.4rem;
+  margin: 0.75rem 0;
+  color: var(--lf-text-primary);
 }
 
 .score-badge {
   display: inline-block;
-  padding: 8px 20px;
-  background: rgba(79, 70, 229, 0.12);
-  color: var(--lf-indigo-light);
-  border: 1px solid rgba(79, 70, 229, 0.25);
-  border-radius: var(--lf-radius-full);
-  font-weight: 800;
-  font-size: 0.95rem;
+  padding: 6px 16px;
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--lf-primary-light);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: var(--lf-radius-sm);
+  font-weight: 700;
+  font-size: 0.9rem;
 }
 
 .result-body p {
   color: var(--lf-text-secondary);
   margin-bottom: 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 .recommendation-list {
-  margin: 1.5rem 0 2.5rem 1.5rem;
+  margin: 1.25rem 0 2rem 1.25rem;
   padding: 0;
 }
 
 .recommendation-list li {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
   font-weight: 500;
   color: var(--lf-text-secondary);
-  line-height: 1.6;
+  line-height: 1.5;
+  font-size: 0.9rem;
 }
 
 .recommendation-list li::marker {
-  color: var(--lf-indigo-light);
+  color: var(--lf-primary-light);
 }
 
 .result-actions {

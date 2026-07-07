@@ -139,23 +139,23 @@ const Sidebar = () => {
               style={{
                 background: 'none',
                 border: 'none',
-                color: guideEnabled ? 'var(--med-teal)' : 'var(--med-gray)',
+                color: guideEnabled ? 'var(--lf-primary-light)' : 'var(--lf-text-muted)',
                 cursor: 'pointer',
-                fontWeight: 700,
+                fontWeight: 600,
                 fontSize: '0.75rem',
                 padding: '2px 6px'
               }}
             >
-              {guideEnabled ? 'ON 🟢' : 'OFF ⚪'}
+              {guideEnabled ? 'Active' : 'Disabled'}
             </button>
           </div>
 
           {guideEnabled && (
             <div className="sidebar-guide-card">
-              <h4 style={{ color: 'var(--med-blue-primary)', margin: 0, fontWeight: 700, fontSize: '0.85rem' }}>
+              <h4 style={{ color: 'var(--lf-primary-light)', margin: 0, fontWeight: 700, fontSize: '0.8rem' }}>
                 {activeGuide[currentStep]?.title}
               </h4>
-              <p style={{ color: 'var(--med-gray)', margin: '0.5rem 0 0.75rem 0', lineHeight: '1.4', fontSize: '0.78rem' }}>
+              <p style={{ color: 'var(--lf-text-secondary)', margin: '0.5rem 0 0.75rem 0', lineHeight: '1.4', fontSize: '0.75rem' }}>
                 {activeGuide[currentStep]?.content}
               </p>
 
@@ -168,8 +168,8 @@ const Sidebar = () => {
                     className="sidebar-guide-step-bar"
                     style={{
                       background: completedSteps[idx] 
-                        ? 'var(--med-teal)' 
-                        : (idx === currentStep ? 'var(--med-blue-primary)' : '#cbd5e1'),
+                        ? 'var(--lf-teal)' 
+                        : (idx === currentStep ? 'var(--lf-primary)' : 'var(--lf-border)'),
                     }}
                     title={`Step ${idx + 1}: ${step.title}`}
                   />
@@ -198,13 +198,13 @@ const Sidebar = () => {
                   onClick={() => toggleStepCompleted(currentStep)}
                   className="sidebar-guide-btn"
                   style={{
-                    background: completedSteps[currentStep] ? '#fee2e2' : 'var(--med-teal-soft)',
-                    color: completedSteps[currentStep] ? '#ef4444' : 'var(--med-teal)',
+                    background: completedSteps[currentStep] ? 'rgba(239, 68, 68, 0.1)' : 'rgba(20, 184, 166, 0.08)',
+                    color: completedSteps[currentStep] ? 'var(--lf-rose)' : 'var(--lf-teal-light)',
                     border: 'none',
                     fontWeight: 700
                   }}
                 >
-                  {completedSteps[currentStep] ? 'Undo ✓' : 'Complete ✓'}
+                  {completedSteps[currentStep] ? 'Undo' : 'Complete'}
                 </button>
               </div>
             </div>
@@ -212,9 +212,9 @@ const Sidebar = () => {
         </>
       )}
       
-      <div style={{ marginTop: 'auto', padding: '1rem', background: 'var(--med-teal-soft)', borderRadius: '12px', border: '1px solid #ccfbf1' }}>
-        <small style={{ fontWeight: 800, color: 'var(--med-teal)', fontSize: '0.65rem', textTransform: 'uppercase' }}>System Status</small>
-        <p style={{ fontSize: '0.75rem', color: 'var(--med-teal)', fontWeight: 600, marginTop: '0.25rem' }}>Neural Engine v4.2 Active</p>
+      <div style={{ marginTop: 'auto', padding: '0.85rem', background: 'rgba(59, 130, 246, 0.04)', borderRadius: '8px', border: '1px solid var(--lf-border)' }}>
+        <small style={{ fontWeight: 700, color: 'var(--lf-primary-light)', fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>System Status</small>
+        <p style={{ fontSize: '0.75rem', color: 'var(--lf-text-secondary)', fontWeight: 500, marginTop: '0.15rem' }}>Diagnostic Engine v4.2 Active</p>
       </div>
     </aside>
   );

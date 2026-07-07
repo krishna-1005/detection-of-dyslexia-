@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import './UserReport.css';
+import { getUserSession } from './authSession';
 
 const UserReport = () => {
+  const navigate = useNavigate();
   const [reportData, setReportData] = useState(null);
-  const user = JSON.parse(localStorage.getItem("lexiflow_user"));
+  const user = getUserSession();
 
   useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
     const history = JSON.parse(localStorage.getItem("lexiflow_history") || "[]");
     const exHistory = JSON.parse(localStorage.getItem('lexiflow_exercise_history') || '{}');
     

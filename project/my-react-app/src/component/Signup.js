@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Login.css"; // Reuse login styles
+import { setUserSession } from "./authSession";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -33,8 +34,7 @@ const Signup = () => {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem("lexiflow_user", JSON.stringify(data.user));
-        localStorage.setItem("lexiflow_token", data.token);
+        setUserSession(data.user, data.token);
         navigate("/dashboard");
       } else {
         setError(data.error || "Signup failed. Please try again.");

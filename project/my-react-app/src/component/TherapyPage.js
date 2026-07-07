@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import ExerciseSystem from './ExerciseSystem';
+import { getUserSession } from './authSession';
 
 const therapyInfo = {
     phoneme: {
@@ -40,8 +41,14 @@ const therapyInfo = {
 const TherapyPage = () => {
     const { type } = useParams();
     const navigate = useNavigate();
-    const user = JSON.parse(localStorage.getItem("lexiflow_user"));
+    const user = getUserSession();
     const info = therapyInfo[type] || {};
+
+    useEffect(() => {
+        if (!user) {
+            navigate("/login");
+        }
+    }, [user, navigate]);
 
     return (
         <div className="page-container">

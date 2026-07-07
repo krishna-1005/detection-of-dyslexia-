@@ -1,10 +1,15 @@
-/* Focus Ruler Styles */
+/* ═══════════════════════════════════════════════════════
+   Focus Ruler — Accessibility
+   ═══════════════════════════════════════════════════════ */
+
 .focus-ruler-overlay-top,
 .focus-ruler-overlay-bottom {
   position: fixed;
   left: 0;
   width: 100vw;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(15, 11, 26, 0.45);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   pointer-events: none;
   z-index: 9998;
   transition: height 0.05s linear, top 0.05s linear;
@@ -20,10 +25,10 @@
   width: 100vw;
   height: 80px;
   background: rgba(255, 255, 255, 0);
-  border-top: 2px solid var(--accent-gold, #c5a059);
-  border-bottom: 2px solid var(--accent-gold, #c5a059);
+  border-top: 2.5px solid var(--lf-amber);
+  border-bottom: 2.5px solid var(--lf-amber);
   pointer-events: none;
   z-index: 9999;
-  box-shadow: 0 0 50px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 40px rgba(245, 158, 11, 0.15);
   transition: top 0.05s linear;
 }
