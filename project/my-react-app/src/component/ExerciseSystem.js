@@ -1,6 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import './Exercises.css';
 import VideoPractice from './VideoPractice';
+import { useAuth } from './AuthContext';
+import { fetchWithAuth } from './api';
+
+export const saveTherapyProgress = async (currentUser, type, score, accuracy, timeTaken = "N/A") => {
+  const uid = currentUser?.uid;
+  const now = new Date();
+  const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  const sessionEntry = {
+    type,
+    score,
+    accuracy,
+    timeTaken,
+    date: dateStr,
+    timestamp: now.getTime()
+  };
+
+  if (currentUser) {
+    try {
+      await fetchWithAuth("/api/therapy/progress", {
+        method: "POST",
+        body: JSON.stringify(sessionEntry)
+      });
+    } catch (e) {
+      console.warn("Backend therapy progress save error:", e);
+    }
+
+    const historyKey = `lexiflow_exercise_history_${uid}`;
+    const lastKey = `lexiflow_last_therapy_${uid}`;
+
+    const history = JSON.parse(localStorage.getItem(historyKey) || localStorage.getItem('lexiflow_exercise_history') || '{}');
+    const prev = history[type] || { pb: '0 pts', pb_val: 0, sessions: 0, accuracy: '0%', level: 'Beginner' };
+    const newSessions = (prev.sessions || 0) + 1;
+    const pb_val = Math.max(prev.pb_val || 0, score);
+    const trend = accuracy >= 80 ? 'Improving' : accuracy >= 50 ? 'Stable' : 'Needs Practice';
+
+    history[type] = {
+      pb: `${pb_val} pts`,
+      pb_val: pb_val,
+      sessions: newSessions,
+      accuracy: `${accuracy}%`,
+      lastPlayed: dateStr,
+      trend: trend,
+      level: accuracy > 80 ? 'Advanced' : accuracy > 50 ? 'Intermediate' : 'Beginner'
+    };
+
+    localStorage.setItem(historyKey, JSON.stringify(history));
+    localStorage.setItem(lastKey, type);
+  }
+};
 
 const VisualTracking = ({ onComplete, speedMultiplier = 1 }) => {
   const fullText = "The soft morning sunlight filtered through the heavy curtains. A breeze moved the pages of the open book. Everything felt calm and quiet in the small library. The gentle scent of old paper filled the cool air.";
@@ -14,6 +64,7 @@ const VisualTracking = ({ onComplete, speedMultiplier = 1 }) => {
   const [focusPoints, setFocusPoints] = useState(0);
   const [accuracy, setAccuracy] = useState(100);
 
+  const { currentUser } = useAuth();
   const speed = 600 * speedMultiplier;
 
   useEffect(() => {
@@ -64,15 +115,8 @@ const VisualTracking = ({ onComplete, speedMultiplier = 1 }) => {
     window.speechSynthesis.speak(ut);
   };
 
-  const handleFinish = () => {
-    const history = JSON.parse(localStorage.getItem('lexiflow_exercise_history') || '{}');
-    history['visual'] = {
-      pb: `${accuracy}%`,
-      sessions: (history['visual']?.sessions || 0) + 1,
-      accuracy: `${accuracy}%`,
-      level: speedMultiplier < 1 ? 'Advanced' : 'Normal'
-    };
-    localStorage.setItem('lexiflow_exercise_history', JSON.stringify(history));
+  const handleFinish = async () => {
+    await saveTherapyProgress(currentUser, 'visual', focusPoints, accuracy, `${speedMultiplier < 1 ? 'Fast' : 'Normal'} Pace`);
     onComplete();
   };
 
@@ -138,15 +182,16 @@ const VisualTracking = ({ onComplete, speedMultiplier = 1 }) => {
 
 const PhonemeMatching = ({ onComplete }) => {
   const pairs = [
-    { phoneme: 'CH', words: ['Chair', 'Chip', 'Catch'], options: ['Chair', 'Apple', 'Chip', 'Sun'], audio: 'ch' },
-    { phoneme: 'SH', words: ['Ship', 'Shop', 'Fish'], options: ['Ship', 'Book', 'Fish', 'Ball'], audio: 'sh' },
-    { phoneme: 'TH', words: ['Thin', 'That', 'Math'], options: ['Thin', 'Frog', 'Math', 'Star'], audio: 'th' },
+    { phoneme: 'CH', words: ['Chair', 'Chip', 'Catch'], options: ['Chair', 'Apple', 'Chip', 'Sun'] },
+    { phoneme: 'SH', words: ['Ship', 'Shop', 'Fish'], options: ['Ship', 'Book', 'Fish', 'Ball'] },
+    { phoneme: 'TH', words: ['Thin', 'That', 'Math'], options: ['Thin', 'Frog', 'Math', 'Star'] },
   ];
   const [currentPair, setCurrentPair] = useState(0);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
+  const { currentUser } = useAuth();
 
-  const handleMatch = (isCorrect) => {
+  const handleMatch = async (isCorrect) => {
     const nextScore = isCorrect ? score + 1 : score;
     if (isCorrect) setScore(nextScore);
 
@@ -154,18 +199,8 @@ const PhonemeMatching = ({ onComplete }) => {
       setCurrentPair(currentPair + 1);
     } else {
       setFinished(true);
-      const history = JSON.parse(localStorage.getItem('lexiflow_exercise_history') || '{}');
-      const prevStats = history['phoneme'] || { pb: 0, sessions: 0, accuracy: '0%', level: 'New User' };
-      const newSessions = (prevStats.sessions || 0) + 1;
       const finalAccuracy = Math.round((nextScore / pairs.length) * 100);
-      const pb = Math.max(prevStats.pb || 0, nextScore);
-      history['phoneme'] = {
-        pb: `${pb} / ${pairs.length}`,
-        sessions: newSessions,
-        accuracy: `${finalAccuracy}%`,
-        level: finalAccuracy > 80 ? 'Advanced' : finalAccuracy > 50 ? 'Intermediate' : 'Beginner'
-      };
-      localStorage.setItem('lexiflow_exercise_history', JSON.stringify(history));
+      await saveTherapyProgress(currentUser, 'phoneme', nextScore * 100, finalAccuracy);
     }
   };
 
@@ -216,13 +251,14 @@ const AuditoryProcessing = ({ onComplete }) => {
   const [currentTask, setCurrentTask] = useState(0);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
+  const { currentUser } = useAuth();
 
   const playWord = (word) => {
     const ut = new SpeechSynthesisUtterance(word);
     window.speechSynthesis.speak(ut);
   };
 
-  const handleChoice = (word) => {
+  const handleChoice = async (word) => {
     const isCorrect = word === tasks[currentTask].correct;
     const nextScore = isCorrect ? score + 1 : score;
     if (isCorrect) setScore(nextScore);
@@ -231,18 +267,8 @@ const AuditoryProcessing = ({ onComplete }) => {
       setCurrentTask(currentTask + 1);
     } else {
       setFinished(true);
-      const history = JSON.parse(localStorage.getItem('lexiflow_exercise_history') || '{}');
-      const prevStats = history['auditory'] || { pb: 0, sessions: 0, accuracy: '0%', level: 'New User' };
-      const newSessions = (prevStats.sessions || 0) + 1;
       const finalAccuracy = Math.round((nextScore / tasks.length) * 100);
-      const pb = Math.max(prevStats.pb || 0, nextScore);
-      history['auditory'] = {
-        pb: `${pb} / ${tasks.length}`,
-        sessions: newSessions,
-        accuracy: `${finalAccuracy}%`,
-        level: finalAccuracy > 80 ? 'Advanced' : finalAccuracy > 50 ? 'Intermediate' : 'Beginner'
-      };
-      localStorage.setItem('lexiflow_exercise_history', JSON.stringify(history));
+      await saveTherapyProgress(currentUser, 'auditory', nextScore * 100, finalAccuracy);
     }
   };
 
@@ -290,8 +316,9 @@ const MorphologyBuilder = ({ onComplete }) => {
   const [currentTask, setCurrentTask] = useState(0);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
+  const { currentUser } = useAuth();
 
-  const handleChoice = (choice) => {
+  const handleChoice = async (choice) => {
     const isCorrect = choice === tasks[currentTask].correct;
     const nextScore = isCorrect ? score + 1 : score;
     if (isCorrect) setScore(nextScore);
@@ -300,18 +327,8 @@ const MorphologyBuilder = ({ onComplete }) => {
       setCurrentTask(currentTask + 1);
     } else {
       setFinished(true);
-      const history = JSON.parse(localStorage.getItem('lexiflow_exercise_history') || '{}');
-      const prevStats = history['morphology'] || { pb: 0, sessions: 0, accuracy: '0%', level: 'New User' };
-      const newSessions = (prevStats.sessions || 0) + 1;
       const finalAccuracy = Math.round((nextScore / tasks.length) * 100);
-      const pb = Math.max(parseInt(prevStats.pb) || 0, nextScore);
-      history['morphology'] = { 
-        pb: `${pb} / ${tasks.length}`, 
-        sessions: newSessions, 
-        accuracy: `${finalAccuracy}%`, 
-        level: finalAccuracy > 80 ? 'Advanced' : 'Level 1' 
-      };
-      localStorage.setItem('lexiflow_exercise_history', JSON.stringify(history));
+      await saveTherapyProgress(currentUser, 'morphology', nextScore * 100, finalAccuracy);
     }
   };
 
@@ -341,31 +358,22 @@ const MorphologyBuilder = ({ onComplete }) => {
 };
 
 const RapidNaming = ({ onComplete }) => {
-  const items = ['🍎', '🍌', '🍇', '🍊', '🍓', '🥝', '🫐', '🍍', '🥭', '🍉'];
+  const items = ['🍎', '🍌', '🍇', '🍊', '🍓', '🥝', '🫐', '🍍', '^{-/-}$', '🍉'];
   const [startTime, setStartTime] = useState(null);
   const [elapsed, setElapsed] = useState(null);
   const [isActive, setIsActive] = useState(false);
+  const { currentUser } = useAuth();
 
   const startTest = () => {
     setStartTime(Date.now());
     setIsActive(true);
   };
 
-  const finishTest = () => {
+  const finishTest = async () => {
     const time = ((Date.now() - startTime) / 1000).toFixed(2);
     setElapsed(time);
     setIsActive(false);
-    const history = JSON.parse(localStorage.getItem('lexiflow_exercise_history') || '{}');
-    const prevStats = history['naming'] || { pb: '99s', sessions: 0, accuracy: '100%', level: 'Normal' };
-    const newSessions = (prevStats.sessions || 0) + 1;
-    const bestTime = Math.min(parseFloat(prevStats.pb) || 99, parseFloat(time));
-    history['naming'] = { 
-      pb: `${bestTime}s`, 
-      sessions: newSessions, 
-      accuracy: '100%', 
-      level: bestTime < 10 ? 'Elite' : 'Fast' 
-    };
-    localStorage.setItem('lexiflow_exercise_history', JSON.stringify(history));
+    await saveTherapyProgress(currentUser, 'naming', Math.round(100 - parseFloat(time)), 100, `${time}s`);
   };
 
   return (
@@ -394,17 +402,15 @@ const RapidNaming = ({ onComplete }) => {
 const ExerciseSystem = ({ type, onComplete }) => {
   const [exerciseStats, setExerciseStats] = useState(null);
   const [isAdvanced, setIsAdvanced] = useState(false);
+  const { currentUser } = useAuth();
 
   useEffect(() => {
-    const history = JSON.parse(localStorage.getItem('lexiflow_exercise_history') || '{}');
-    const typeStats = history[type] || { pb: '0 / 3', sessions: 0, accuracy: '0%', level: 'New User', history: [] };
-    
-    if (typeStats.pb === '--' || !typeStats.pb) {
-        typeStats.pb = '0 / 3';
-    }
-    
+    if (!currentUser) return;
+    const historyKey = `lexiflow_exercise_history_${currentUser.uid}`;
+    const history = JSON.parse(localStorage.getItem(historyKey) || localStorage.getItem('lexiflow_exercise_history') || '{}');
+    const typeStats = history[type] || { pb: '0 pts', sessions: 0, accuracy: '0%', trend: 'Stable', level: 'New User' };
     setExerciseStats(typeStats);
-  }, [type]);
+  }, [type, currentUser]);
 
   const toggleAdvanced = () => {
     setIsAdvanced(!isAdvanced);
@@ -412,7 +418,6 @@ const ExerciseSystem = ({ type, onComplete }) => {
 
   return (
     <div className="exercise-container-flat">
-        {/* Exercise Stats Sidebar — hidden for video sessions */}
         {type !== 'video' && <aside className="exercise-stats-sidebar">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
             <h4 style={{ color: 'var(--lf-indigo-light)', fontSize: '0.85rem', margin: 0, fontWeight: 700, letterSpacing: '0.05em' }}>PERFORMANCE</h4>
@@ -435,7 +440,7 @@ const ExerciseSystem = ({ type, onComplete }) => {
           
           <div className="ex-stat-item" style={{ marginBottom: '1.5rem' }}>
             <small className="medical-label">PERSONAL BEST</small>
-            <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--lf-indigo-light)' }}>{exerciseStats?.pb || '0 / 3'}</span>
+            <span style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--lf-indigo-light)' }}>{exerciseStats?.pb || '0 pts'}</span>
           </div>
 
           <div className="ex-stat-item" style={{ marginBottom: '1.5rem' }}>
@@ -454,7 +459,8 @@ const ExerciseSystem = ({ type, onComplete }) => {
             <h5 style={{ margin: '0 0 1rem 0', fontSize: '0.8rem', fontWeight: 800, color: 'var(--lf-text-primary)' }}>MODULE ANALYSIS</h5>
             <div style={{ fontSize: '0.75rem', color: 'var(--lf-text-secondary)', lineHeight: '1.6' }}>
               <p>• <strong>Frequency:</strong> {exerciseStats?.sessions || 0} sessions</p>
-              <p>• <strong>Trend:</strong> {parseInt(exerciseStats?.accuracy) > 80 ? '📈 Improving' : '➡️ Stable'}</p>
+              <p>• <strong>Last Played:</strong> {exerciseStats?.lastPlayed || 'Never'}</p>
+              <p>• <strong>Progress Trend:</strong> {exerciseStats?.trend === 'Improving' ? '📈 Improving' : exerciseStats?.trend === 'Needs Practice' ? '💡 Needs Practice' : '➡️ Stable'}</p>
               <p>• <strong>Focus Area:</strong> {type === 'phoneme' ? 'Phonological Decoding' : type === 'visual' ? 'Saccadic Eye Movement' : 'Linguistic Retrieval'}</p>
             </div>
             <div style={{ marginTop: '1rem', height: '60px', display: 'flex', alignItems: 'flex-end', gap: '4px' }}>
@@ -466,7 +472,6 @@ const ExerciseSystem = ({ type, onComplete }) => {
           </div>
         </aside>}
 
-        {/* Main Exercise Content */}
         <div className="exercise-content-area" style={{ flex: 1, position: 'relative' }}>
           {type === 'visual' && <VisualTracking onComplete={onComplete} speedMultiplier={isAdvanced ? 0.6 : 1} />}
           {type === 'phoneme' && <PhonemeMatching onComplete={onComplete} advanced={isAdvanced} />}

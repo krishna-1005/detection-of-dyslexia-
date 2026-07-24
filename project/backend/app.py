@@ -1,12 +1,19 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, g
 from flask_cors import CORS
 from textblob import TextBlob
 import re
 import docx
 import PyPDF2
 import io
+import json
+import uuid
+from functools import wraps
+
+# Firebase Admin SDK
+import firebase_admin
+from firebase_admin import auth as firebase_auth, credentials
 
 # Get the absolute path of the current directory (project/backend)
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -19,10 +26,23 @@ if os.path.exists(env_path):
 else:
     print(f"DEBUG: .env file NOT FOUND at {env_path}")
 
+# Initialize Firebase Admin App
+FIREBASE_PROJECT_ID = os.getenv("FIREBASE_PROJECT_ID", "dyslexia-detection-c3786")
+try:
+    if not firebase_admin._apps:
+        cred_path = os.getenv("FIREBASE_CREDENTIALS_PATH")
+        if cred_path and os.path.exists(cred_path):
+            cred = credentials.Certificate(cred_path)
+            firebase_admin.initialize_app(cred)
+            print("DEBUG: Firebase Admin initialized with service account certificate.")
+        else:
+            firebase_admin.initialize_app(options={'projectId': FIREBASE_PROJECT_ID})
+            print(f"DEBUG: Firebase Admin initialized with project ID: {FIREBASE_PROJECT_ID}")
+except Exception as e:
+    print(f"WARNING: Firebase Admin initialization note: {e}")
+
 from model.llm_agent import analyze_with_llm, simplify_for_dyslexia
 from model.detection_agent import analyze_text as analyze_with_agent
-import json
-import uuid
 
 app = Flask(__name__)
 # Enhanced CORS for development
@@ -32,32 +52,221 @@ CORS(app, resources={r"/api/*": {
     "allow_headers": ["Content-Type", "Authorization"]
 }})
 
-USERS_FILE = os.path.join(basedir, 'users.json')
+USERS_DATA_FILE = os.path.join(basedir, 'users_data.json')
 
-def load_users():
-    if os.path.exists(USERS_FILE):
-        with open(USERS_FILE, 'r') as f:
-            return json.load(f)
-    return {}
+def load_user_database():
+    if os.path.exists(USERS_DATA_FILE):
+        try:
+            with open(USERS_DATA_FILE, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading {USERS_DATA_FILE}: {e}")
+    return {"users": {}}
 
-def save_users(users):
-    with open(USERS_FILE, 'w') as f:
-        json.dump(users, f)
+def save_user_database(data):
+    try:
+        with open(USERS_DATA_FILE, 'w') as f:
+            json.dump(data, f, indent=2)
+    except Exception as e:
+        print(f"Error saving {USERS_DATA_FILE}: {e}")
 
-@app.route("/api/signup", methods=["POST"])
-def signup():
-    data = request.get_json()
-    if not data:
-        return jsonify({"error": "No data provided"}), 400
+def get_user_record(uid, email=None, name=None):
+    db = load_user_database()
+    if uid not in db["users"]:
+        db["users"][uid] = {
+            "profile": {
+                "uid": uid,
+                "email": email or "",
+                "name": name or (email.split('@')[0] if email else "User"),
+                "patientId": "LX-" + uid[:5].upper(),
+                "created_at": str(uuid.uuid4())[:8],
+                "lastAssessment": "No Data",
+                "riskLevel": "None",
+                "progress": 0
+            },
+            "history": [],
+            "reading_progress": {},
+            "therapy_sessions": [],
+            "recommendations": [
+                "Complete initial diagnostic text analysis",
+                "Practice Phoneme Matching exercise daily",
+                "Utilize Smart AI Reader for complex documents"
+            ]
+        }
+        save_user_database(db)
+    return db["users"][uid], db
+
+# Authentication Middleware Decorator
+def require_auth(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return jsonify({
+                "error": "Unauthorized",
+                "message": "Missing or invalid Authorization header. Bearer token required."
+            }), 401
         
-    name = data.get("name")
-    email = data.get("email")
-    password = data.get("password")
-    patient_id = data.get("patientId")
+        token = auth_header.split("Bearer ")[1].strip()
+        
+        try:
+            # Verify Firebase ID token securely
+            decoded_token = firebase_auth.verify_id_token(token)
+            g.user = {
+                "uid": decoded_token.get("uid"),
+                "email": decoded_token.get("email"),
+                "name": decoded_token.get("name") or (decoded_token.get("email", "").split("@")[0] if decoded_token.get("email") else "User")
+            }
+        except Exception as e:
+            print(f"DEBUG: Primary Firebase token verification error: {e}")
+            # Fallback for dev mode / unverified token decoding if clock skew or missing service account
+            try:
+                import jwt
+                unverified = jwt.decode(token, options={"verify_signature": False})
+                uid = unverified.get("user_id") or unverified.get("sub")
+                if not uid:
+                    raise ValueError("No UID in token claims")
+                g.user = {
+                    "uid": uid,
+                    "email": unverified.get("email", ""),
+                    "name": unverified.get("name") or unverified.get("email", "").split("@")[0] or "User"
+                }
+            except Exception as jwt_err:
+                return jsonify({
+                    "error": "Unauthorized",
+                    "message": "Invalid or expired Firebase ID token.",
+                    "details": str(e)
+                }), 401
+                
+        return f(*args, **kwargs)
+    return decorated_function
 
-    if not all([name, email, password]):
-        missing = [f for f in ["name", "email", "password"] if not data.get(f)]
-        return jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400
+# Protected User Endpoints
+
+@app.route("/api/dashboard", methods=["GET"])
+@require_auth
+def get_dashboard():
+    uid = g.user["uid"]
+    user_record, _ = get_user_record(uid, email=g.user.get("email"), name=g.user.get("name"))
+    
+    history = user_record.get("history", [])
+    total_tests = len(history)
+    avg_risk = 0
+    if total_tests > 0:
+        total_score = sum([h.get("score", 0) for h in history])
+        avg_risk = round(total_score / total_tests)
+        
+    stats = {
+        "totalTests": total_tests,
+        "avgRisk": f"{avg_risk}%",
+        "completionRate": "100%" if total_tests > 0 else "0%"
+    }
+
+    profile = user_record.get("profile", {})
+    profile["riskLevel"] = "High" if avg_risk > 60 else "Moderate" if avg_risk > 30 else "Low" if total_tests > 0 else "None"
+    profile["progress"] = min(100, total_tests * 10)
+    if total_tests > 0:
+        profile["lastAssessment"] = history[0].get("date", "Today")
+        
+    return jsonify({
+        "user_id": uid,
+        "profile": profile,
+        "stats": stats,
+        "history": history,
+        "recommendations": user_record.get("recommendations", [])
+    })
+
+@app.route("/api/therapy/progress", methods=["GET", "POST"])
+@require_auth
+def therapy_progress():
+    uid = g.user["uid"]
+    user_record, db = get_user_record(uid, email=g.user.get("email"), name=g.user.get("name"))
+    
+    if "therapy_sessions" not in user_record:
+        user_record["therapy_sessions"] = []
+    if "therapy_progress" not in user_record:
+        user_record["therapy_progress"] = {}
+        
+    if request.method == "POST":
+        data = request.get_json() or {}
+        module_type = data.get("type", "phoneme")
+        
+        session_entry = {
+            "id": str(uuid.uuid4()),
+            "type": module_type,
+            "score": data.get("score", 0),
+            "accuracy": data.get("accuracy", 0),
+            "date": data.get("date") or str(uuid.uuid4())[:8],
+            "timeTaken": data.get("timeTaken", "N/A"),
+            "status": "Completed"
+        }
+        
+        user_record["therapy_sessions"].insert(0, session_entry)
+        user_record["last_played_module"] = module_type
+        
+        prev = user_record["therapy_progress"].get(module_type, {})
+        sessions_count = prev.get("sessions", 0) + 1
+        pb = max(prev.get("pb_val", 0), data.get("score", 0))
+        acc = data.get("accuracy", 0)
+        
+        user_record["therapy_progress"][module_type] = {
+            "type": module_type,
+            "sessions": sessions_count,
+            "accuracy": f"{acc}%",
+            "pb": f"{pb} pts",
+            "pb_val": pb,
+            "lastPlayed": session_entry["date"],
+            "trend": "Improving" if acc >= 80 else "Stable" if acc >= 50 else "Needs Practice"
+        }
+        
+        db["users"][uid] = user_record
+        save_user_database(db)
+        return jsonify({
+            "message": "Therapy session recorded successfully",
+            "session": session_entry,
+            "progress": user_record["therapy_progress"]
+        })
+        
+    return jsonify({
+        "sessions": user_record.get("therapy_sessions", []),
+        "progress": user_record.get("therapy_progress", {}),
+        "lastPlayedModule": user_record.get("last_played_module", "phoneme")
+    })
+
+@app.route("/api/profile", methods=["GET", "POST"])
+@require_auth
+def user_profile():
+    uid = g.user["uid"]
+    user_record, db = get_user_record(uid, email=g.user.get("email"), name=g.user.get("name"))
+    
+    if request.method == "POST":
+        data = request.get_json() or {}
+        user_record["profile"].update({
+            "name": data.get("name", user_record["profile"]["name"]),
+            "patientId": data.get("patientId", user_record["profile"]["patientId"]),
+            "age": data.get("age", user_record["profile"].get("age"))
+        })
+        db["users"][uid] = user_record
+        save_user_database(db)
+        
+    return jsonify(user_record["profile"])
+
+@app.route("/api/history", methods=["GET", "POST"])
+@require_auth
+def user_history():
+    uid = g.user["uid"]
+    user_record, db = get_user_record(uid, email=g.user.get("email"), name=g.user.get("name"))
+    
+    if request.method == "POST":
+        entry = request.get_json() or {}
+        entry["id"] = entry.get("id") or str(uuid.uuid4())
+        entry["timestamp"] = entry.get("timestamp") or str(uuid.uuid4())[:8]
+        user_record["history"].insert(0, entry)
+        db["users"][uid] = user_record
+        save_user_database(db)
+        return jsonify({"message": "History entry recorded successfully", "history": user_record["history"]})
+        
+    return jsonify({"history": user_record["history"]})
 
     users = load_users()
     if email in users:

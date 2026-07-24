@@ -1,18 +1,18 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Login.css"; // Reuse login styles
-import { setUserSession } from "./authSession";
+import { useAuth } from "./AuthContext";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
-    confirmPassword: "",
-    patientId: "LX-" + Math.floor(Math.random() * 9000 + 1000)
+    confirmPassword: ""
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const { signup } = useAuth();
   const navigate = useNavigate();
 
   const handleSignup = async (e) => {
@@ -20,27 +20,29 @@ const Signup = () => {
     if (formData.password !== formData.confirmPassword) {
       return setError("Passwords do not match.");
     }
+    if (formData.password.length < 6) {
+      return setError("Password must be at least 6 characters.");
+    }
     
     setLoading(true);
     setError("");
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/signup`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+      await signup(formData.email, formData.password, formData.name);
+      navigate("/login", { 
+        state: { message: "Account created successfully! Please sign in with your credentials." } 
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setUserSession(data.user, data.token);
-        navigate("/dashboard");
-      } else {
-        setError(data.error || "Signup failed. Please try again.");
-      }
     } catch (err) {
-      setError("Unable to connect to server. Please try again later.");
+      console.error("Firebase Signup Error:", err);
+      let message = "Signup failed. Please check your inputs and try again.";
+      if (err.code === "auth/email-already-in-use") {
+        message = "An account with this email address already exists.";
+      } else if (err.code === "auth/weak-password") {
+        message = "Password must be at least 6 characters long.";
+      } else if (err.code === "auth/invalid-email") {
+        message = "Please enter a valid email address.";
+      }
+      setError(message);
     } finally {
       setLoading(false);
     }

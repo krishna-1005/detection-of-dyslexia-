@@ -9,25 +9,31 @@ import UserReport from "./component/UserReport";
 import Login from "./component/Login";
 import Signup from "./component/Signup";
 import GuideMe from "./component/GuideMe";
+import { AuthProvider } from "./component/AuthContext";
+import ProtectedRoute from "./component/ProtectedRoute";
 import "./App.css";
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/detect" element={<DetectPage />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/reader" element={<SmartReader />} />
-          <Route path="/therapy/:type" element={<TherapyPage />} />
-          <Route path="/analysis" element={<UserReport />} />
-        </Routes>
-        <GuideMe />
-      </div>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <div className="App">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            
+            {/* Protected Routes requiring Authentication */}
+            <Route path="/detect" element={<ProtectedRoute><DetectPage /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/reader" element={<ProtectedRoute><SmartReader /></ProtectedRoute>} />
+            <Route path="/therapy/:type" element={<ProtectedRoute><TherapyPage /></ProtectedRoute>} />
+            <Route path="/analysis" element={<ProtectedRoute><UserReport /></ProtectedRoute>} />
+          </Routes>
+          <GuideMe />
+        </div>
+      </Router>
+    </AuthProvider>
   );
 }
 

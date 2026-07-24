@@ -5,10 +5,13 @@ import Sidebar from './Sidebar';
 import SpeechAssistant from './SpeechAssistant';
 import FocusRuler from './FocusRuler';
 import './SmartReader.css';
-import { getUserSession } from './authSession';
+import { useAuth } from './AuthContext';
+import { fetchWithAuth } from './api';
 
 const SmartReader = () => {
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
+    const user = currentUser;
     const [text, setText] = useState("");
     const [simplifiedText, setSimplifiedText] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -23,23 +26,14 @@ const SmartReader = () => {
     });
     const [isReading, setIsReading] = useState(false);
     const [currentWordIndex, setCurrentWordIndex] = useState(-1);
-    
-    const user = getUserSession();
     const readingAreaRef = useRef(null);
-
-    useEffect(() => {
-        if (!user) {
-            navigate("/login");
-        }
-    }, [user, navigate]);
 
     const handleSimplify = async () => {
         if (!text.trim()) return;
         setIsLoading(true);
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/simplify`, {
+            const response = await fetchWithAuth("/api/simplify", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ text })
             });
             const data = await response.json();

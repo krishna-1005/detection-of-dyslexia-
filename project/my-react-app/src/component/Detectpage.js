@@ -8,11 +8,13 @@ import Sidebar from "./Sidebar";
 import FocusRuler from "./FocusRuler";
 import ReportGenerator from "./ReportGenerator";
 import ResultDisplay from "./ResultDisplay";
-import { getUserSession } from "./authSession";
+import { useAuth } from "./AuthContext";
+import { fetchWithAuth } from "./api";
 
 const DetectPage = () => {
   const navigate = useNavigate();
-  const user = getUserSession();
+  const { currentUser } = useAuth();
+  const user = currentUser;
   const [text, setText] = useState("");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -34,13 +36,6 @@ const DetectPage = () => {
     }
   }, [result]);
 
-  useEffect(() => {
-    if (!user) {
-      navigate("/login");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, navigate]);
-
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -50,7 +45,7 @@ const DetectPage = () => {
     formData.append("file", file);
     
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/upload`, {
+      const response = await fetchWithAuth("/api/upload", {
         method: "POST",
         body: formData,
       });
@@ -73,24 +68,43 @@ const DetectPage = () => {
     setLoading(true);
     setResult(null);
     try {
-      const response = await fetch(`${process.env.REACT_APP_API_URL || "http://localhost:5000"}/api/analyze`, {
+      const response = await fetchWithAuth("/api/analyze", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text }),
       });
       const data = await response.json();
       setResult(data);
       
-      const history = JSON.parse(localStorage.getItem("lexiflow_history") || "[]");
+      const score = Math.round((data.risk_score || 0) * 100);
+      const riskLevel = score > 60 ? "High" : score > 35 ? "Moderate" : "Low";
+      const now = new Date();
+      const formattedDate = now.toLocaleDateString() + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
       const newEntry = {
         id: Date.now(),
-        date: new Date().toISOString().split('T')[0],
-        type: "Text Analysis",
-        score: Math.round(data.risk_score * 100),
+        date: formattedDate,
+        isoDate: now.toISOString(),
+        type: "Linguistic Text Analysis",
+        score: score,
+        riskLevel: riskLevel,
         status: "Completed",
         details: data
       };
-      localStorage.setItem("lexiflow_history", JSON.stringify([newEntry, ...history]));
+
+      // Save to backend history endpoint
+      try {
+        await fetchWithAuth("/api/history", {
+          method: "POST",
+          body: JSON.stringify(newEntry)
+        });
+      } catch (err) {
+        console.warn("Could not post history to backend:", err);
+      }
+
+      // Save to local storage tagged with UID
+      const storageKey = currentUser?.uid ? `lexiflow_history_${currentUser.uid}` : "lexiflow_history";
+      const history = JSON.parse(localStorage.getItem(storageKey) || "[]");
+      localStorage.setItem(storageKey, JSON.stringify([newEntry, ...history]));
     } catch (error) {
       alert("Error contacting diagnostic engine.");
     } finally {
@@ -98,7 +112,8 @@ const DetectPage = () => {
     }
   };
 
-  const history = JSON.parse(localStorage.getItem("lexiflow_history") || "[]");
+  const storageKey = currentUser?.uid ? `lexiflow_history_${currentUser.uid}` : "lexiflow_history";
+  const history = JSON.parse(localStorage.getItem(storageKey) || "[]");
 
   return (
     <div className={`page-container ${isDyslexiaFriendly ? "dyslexia-friendly" : ""}`}>

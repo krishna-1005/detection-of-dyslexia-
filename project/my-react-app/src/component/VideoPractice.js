@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './VideoPractice.css';
+import { useAuth } from './AuthContext';
+import { fetchWithAuth } from './api';
 
 const VideoPractice = ({ onComplete }) => {
   const [stream, setStream] = useState(null);
@@ -10,6 +12,8 @@ const VideoPractice = ({ onComplete }) => {
   const [feedback, setFeedback] = useState({ text: 'Waiting to start...', type: 'neutral' });
   const videoRef = useRef(null);
   const recognitionRef = useRef(null);
+
+  const { currentUser } = useAuth();
 
   const practiceSentences = [
     "The sun is bright and warm today.",
@@ -92,7 +96,7 @@ const VideoPractice = ({ onComplete }) => {
     }
   };
 
-  const stopCamera = () => {
+  const stopCamera = async () => {
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
@@ -100,15 +104,44 @@ const VideoPractice = ({ onComplete }) => {
     setIsRecording(false);
     if (recognitionRef.current) recognitionRef.current.stop();
 
-    const history = JSON.parse(localStorage.getItem('lexiflow_exercise_history') || '{}');
-    const prevStats = history['video'] || { pb: '--', sessions: 0, accuracy: '100%', level: 'Completed' };
-    history['video'] = {
-      pb: '100%',
-      sessions: (prevStats.sessions || 0) + 1,
-      accuracy: '100%',
-      level: 'Completed'
+    const uid = currentUser?.uid;
+    const now = new Date();
+    const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    const sessionEntry = {
+      type: 'video',
+      score: 100,
+      accuracy: 100,
+      timeTaken: `${sessionTime}s`,
+      date: dateStr,
+      timestamp: now.getTime()
     };
-    localStorage.setItem('lexiflow_exercise_history', JSON.stringify(history));
+
+    if (currentUser) {
+      try {
+        await fetchWithAuth("/api/therapy/progress", {
+          method: "POST",
+          body: JSON.stringify(sessionEntry)
+        });
+      } catch (e) {}
+
+      const historyKey = `lexiflow_exercise_history_${uid}`;
+      const lastKey = `lexiflow_last_therapy_${uid}`;
+
+      const history = JSON.parse(localStorage.getItem(historyKey) || localStorage.getItem('lexiflow_exercise_history') || '{}');
+      const prevStats = history['video'] || { pb: '100%', sessions: 0, accuracy: '100%', level: 'Completed' };
+      history['video'] = {
+        pb: '100%',
+        sessions: (prevStats.sessions || 0) + 1,
+        accuracy: '100%',
+        lastPlayed: dateStr,
+        trend: 'Improving',
+        level: 'Completed'
+      };
+
+      localStorage.setItem(historyKey, JSON.stringify(history));
+      localStorage.setItem(lastKey, 'video');
+    }
 
     onComplete();
   };

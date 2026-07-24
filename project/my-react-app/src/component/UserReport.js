@@ -3,20 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import './UserReport.css';
-import { getUserSession } from './authSession';
+import { useAuth } from './AuthContext';
 
 const UserReport = () => {
   const navigate = useNavigate();
   const [reportData, setReportData] = useState(null);
-  const user = getUserSession();
+  const { currentUser } = useAuth();
+  const user = currentUser;
 
   useEffect(() => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-    const history = JSON.parse(localStorage.getItem("lexiflow_history") || "[]");
-    const exHistory = JSON.parse(localStorage.getItem('lexiflow_exercise_history') || '{}');
+    if (!currentUser) return;
+    const historyKey = `lexiflow_history_${currentUser.uid}`;
+    const exHistoryKey = `lexiflow_exercise_history_${currentUser.uid}`;
+
+    const history = JSON.parse(localStorage.getItem(historyKey) || localStorage.getItem("lexiflow_history") || "[]");
+    const exHistory = JSON.parse(localStorage.getItem(exHistoryKey) || localStorage.getItem('lexiflow_exercise_history') || '{}');
     
     if (history.length === 0 && Object.keys(exHistory).length === 0) {
       setReportData({ isEmpty: true });

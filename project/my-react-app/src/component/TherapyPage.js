@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import Sidebar from './Sidebar';
 import ExerciseSystem from './ExerciseSystem';
-import { getUserSession } from './authSession';
+import { useAuth } from './AuthContext';
 
 const therapyInfo = {
     phoneme: {
@@ -41,14 +41,9 @@ const therapyInfo = {
 const TherapyPage = () => {
     const { type } = useParams();
     const navigate = useNavigate();
-    const user = getUserSession();
+    const { currentUser } = useAuth();
+    const user = currentUser;
     const info = therapyInfo[type] || {};
-
-    useEffect(() => {
-        if (!user) {
-            navigate("/login");
-        }
-    }, [user, navigate]);
 
     return (
         <div className="page-container">

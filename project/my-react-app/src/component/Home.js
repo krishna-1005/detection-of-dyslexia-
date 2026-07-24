@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './Home.css';
+import { useAuth } from './AuthContext';
 
 import SymptomsQuiz from './SymptomsQuiz';
 
@@ -206,7 +207,97 @@ const VisualSaccadicSandbox = () => {
   );
 };
 
+const AnimatedHeroVideo = () => {
+  const [showModal, setShowModal] = useState(false);
+  const videoRef = useRef(null);
+
+  return (
+    <div className="hero-animated-video-card">
+      <div className="video-frame-wrapper" onClick={() => setShowModal(true)}>
+        <video 
+          ref={videoRef}
+          className="hero-video-element"
+          autoPlay 
+          loop 
+          muted 
+          playsInline
+          poster="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80&w=1000"
+        >
+          <source src="https://cdn.coverr.co/videos/coverr-a-child-reading-a-book-5668/1080p.mp4" type="video/mp4" />
+          Your browser does not support HTML5 video.
+        </video>
+
+        {/* Animated Scanning Line */}
+        <div className="video-scan-line"></div>
+
+        {/* Floating AI Badges */}
+        <div className="video-live-badge badge-top-left">
+          <span className="live-dot"></span> AI Phonetic Tracker
+        </div>
+
+        <div className="video-live-badge badge-bottom-right">
+          ⚡ RAN Speed: 94%
+        </div>
+
+        {/* Equalizer Sound Waves */}
+        <div className="video-sound-bars">
+          <span className="bar bar1"></span>
+          <span className="bar bar2"></span>
+          <span className="bar bar3"></span>
+          <span className="bar bar4"></span>
+        </div>
+
+        {/* Play Overlay Button */}
+        <div className="video-play-overlay">
+          <button className="play-circle-btn" onClick={(e) => { e.stopPropagation(); setShowModal(true); }}>
+            ▶
+          </button>
+          <span className="play-btn-label">Watch Live Demo Video</span>
+        </div>
+      </div>
+
+      {/* Video Modal Preview */}
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content video-modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '750px' }}>
+            <button className="modal-close-btn" onClick={() => setShowModal(false)}>✕</button>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.85rem', color: 'var(--lf-text-primary)' }}>
+              LexiFlow AI Reading & Diagnostic Demonstration
+            </h3>
+            
+            <div className="modal-video-container">
+              <video 
+                controls 
+                autoPlay 
+                className="full-modal-video"
+                src="https://cdn.coverr.co/videos/coverr-a-child-reading-a-book-5668/1080p.mp4"
+              />
+            </div>
+
+            <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span className="dash-status">● SCIENCE-BACKED DYSLEXIA INTERVENTION</span>
+              <button className="medical-btn-primary" onClick={() => setShowModal(false)}>
+                Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Home = () => {
+  const { currentUser, logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (e) {
+      console.error("Logout error:", e);
+    }
+  };
+
   return (
     <div className="home-container">
       <div className="home-bg-effects">
@@ -219,8 +310,23 @@ const Home = () => {
           <h2>LexiFlow Clinical</h2>
         </div>
         <div className="nav-links">
-          <Link to="/login" className="nav-item">Login</Link>
-          <Link to="/signup" className="home-cta-btn">Get Started →</Link>
+          {currentUser ? (
+            <>
+              <Link to="/dashboard" className="home-cta-btn">Dashboard →</Link>
+              <button 
+                onClick={handleLogout} 
+                className="nav-item"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--lf-rose, #f43f5e)', fontWeight: 600 }}
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="nav-item">Login</Link>
+              <Link to="/signup" className="home-cta-btn">Get Started →</Link>
+            </>
+          )}
         </div>
       </nav>
 
@@ -264,15 +370,7 @@ const Home = () => {
               </div>
             </div>
             <div className="hero-content-right">
-              <div className="hero-illustration">
-                <div className="child-image-container">
-                   <img 
-                    src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?auto=format&fit=crop&q=80&w=1000" 
-                    alt="Child reading with confidence" 
-                    className="hero-child-img"
-                   />
-                </div>
-              </div>
+              <AnimatedHeroVideo />
             </div>
           </div>
         </section>

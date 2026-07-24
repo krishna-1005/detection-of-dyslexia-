@@ -620,6 +620,198 @@
   color: var(--lf-primary);
 }
 
+/* ---- Hero Animated Video Card ---- */
+.hero-animated-video-card {
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  margin: 0 auto;
+}
+
+.video-frame-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 2px solid rgba(79, 70, 229, 0.25);
+  box-shadow: 0 20px 40px rgba(79, 70, 229, 0.18), 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  background: #0f172a;
+  aspect-ratio: 4 / 3;
+}
+
+.hero-video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.video-frame-wrapper:hover .hero-video-element {
+  transform: scale(1.04);
+}
+
+/* Laser Scan Line */
+.video-scan-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #38bdf8, #818cf8, transparent);
+  box-shadow: 0 0 15px #38bdf8;
+  animation: scanMove 3s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 5;
+}
+
+@keyframes scanMove {
+  0% { top: 5%; }
+  100% { top: 92%; }
+}
+
+/* Floating Badges */
+.video-live-badge {
+  position: absolute;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.badge-top-left {
+  top: 14px;
+  left: 14px;
+}
+
+.badge-bottom-right {
+  bottom: 14px;
+  right: 14px;
+  color: #14b8a6;
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  background: #f43f5e;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #f43f5e;
+  animation: pulseDot 1.5s infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.3); }
+}
+
+/* Equalizer Bars */
+.video-sound-bars {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 18px;
+  z-index: 10;
+  background: rgba(15, 23, 42, 0.75);
+  padding: 4px 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.video-sound-bars .bar {
+  width: 3px;
+  background: #818cf8;
+  border-radius: 2px;
+  animation: barBounce 1.2s ease-in-out infinite alternate;
+}
+
+.video-sound-bars .bar1 { height: 40%; animation-delay: 0.1s; }
+.video-sound-bars .bar2 { height: 80%; animation-delay: 0.3s; }
+.video-sound-bars .bar3 { height: 60%; animation-delay: 0.2s; }
+.video-sound-bars .bar4 { height: 100%; animation-delay: 0.4s; }
+
+@keyframes barBounce {
+  0% { height: 20%; }
+  100% { height: 100%; }
+}
+
+/* Play Overlay Button */
+.video-play-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.25);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.3s ease;
+  z-index: 8;
+}
+
+.video-frame-wrapper:hover .video-play-overlay {
+  background: rgba(15, 23, 42, 0.45);
+}
+
+.play-circle-btn {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4f46e5 0%, #0d9488 100%);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.5);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.video-frame-wrapper:hover .play-circle-btn {
+  transform: scale(1.1);
+  box-shadow: 0 12px 28px rgba(79, 70, 229, 0.7);
+}
+
+.play-btn-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  letter-spacing: 0.02em;
+}
+
+/* Video Modal */
+.modal-video-container {
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #000;
+  aspect-ratio: 16 / 9;
+}
+
+.full-modal-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 900px) {
   .hero-container-inner {

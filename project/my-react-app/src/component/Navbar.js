@@ -1,15 +1,24 @@
 import React from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './Navbar.css';
-import { clearUserSession } from './authSession';
+import { useAuth } from './AuthContext';
 
-const Navbar = ({ user, showDropdown, setShowDropdown }) => {
+const Navbar = ({ user: propUser, showDropdown, setShowDropdown }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { currentUser, logout } = useAuth();
 
-  const handleLogout = () => {
-    clearUserSession();
-    navigate("/");
+  const user = currentUser || propUser;
+  const displayName = user?.displayName || user?.name || user?.email?.split('@')[0] || "Clinician";
+  const initial = displayName.charAt(0).toUpperCase();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (e) {
+      console.error("Logout error:", e);
+    }
+    navigate("/login");
   };
 
   return (
@@ -22,16 +31,16 @@ const Navbar = ({ user, showDropdown, setShowDropdown }) => {
       <div className="nav-links">
         <Link to="/dashboard" className={`nav-item ${location.pathname === '/dashboard' ? 'active' : ''}`}>Dashboard</Link>
         <Link to="/detect" className={`nav-item ${location.pathname === '/detect' ? 'active' : ''}`}>Diagnostic Engine</Link>
-        <a href="#" className="nav-item">Linguistic Library</a>
-        <a href="#" className="nav-item">Support</a>
+        <a href="#" onClick={(e) => e.preventDefault()} className="nav-item">Linguistic Library</a>
+        <a href="#" onClick={(e) => e.preventDefault()} className="nav-item">Support</a>
       </div>
 
       <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
         <div className="user-profile-nav" onClick={() => setShowDropdown && setShowDropdown(!showDropdown)}>
           <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--lf-gradient-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.85rem' }}>
-            {user?.name?.charAt(0) || "G"}
+            {initial}
           </div>
-          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--lf-text-primary)' }}>{user?.name || "Clinician"}</span>
+          <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--lf-text-primary)' }}>{displayName}</span>
           <span style={{ fontSize: '0.7rem', color: 'var(--lf-text-muted)' }}>{showDropdown ? '▲' : '▼'}</span>
           
           {showDropdown && (
