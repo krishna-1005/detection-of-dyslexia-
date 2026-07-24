@@ -107,9 +107,6 @@ const Dashboard = () => {
   const totalTests = allTests.length;
   const scores = allTests.map(t => typeof t.score === 'number' ? t.score : Math.round((t.details?.risk_score || 0) * 100));
   const latestScore = scores.length > 0 ? scores[0] : 0;
-  const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
-  const highestScore = scores.length > 0 ? Math.max(...scores) : 0;
-  const lowestScore = scores.length > 0 ? Math.min(...scores) : 0;
 
   const latestTest = allTests.length > 0 ? allTests[0] : null;
   const latestRiskLevel = latestTest?.riskLevel || (latestScore > 60 ? "High" : latestScore > 35 ? "Moderate" : "Low");
