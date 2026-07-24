@@ -8,3 +8,5 @@ python-dotenv
 python-docx
 PyPDF2
 gunicorn
+firebase-admin
+PyJWT
