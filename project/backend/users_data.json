@@ -1,0 +1,24 @@
+{
+  "users": {
+    "BOYcgnfoPATKCacRkQeRP47JEmm1": {
+      "profile": {
+        "uid": "BOYcgnfoPATKCacRkQeRP47JEmm1",
+        "email": "krishkulkarni1005@gmail.com",
+        "name": "krish",
+        "patientId": "LX-BOYCG",
+        "created_at": "c47004af",
+        "lastAssessment": "No Data",
+        "riskLevel": "None",
+        "progress": 0
+      },
+      "history": [],
+      "reading_progress": {},
+      "therapy_sessions": [],
+      "recommendations": [
+        "Complete initial diagnostic text analysis",
+        "Practice Phoneme Matching exercise daily",
+        "Utilize Smart AI Reader for complex documents"
+      ]
+    }
+  }
+}
