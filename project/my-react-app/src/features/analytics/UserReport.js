@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from './Navbar';
-import Sidebar from './Sidebar';
+import Navbar from '../dashboard/Navbar';
+import Sidebar from '../dashboard/Sidebar';
 import './UserReport.css';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../auth/AuthContext';
 
 const UserReport = () => {
   const navigate = useNavigate();
@@ -12,12 +12,17 @@ const UserReport = () => {
   const user = currentUser;
 
   useEffect(() => {
-    if (!currentUser) return;
-    const historyKey = `lexiflow_history_${currentUser.uid}`;
-    const exHistoryKey = `lexiflow_exercise_history_${currentUser.uid}`;
+    const uid = currentUser?.uid;
+    const historyKey = uid ? `lexiflow_history_${uid}` : "lexiflow_history";
+    const exHistoryKey = uid ? `lexiflow_exercise_history_${uid}` : 'lexiflow_exercise_history';
 
-    const history = JSON.parse(localStorage.getItem(historyKey) || localStorage.getItem("lexiflow_history") || "[]");
-    const exHistory = JSON.parse(localStorage.getItem(exHistoryKey) || localStorage.getItem('lexiflow_exercise_history') || '{}');
+    const historyUid = JSON.parse(localStorage.getItem(historyKey) || "[]");
+    const historyGlobal = JSON.parse(localStorage.getItem("lexiflow_history") || "[]");
+    const history = [...historyUid, ...historyGlobal];
+
+    const exHistoryUid = JSON.parse(localStorage.getItem(exHistoryKey) || "{}");
+    const exHistoryGlobal = JSON.parse(localStorage.getItem("lexiflow_exercise_history") || "{}");
+    const exHistory = { ...exHistoryGlobal, ...exHistoryUid };
     
     if (history.length === 0 && Object.keys(exHistory).length === 0) {
       setReportData({ isEmpty: true });

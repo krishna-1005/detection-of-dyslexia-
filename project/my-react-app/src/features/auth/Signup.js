@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "./Login.css"; // Reuse login styles
+import "./Login.css";
 import { useAuth } from "./AuthContext";
 
 const Signup = () => {
@@ -51,9 +51,12 @@ const Signup = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <Link to="/" className="auth-logo">LexiFlow</Link>
-        <h2>Create Account</h2>
-        <p>Join the sanctuary for personalized cognitive support.</p>
+        <Link to="/" className="auth-brand-badge">
+          <div className="nav-logo-icon">L</div>
+          <h2>LexiFlow Clinical</h2>
+        </Link>
+        <h3>Create Account</h3>
+        <p>Join for personalized cognitive support and diagnostics.</p>
 
         {error && <div className="auth-error">{error}</div>}
 
@@ -99,7 +102,7 @@ const Signup = () => {
             />
           </div>
           <button type="submit" className="btn-auth" disabled={loading}>
-            {loading ? "Creating account..." : "Join Now"}
+            {loading ? "Creating account..." : "Create Free Account"}
           </button>
         </form>
 

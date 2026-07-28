@@ -1,0 +1,211 @@
+/* ═══════════════════════════════════════════════════════
+   Navbar — Modern Glassmorphic Design
+   ═══════════════════════════════════════════════════════ */
+
+.navbar {
+  height: 64px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--lf-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+}
+
+.nav-logo-icon {
+  width: 34px;
+  height: 34px;
+  background: var(--lf-gradient-primary);
+  border-radius: var(--lf-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 800;
+  font-size: 1rem;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+}
+
+.nav-brand h2 {
+  color: var(--lf-text-primary);
+  font-family: var(--lf-font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.nav-brand-tag {
+  background: var(--lf-primary-soft);
+  color: var(--lf-primary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--lf-radius-full);
+  margin-left: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.75rem;
+  align-items: center;
+}
+
+.nav-item {
+  text-decoration: none;
+  color: var(--lf-text-secondary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  position: relative;
+  padding: 0.5rem 0.25rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.nav-item:hover {
+  color: var(--lf-primary);
+}
+
+.nav-item.active {
+  color: var(--lf-primary);
+  font-weight: 700;
+}
+
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--lf-gradient-primary);
+  border-radius: 3px 3px 0 0;
+}
+
+.user-profile-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--lf-radius-full);
+  background: #ffffff;
+  cursor: pointer;
+  border: 1px solid var(--lf-border);
+  transition: all 0.2s ease;
+  position: relative;
+  box-shadow: var(--lf-shadow-sm);
+}
+
+.user-profile-nav:hover {
+  border-color: var(--lf-primary-light);
+  box-shadow: var(--lf-shadow-md);
+  transform: translateY(-1px);
+}
+
+.user-avatar-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--lf-gradient-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+
+.user-name-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--lf-text-primary);
+}
+
+.user-dropdown-arrow {
+  font-size: 0.65rem;
+  color: var(--lf-text-muted);
+}
+
+.navbar-dropdown-menu {
+  position: absolute;
+  top: 52px;
+  right: 0;
+  width: 220px;
+  background: #ffffff;
+  border: 1px solid var(--lf-border);
+  border-radius: var(--lf-radius-lg);
+  box-shadow: var(--lf-shadow-xl);
+  padding: 0.5rem;
+  z-index: 1001;
+  animation: fadeInUp 0.2s ease-out;
+}
+
+.dropdown-user-header {
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-user-header strong {
+  font-size: 0.85rem;
+  color: var(--lf-text-primary);
+}
+
+.dropdown-user-header small {
+  font-size: 0.75rem;
+  color: var(--lf-text-muted);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--lf-border);
+  margin: 0.4rem 0;
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  border: none;
+  background: none;
+  border-radius: var(--lf-radius-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--lf-text-secondary);
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dropdown-item:hover {
+  background: var(--lf-bg-primary);
+  color: var(--lf-primary);
+}
+
+.dropdown-item.logout-item {
+  color: var(--lf-rose);
+}
+
+.dropdown-item.logout-item:hover {
+  background: var(--lf-rose-soft);
+}

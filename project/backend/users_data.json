@@ -11,14 +11,136 @@
         "riskLevel": "None",
         "progress": 0
       },
-      "history": [],
+      "history": [
+        {
+          "id": 1785135257658,
+          "date": "7/27/2026 12:24 PM",
+          "isoDate": "2026-07-27T06:54:17.657Z",
+          "type": "Therapy: Phoneme Matching",
+          "score": 100,
+          "riskLevel": "Low",
+          "status": "Completed",
+          "details": {
+            "type": "phoneme",
+            "score": 300,
+            "accuracy": 100,
+            "timeTaken": "N/A",
+            "date": "7/27/2026 12:24 PM",
+            "timestamp": 1785135257657
+          },
+          "timestamp": "59b3aafe"
+        },
+        {
+          "id": 1785135079908,
+          "date": "7/27/2026 12:21 PM",
+          "isoDate": "2026-07-27T06:51:19.907Z",
+          "type": "Therapy: Phoneme Matching",
+          "score": 67,
+          "riskLevel": "Moderate",
+          "status": "Completed",
+          "details": {
+            "type": "phoneme",
+            "score": 200,
+            "accuracy": 67,
+            "timeTaken": "N/A",
+            "date": "7/27/2026 12:21 PM",
+            "timestamp": 1785135079907
+          },
+          "timestamp": "17358155"
+        }
+      ],
       "reading_progress": {},
-      "therapy_sessions": [],
+      "therapy_sessions": [
+        {
+          "id": "7b4a3577-d757-4814-838d-abf1b69bb5da",
+          "type": "phoneme",
+          "score": 300,
+          "accuracy": 100,
+          "date": "7/27/2026 12:24 PM",
+          "timeTaken": "N/A",
+          "status": "Completed"
+        },
+        {
+          "id": "9b123012-fea8-40ce-8741-1bf4dfd61a9c",
+          "type": "phoneme",
+          "score": 200,
+          "accuracy": 67,
+          "date": "7/27/2026 12:21 PM",
+          "timeTaken": "N/A",
+          "status": "Completed"
+        },
+        {
+          "id": "8efa3dba-467c-4f83-a943-1f6e69e5b2a5",
+          "type": "morphology",
+          "score": 300,
+          "accuracy": 100,
+          "date": "7/27/2026 12:15 PM",
+          "timeTaken": "N/A",
+          "status": "Completed"
+        },
+        {
+          "id": "a3be3f77-6f9a-4922-9243-b6bbf52268e9",
+          "type": "phoneme",
+          "score": 300,
+          "accuracy": 100,
+          "date": "7/27/2026 12:14 PM",
+          "timeTaken": "N/A",
+          "status": "Completed"
+        },
+        {
+          "id": "905e67e4-1c2b-434a-a10a-c7a0ac0cf612",
+          "type": "phoneme",
+          "score": 100,
+          "accuracy": 33,
+          "date": "7/27/2026 12:14 PM",
+          "timeTaken": "N/A",
+          "status": "Completed"
+        },
+        {
+          "id": "b7c2b579-74f5-4ccc-9c65-b7884596dd5e",
+          "type": "phoneme",
+          "score": 200,
+          "accuracy": 67,
+          "date": "7/27/2026 12:14 PM",
+          "timeTaken": "N/A",
+          "status": "Completed"
+        },
+        {
+          "id": "9f032bed-f669-4f9d-9d9b-ae08701d580d",
+          "type": "phoneme",
+          "score": 100,
+          "accuracy": 33,
+          "date": "7/25/2026 12:04 AM",
+          "timeTaken": "N/A",
+          "status": "Completed"
+        }
+      ],
       "recommendations": [
         "Complete initial diagnostic text analysis",
         "Practice Phoneme Matching exercise daily",
         "Utilize Smart AI Reader for complex documents"
-      ]
+      ],
+      "therapy_progress": {
+        "phoneme": {
+          "type": "phoneme",
+          "sessions": 6,
+          "accuracy": "100%",
+          "pb": "300 pts",
+          "pb_val": 300,
+          "lastPlayed": "7/27/2026 12:24 PM",
+          "trend": "Improving"
+        },
+        "morphology": {
+          "type": "morphology",
+          "sessions": 1,
+          "accuracy": "100%",
+          "pb": "300 pts",
+          "pb_val": 300,
+          "lastPlayed": "7/27/2026 12:15 PM",
+          "trend": "Improving"
+        }
+      },
+      "last_played_module": "phoneme"
     }
   }
 }

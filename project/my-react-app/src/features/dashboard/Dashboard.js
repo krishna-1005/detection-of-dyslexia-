@@ -15,8 +15,8 @@ import {
 import "./Dashboard.css";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
-import { useAuth } from "./AuthContext";
-import { fetchWithAuth } from "./api";
+import { useAuth } from "../auth/AuthContext";
+import { fetchWithAuth } from "../../services/api";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -47,55 +47,66 @@ const Dashboard = () => {
   ];
 
   useEffect(() => {
-    if (!currentUser) return;
-
     const loadDashboardData = async () => {
       let historyList = [];
       let thProgress = {};
       let thSessions = [];
       let lastMod = 'phoneme';
 
-      // 1. Fetch from Flask backend
-      try {
-        const response = await fetchWithAuth("/api/dashboard");
-        if (response.ok) {
-          const data = await response.json();
-          if (data.history) historyList = data.history;
-          if (data.profile) {
-            setProfile(prev => ({
-              ...prev,
-              name: data.profile.name || prev.name,
-              email: data.profile.email || prev.email,
-              patientId: data.profile.patientId || prev.patientId
-            }));
+      // 1. Fetch from Flask backend if logged in
+      if (currentUser) {
+        try {
+          const response = await fetchWithAuth("/api/dashboard");
+          if (response.ok) {
+            const data = await response.json();
+            if (data.history) historyList = data.history;
+            if (data.profile) {
+              setProfile(prev => ({
+                ...prev,
+                name: data.profile.name || prev.name,
+                email: data.profile.email || prev.email,
+                patientId: data.profile.patientId || prev.patientId
+              }));
+            }
           }
+
+          const thRes = await fetchWithAuth("/api/therapy/progress");
+          if (thRes.ok) {
+            const thData = await thRes.json();
+            if (thData.progress) thProgress = thData.progress;
+            if (thData.sessions) thSessions = thData.sessions;
+            if (thData.lastPlayedModule) lastMod = thData.lastPlayedModule;
+          }
+        } catch (err) {
+          console.warn("Backend fetch note:", err);
         }
+      }
 
-        const thRes = await fetchWithAuth("/api/therapy/progress");
-        if (thRes.ok) {
-          const thData = await thRes.json();
-          if (thData.progress) thProgress = thData.progress;
-          if (thData.sessions) thSessions = thData.sessions;
-          if (thData.lastPlayedModule) lastMod = thData.lastPlayedModule;
+      // 2. Combine and deduplicate history from backend and local storage
+      const uid = currentUser?.uid;
+      const localHistoryUid = uid ? JSON.parse(localStorage.getItem(`lexiflow_history_${uid}`) || "[]") : [];
+      const localHistoryGlobal = JSON.parse(localStorage.getItem("lexiflow_history") || "[]");
+
+      const combinedRaw = [...historyList, ...localHistoryUid, ...localHistoryGlobal];
+      const seenIds = new Set();
+      const combinedHistory = [];
+      for (const item of combinedRaw) {
+        const itemId = item.id || (item.date + "_" + (item.type || "")) || item.timestamp;
+        if (itemId && !seenIds.has(itemId)) {
+          seenIds.add(itemId);
+          combinedHistory.push(item);
         }
-      } catch (err) {
-        console.warn("Backend fetch error, attempting local UID store fallback:", err);
       }
 
-      // 2. Fallbacks to local storage keyed by UID
-      const uid = currentUser.uid;
-      if (historyList.length === 0) {
-        historyList = JSON.parse(localStorage.getItem(`lexiflow_history_${uid}`) || localStorage.getItem("lexiflow_history") || "[]");
-      }
+      // 3. Combine therapy progress
+      const localThUid = uid ? JSON.parse(localStorage.getItem(`lexiflow_exercise_history_${uid}`) || "{}") : {};
+      const localThGlobal = JSON.parse(localStorage.getItem("lexiflow_exercise_history") || "{}");
+      const mergedTherapyProgress = { ...localThGlobal, ...localThUid, ...thProgress };
 
-      if (Object.keys(thProgress).length === 0) {
-        thProgress = JSON.parse(localStorage.getItem(`lexiflow_exercise_history_${uid}`) || localStorage.getItem("lexiflow_exercise_history") || "{}");
-      }
+      const savedLastMod = (uid ? localStorage.getItem(`lexiflow_last_therapy_${uid}`) : null) || localStorage.getItem("lexiflow_last_therapy") || lastMod;
 
-      const savedLastMod = localStorage.getItem(`lexiflow_last_therapy_${uid}`) || lastMod;
-
-      setAllTests(historyList);
-      setTherapyProgress(thProgress);
+      setAllTests(combinedHistory);
+      setTherapyProgress(mergedTherapyProgress);
       setTherapySessions(thSessions);
       setLastPlayedModule(savedLastMod);
     };

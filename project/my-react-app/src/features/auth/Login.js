@@ -55,11 +55,14 @@ const Login = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <Link to="/" className="auth-logo">LexiFlow</Link>
-        <h2>Welcome Back</h2>
-        <p>Access your personalized dashboard and progress tracking.</p>
+        <Link to="/" className="auth-brand-badge">
+          <div className="nav-logo-icon">L</div>
+          <h2>LexiFlow Clinical</h2>
+        </Link>
+        <h3>Welcome Back</h3>
+        <p>Access your diagnostic sessions and therapy progress.</p>
 
-        {successMsg && <div className="auth-success" style={{ padding: '0.75rem', borderRadius: '8px', background: 'rgba(20, 184, 166, 0.15)', color: '#14b8a6', border: '1px solid #14b8a6', marginBottom: '1rem', fontSize: '0.85rem', fontWeight: 600 }}>{successMsg}</div>}
+        {successMsg && <div className="badge badge-low" style={{ display: 'block', padding: '0.75rem', marginBottom: '1.25rem', fontSize: '0.85rem' }}>{successMsg}</div>}
         {error && <div className="auth-error">{error}</div>}
 
         <form onSubmit={handleLogin} className="auth-form">
@@ -94,7 +97,7 @@ const Login = () => {
             <a href="#" className="forgot-password" onClick={(e) => e.preventDefault()}>Forgot Password?</a>
           </div>
           <button type="submit" className="btn-auth" disabled={loading}>
-            {loading ? "Signing in..." : "Sign In"}
+            {loading ? "Signing in..." : "Sign In to Dashboard"}
           </button>
         </form>
 

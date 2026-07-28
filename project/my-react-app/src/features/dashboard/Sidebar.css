@@ -1,0 +1,130 @@
+/* ═══════════════════════════════════════════════════════
+   Sidebar — Modern Clinical Navigation & Guide Me Suite
+   ═══════════════════════════════════════════════════════ */
+
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  flex-shrink: 0;
+  background: #ffffff;
+  border-right: 1px solid var(--lf-border);
+  padding: 1.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  height: calc(100vh - 64px);
+  position: sticky;
+  top: 64px;
+  overflow-y: auto;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02);
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 0.9rem;
+  border-radius: var(--lf-radius-md);
+  color: var(--lf-text-secondary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.88rem;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.sidebar-item:hover {
+  background: var(--lf-bg-primary);
+  color: var(--lf-primary);
+  transform: translateX(2px);
+}
+
+.sidebar-item.active {
+  background: var(--lf-primary-soft);
+  color: var(--lf-primary);
+  font-weight: 700;
+  border-color: rgba(37, 99, 235, 0.2);
+  box-shadow: var(--lf-shadow-sm);
+}
+
+.sidebar-icon {
+  margin-right: 0.65rem;
+  font-size: 1rem;
+}
+
+.visited-tick {
+  background: var(--lf-teal);
+  color: white;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(13, 148, 136, 0.3);
+}
+
+.sidebar-section-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--lf-text-muted);
+  text-transform: uppercase;
+  margin: 1.35rem 0 0.4rem 0.75rem;
+  letter-spacing: 0.06em;
+}
+
+/* Guide Me Suite Card */
+.sidebar-guide-card {
+  margin: 0.65rem 0.25rem;
+  padding: 1.15rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+  border: 1px solid var(--lf-border);
+  border-radius: var(--lf-radius-lg);
+  font-size: 0.85rem;
+  box-shadow: var(--lf-shadow-md);
+  transition: all 0.25s ease;
+}
+
+.sidebar-guide-card:hover {
+  box-shadow: var(--lf-shadow-lg);
+  border-color: var(--lf-border-hover);
+}
+
+.sidebar-guide-step-bar {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  background: var(--lf-border);
+  transition: all 0.2s ease;
+}
+
+.sidebar-guide-step-bar:hover {
+  transform: scaleY(1.3);
+}
+
+.sidebar-guide-btn {
+  padding: 5px 12px;
+  border-radius: var(--lf-radius-sm);
+  border: 1px solid var(--lf-border);
+  background: #ffffff;
+  color: var(--lf-text-secondary);
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 700;
+  transition: all 0.15s ease;
+  box-shadow: var(--lf-shadow-sm);
+}
+
+.sidebar-guide-btn:hover:not(:disabled) {
+  background: var(--lf-primary);
+  color: #ffffff;
+  border-color: var(--lf-primary);
+}
+
+.sidebar-guide-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}

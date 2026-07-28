@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './Home.css';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../auth/AuthContext';
 
-import SymptomsQuiz from './SymptomsQuiz';
+import SymptomsQuiz from '../quiz/SymptomsQuiz';
 
 const AnimatedCounter = ({ target, suffix = '', duration = 2000 }) => {
   const [count, setCount] = useState(0);

@@ -1,5 +1,5 @@
 import React from "react";
-import SpeechAssistant from "./SpeechAssistant";
+import SpeechAssistant from "../reader/SpeechAssistant";
 
 const ResultDisplay = ({ result }) => {
   if (!result) return null;

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './VideoPractice.css';
-import { useAuth } from './AuthContext';
-import { fetchWithAuth } from './api';
+import { useAuth } from '../auth/AuthContext';
+import { fetchWithAuth } from '../../services/api';
 
 const VideoPractice = ({ onComplete }) => {
   const [stream, setStream] = useState(null);

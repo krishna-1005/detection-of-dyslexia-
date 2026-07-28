@@ -61,6 +61,30 @@ const SymptomsQuiz = () => {
             ];
         }
 
+        const scorePercent = Math.round((score / questions.length) * 100);
+        const riskLevel = category.includes("High") ? "High" : category.includes("Moderate") ? "Moderate" : "Low";
+        const now = new Date();
+        const dateStr = now.toLocaleDateString() + " " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        const newEntry = {
+          id: Date.now(),
+          date: dateStr,
+          isoDate: now.toISOString(),
+          type: "Symptoms Screening Quiz",
+          score: scorePercent,
+          riskLevel: riskLevel,
+          status: "Completed",
+          details: {
+            score,
+            total: questions.length,
+            category,
+            recommendations
+          }
+        };
+
+        const globalHist = JSON.parse(localStorage.getItem("lexiflow_history") || "[]");
+        localStorage.setItem("lexiflow_history", JSON.stringify([newEntry, ...globalHist]));
+
         setResult({ score, category, recommendations });
     };
 

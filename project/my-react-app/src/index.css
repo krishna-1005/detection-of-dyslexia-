@@ -1,78 +1,98 @@
 /* ═══════════════════════════════════════════════════════
-   LexiFlow Professional Light Clinical Theme
+   LexiFlow Premium Modern Clinical Theme & Design System
    ═══════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
   /* Font Families */
   --lf-font-family: 'Plus Jakarta Sans', 'Lexend', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --lf-font-display: 'Lexend', 'Plus Jakarta Sans', sans-serif;
 
-  /* Clean Clinical Blue Theme */
-  --lf-primary: #1e40af;       /* Deep slate-blue for high readability */
-  --lf-primary-hover: #1e3a8a;
+  /* Primary Brand Colors */
+  --lf-primary: #2563eb;       /* Rich Indigo Blue */
+  --lf-primary-hover: #1d4ed8;
+  --lf-primary-dark: #1e40af;
   --lf-primary-light: #3b82f6;
+  --lf-primary-soft: rgba(37, 99, 235, 0.08);
 
-  /* Accents */
-  --lf-teal: #0f766e;
+  /* Modern Accents */
+  --lf-teal: #0d9488;
   --lf-teal-light: #14b8a6;
-  --lf-amber: #b45309;
-  --lf-rose: #be123c;
-  --lf-emerald: #047857;
+  --lf-teal-soft: rgba(13, 148, 136, 0.1);
+  --lf-cyan: #06b6d4;
+  --lf-amber: #d97706;
+  --lf-amber-light: #f59e0b;
+  --lf-amber-soft: rgba(217, 119, 6, 0.1);
+  --lf-rose: #e11d48;
+  --lf-rose-light: #f43f5e;
+  --lf-rose-soft: rgba(225, 29, 72, 0.1);
+  --lf-emerald: #059669;
+  --lf-emerald-light: #10b981;
+  --lf-emerald-soft: rgba(5, 150, 105, 0.1);
 
-  /* High Readability Light Backgrounds */
-  --lf-bg-primary: #f8fafc;     /* Soft slate-white to prevent glare */
-  --lf-bg-secondary: #ffffff;   /* Pure white for page canvases and navbar */
+  /* Gradients */
+  --lf-gradient-primary: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #0f766e 100%);
+  --lf-gradient-hero: linear-gradient(135deg, #1e3a8a 0%, #2563eb 40%, #0d9488 100%);
+  --lf-gradient-accent: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%);
+  --lf-gradient-card: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.9) 100%);
+  --lf-gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(241, 245, 249, 0.6) 100%);
+  --lf-gradient-text: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #0d9488 100%);
+
+  /* High Readability Backgrounds */
+  --lf-bg-primary: #f8fafc;     /* Soft slate-white background */
+  --lf-bg-secondary: #ffffff;   /* Pure white */
   --lf-bg-card: #ffffff;
   --lf-bg-card-hover: #f1f5f9;
-  --lf-bg-glass: #ffffff;
+  --lf-bg-glass: rgba(255, 255, 255, 0.82);
 
-  /* Crisp Typography for Dyslexic Readability */
+  /* Crisp Typography */
   --lf-text-primary: #0f172a;   /* Slate-900 */
   --lf-text-secondary: #334155; /* Slate-700 */
   --lf-text-muted: #64748b;     /* Slate-500 */
 
-  /* Crisp Solid Borders */
+  /* Borders */
   --lf-border: #e2e8f0;         /* Slate-200 */
   --lf-border-hover: #cbd5e1;   /* Slate-300 */
-  --lf-border-active: #1e40af;
+  --lf-border-active: #2563eb;
 
-  /* Simple Shadows */
-  --lf-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --lf-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  --lf-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
-  --lf-shadow-glow-indigo: 0 0 0 2px rgba(30, 64, 175, 0.2);
-  --lf-shadow-glow-teal: 0 0 0 2px rgba(15, 118, 110, 0.2);
-  --lf-shadow-glow-violet: 0 0 0 2px rgba(30, 64, 175, 0.2);
+  /* Shadows */
+  --lf-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --lf-shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+  --lf-shadow-lg: 0 12px 24px -4px rgba(37, 99, 235, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+  --lf-shadow-xl: 0 20px 32px -6px rgba(15, 23, 42, 0.12), 0 8px 16px -4px rgba(37, 99, 235, 0.06);
+  --lf-shadow-glow-indigo: 0 0 20px rgba(37, 99, 235, 0.25);
+  --lf-shadow-glow-teal: 0 0 20px rgba(13, 148, 136, 0.25);
 
   /* Radius */
-  --lf-radius-sm: 4px;
-  --lf-radius-md: 6px;
-  --lf-radius-lg: 8px;
-  --lf-radius-xl: 12px;
+  --lf-radius-sm: 6px;
+  --lf-radius-md: 10px;
+  --lf-radius-lg: 14px;
+  --lf-radius-xl: 20px;
   --lf-radius-full: 9999px;
 
-  /* Backward Compatibility Variables mapped to Light Theme */
+  /* Backward Compatibility Variables */
   --med-blue-dark: #0f172a;
-  --med-blue-primary: #1e40af;
+  --med-blue-primary: #2563eb;
   --med-blue-light: #f8fafc;
-  --med-teal: #0f766e;
-  --med-teal-soft: rgba(15, 118, 110, 0.08);
+  --med-teal: #0d9488;
+  --med-teal-soft: rgba(13, 148, 136, 0.08);
   --med-gray: #475569;
   --med-border: #e2e8f0;
   --med-white: #ffffff;
-  --med-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  --med-radius: 6px;
-  --primary-teal: #1e40af;
+  --med-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --med-radius: 10px;
+  --primary-teal: #2563eb;
   --secondary-teal: #1d4ed8;
   --bg-app: #f8fafc;
   --bg-card: #ffffff;
   --text-main: #0f172a;
   --text-sub: #475569;
   --border-soft: #e2e8f0;
-  --accent-gold: #b45309;
-  --accent-red: #be123c;
-  --accent-orange: #b45309;
-  --accent-green: #047857;
+  --accent-gold: #d97706;
+  --accent-red: #e11d48;
+  --accent-orange: #d97706;
+  --accent-green: #059669;
 }
 
 /* ── Reset & Base ── */
@@ -90,7 +110,7 @@ body {
   font-family: var(--lf-font-family);
   background-color: var(--lf-bg-primary);
   color: var(--lf-text-primary);
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
@@ -102,7 +122,9 @@ button, input, select, textarea {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--lf-font-display);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
+  font-weight: 700;
+  color: var(--lf-text-primary);
 }
 
 /* ── Scrollbar ── */
@@ -126,84 +148,197 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'OpenDyslexic', sans-serif !important;
 }
 
-/* ── Clean Static Card System ── */
+/* ── Typography Utilities ── */
+.gradient-text {
+  background: var(--lf-gradient-text);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
+}
+
+/* ── Glass & Card System ── */
+.glass-card {
+  background: var(--lf-bg-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: var(--lf-shadow-md);
+  border-radius: var(--lf-radius-lg);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
 .medical-card {
   background: var(--lf-bg-card);
   border-radius: var(--lf-radius-lg);
   border: 1px solid var(--lf-border);
-  box-shadow: var(--lf-shadow-sm);
-  padding: 1.5rem;
+  box-shadow: var(--lf-shadow-md);
+  padding: 1.75rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.medical-card:hover {
+  border-color: var(--lf-border-hover);
+  box-shadow: var(--lf-shadow-lg);
 }
 
 .medical-header {
   margin-bottom: 1.25rem;
-  border-left: 3px solid var(--lf-primary);
-  padding-left: 0.75rem;
+  border-left: 4px solid var(--lf-primary);
+  padding-left: 0.85rem;
 }
 
 /* ── Buttons ── */
-.medical-btn-primary {
+.medical-btn-primary, .btn-primary {
   background: var(--lf-primary);
-  color: #ffffff;
+  color: #ffffff !important;
   border: 1px solid var(--lf-primary);
-  padding: 0.5rem 1rem;
-  border-radius: var(--lf-radius-sm);
+  padding: 0.65rem 1.35rem;
+  border-radius: var(--lf-radius-md);
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  transition: background-color 0.1s ease, border-color 0.1s ease;
+  transition: all 0.2s ease;
   text-decoration: none;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 
-.medical-btn-primary:hover {
+.medical-btn-primary:hover, .btn-primary:hover {
   background: var(--lf-primary-hover);
   border-color: var(--lf-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
 }
 
-.medical-btn-secondary {
+.medical-btn-secondary, .btn-secondary {
   background: #ffffff;
-  color: var(--lf-text-secondary);
+  color: var(--lf-text-secondary) !important;
   border: 1px solid var(--lf-border);
-  padding: 0.5rem 1rem;
-  border-radius: var(--lf-radius-sm);
+  padding: 0.65rem 1.35rem;
+  border-radius: var(--lf-radius-md);
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: background-color 0.1s ease, border-color 0.1s ease;
+  transition: all 0.2s ease;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
+  box-shadow: var(--lf-shadow-sm);
 }
 
-.medical-btn-secondary:hover {
+.medical-btn-secondary:hover, .btn-secondary:hover {
   background: #f8fafc;
   border-color: var(--lf-border-hover);
+  color: var(--lf-text-primary) !important;
+  transform: translateY(-1px);
+  box-shadow: var(--lf-shadow-md);
+}
+
+.btn-gradient {
+  background: var(--lf-gradient-primary);
+  color: #ffffff !important;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--lf-radius-md);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.25s ease;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+}
+
+.btn-gradient:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 }
 
 .medical-label {
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.05em;
   color: var(--lf-text-muted);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
   display: block;
 }
 
-/* Removed all AI templates animations/meshes completely */
-.animate-fadeInUp, .animate-fadeInDown, .animate-slideInLeft, .animate-slideInRight, .animate-fadeInScale {
-  animation: none !important;
+/* ── Badges ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--lf-radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
 }
-.delay-100, .delay-200, .delay-300, .delay-400, .delay-500 {
-  animation-delay: 0s !important;
+
+.badge-low {
+  background: var(--lf-emerald-soft);
+  color: var(--lf-emerald);
+  border: 1px solid rgba(5, 150, 105, 0.2);
 }
-.gradient-text {
-  color: var(--lf-text-primary) !important;
-  background: none !important;
-  -webkit-text-fill-color: initial !important;
-  background-clip: initial !important;
+
+.badge-mod {
+  background: var(--lf-amber-soft);
+  color: var(--lf-amber);
+  border: 1px solid rgba(217, 119, 6, 0.2);
+}
+
+.badge-high {
+  background: var(--lf-rose-soft);
+  color: var(--lf-rose);
+  border: 1px solid rgba(225, 29, 72, 0.2);
+}
+
+.badge-info {
+  background: var(--lf-primary-soft);
+  color: var(--lf-primary);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+/* ── Micro-Animations ── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(37, 99, 235, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(37, 99, 235, 0.4);
+  }
+}
+
+@keyframes floatAnimation {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.animate-float {
+  animation: floatAnimation 4s ease-in-out infinite;
 }

@@ -1,26 +1,23 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Navbar from './Navbar';
-import Sidebar from './Sidebar';
-import SpeechAssistant from './SpeechAssistant';
+import React, { useState, useRef } from 'react';
+import Navbar from '../dashboard/Navbar';
+import Sidebar from '../dashboard/Sidebar';
 import FocusRuler from './FocusRuler';
 import './SmartReader.css';
-import { useAuth } from './AuthContext';
-import { fetchWithAuth } from './api';
+import { useAuth } from '../auth/AuthContext';
+import { fetchWithAuth } from '../../services/api';
 
 const SmartReader = () => {
-    const navigate = useNavigate();
     const { currentUser } = useAuth();
     const user = currentUser;
     const [text, setText] = useState("");
     const [simplifiedText, setSimplifiedText] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const [viewMode, setViewMode] = useState("original"); // original or simplified
+    const [viewMode, setViewMode] = useState("original");
     const [settings, setSettings] = useState({
         fontSize: 20,
         lineHeight: 1.8,
         letterSpacing: 2,
-        fontFamily: 'system-ui',
+        fontFamily: "'Lexend', sans-serif",
         bionicMode: false,
         showRuler: false
     });
@@ -50,16 +47,6 @@ const SmartReader = () => {
         setIsLoading(false);
     };
 
-    const toggleBionic = (txt) => {
-        if (!settings.bionicMode) return txt;
-        return txt.split(' ').map((word, i) => {
-            const half = Math.ceil(word.length / 2);
-            const first = word.substring(0, half);
-            const second = word.substring(half);
-            return <span key={i}><strong>{first}</strong>{second}{' '}</span>;
-        });
-    };
-
     const handleReadAloud = () => {
         const contentToRead = viewMode === "original" ? text : simplifiedText;
         if (!contentToRead) return;
@@ -72,7 +59,6 @@ const SmartReader = () => {
         }
 
         setIsReading(true);
-        const words = contentToRead.split(/\s+/);
         let index = 0;
 
         const utterance = new SpeechSynthesisUtterance(contentToRead);
@@ -95,7 +81,7 @@ const SmartReader = () => {
 
     const renderText = () => {
         const content = viewMode === "original" ? text : simplifiedText;
-        if (!content) return <p className="placeholder-text">Enter or paste text to begin...</p>;
+        if (!content) return <p className="placeholder-text">Enter or paste complex text into the input section above to begin transformation...</p>;
 
         const words = content.split(/\s+/);
 
@@ -127,62 +113,67 @@ const SmartReader = () => {
     return (
         <div className="page-container smart-reader-page">
             <Navbar user={user} />
-            <div className="dashboard-layout">
+            <div className="dashboard-layout" style={{ display: 'flex' }}>
                 <Sidebar />
-                <main className="main-content reader-main">
-                    <header className="reader-header">
+                <main className="main-content reader-main" style={{ flex: 1, padding: '2.5rem' }}>
+                    <header className="reader-header" style={{ marginBottom: '2rem' }}>
                         <div className="title-area">
-                            <span className="medical-label">AI Accessibility Tool</span>
-                            <h1>Smart AI Reader</h1>
-                            <p>Transform any text into a dyslexia-friendly reading experience.</p>
+                            <span className="badge badge-info" style={{ marginBottom: '0.4rem' }}>✨ AI Reading Accessibility Suite</span>
+                            <h1 style={{ fontSize: '1.9rem', fontWeight: 800 }}>Smart AI Reader & Simplifier</h1>
+                            <p style={{ color: 'var(--lf-text-muted)', fontSize: '0.9rem', marginTop: '0.2rem' }}>
+                                Transform dense, complex paragraphs into high-readability dyslexia-friendly formats.
+                            </p>
                         </div>
                         <div className="header-actions">
                             <button 
                                 className={`mode-btn ${viewMode === 'original' ? 'active' : ''}`}
                                 onClick={() => setViewMode('original')}
                             >
-                                Original
+                                📄 Original Text
                             </button>
                             <button 
                                 className={`mode-btn ${viewMode === 'simplified' ? 'active' : ''}`}
                                 onClick={() => setViewMode('simplified')}
                                 disabled={!simplifiedText}
                             >
-                                AI Simplified
+                                ✨ AI Simplified Text
                             </button>
                         </div>
                     </header>
 
                     <div className="reader-grid">
                         <section className="input-section medical-card">
-                            <h3>Source Text</h3>
+                            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem' }}>Source Content Input</h3>
                             <textarea 
                                 value={text}
                                 onChange={(e) => setText(e.target.value)}
-                                placeholder="Paste long articles, complex documents, or any text you find hard to read..."
+                                placeholder="Paste articles, textbook chapters, or complex clinical documents here..."
                                 className="reader-textarea"
                             />
-                            <div className="input-actions">
-                                <button className="medical-btn-primary" onClick={handleSimplify} disabled={isLoading || !text.trim()}>
-                                    {isLoading ? "Simplifying..." : "✨ AI Simplify"}
+                            <div className="input-actions" style={{ marginTop: '1.25rem' }}>
+                                <button className="btn-gradient" onClick={handleSimplify} disabled={isLoading || !text.trim()}>
+                                    {isLoading ? "✨ SIMPLIFYING WITH AI..." : "✨ AI SIMPLIFY TEXT"}
                                 </button>
-                                <button className="medical-btn-secondary" onClick={() => setText("")}>Clear</button>
+                                <button className="btn-secondary" onClick={() => { setText(""); setSimplifiedText(""); }}>
+                                    Clear Text
+                                </button>
                             </div>
                         </section>
 
                         <section className="controls-section medical-card">
-                            <h3>Reading Assistant</h3>
+                            <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>Reader Toolbar</h3>
+                            
                             <div className="control-group">
-                                <label>Audio Assist</label>
+                                <label className="medical-label">Audio Assist</label>
                                 <button className={`read-btn ${isReading ? 'reading' : ''}`} onClick={handleReadAloud}>
-                                    {isReading ? "Stop Reading" : "🔊 Read Aloud"}
+                                    {isReading ? "⏹ Stop Speech" : "🔊 Read Aloud with Speech"}
                                 </button>
                             </div>
 
                             <div className="control-group">
-                                <label>Visual Focus</label>
+                                <label className="medical-label">Visual Assist Tools</label>
                                 <div className="toggle-item">
-                                    <span>Focus Ruler</span>
+                                    <span>Focus Line Ruler</span>
                                     <input 
                                         type="checkbox" 
                                         checked={settings.showRuler} 
@@ -200,9 +191,9 @@ const SmartReader = () => {
                             </div>
 
                             <div className="control-group">
-                                <label>Typography</label>
+                                <label className="medical-label">Typography Controls</label>
                                 <div className="range-item">
-                                    <span>Size</span>
+                                    <span>Size ({settings.fontSize}px)</span>
                                     <input type="range" min="16" max="32" value={settings.fontSize} onChange={(e) => setSettings({...settings, fontSize: e.target.value})} />
                                 </div>
                                 <div className="range-item">
@@ -212,15 +203,15 @@ const SmartReader = () => {
                             </div>
                             
                             <div className="control-group">
-                                <label>Font Style</label>
+                                <label className="medical-label">Typeface Selection</label>
                                 <select 
                                     value={settings.fontFamily} 
                                     onChange={(e) => setSettings({...settings, fontFamily: e.target.value})}
                                     className="font-select"
                                 >
-                                    <option value="system-ui">Default</option>
-                                    <option value="'Lexend', sans-serif">Lexend (Clear)</option>
-                                    <option value="'Comic Sans MS', cursive">Dyslexic Friendly (Weighted)</option>
+                                    <option value="'Lexend', sans-serif">Lexend Clinical (Recommended)</option>
+                                    <option value="'Plus Jakarta Sans', sans-serif">Plus Jakarta Sans</option>
+                                    <option value="'Comic Sans MS', cursive">Dyslexia-Friendly Weighted</option>
                                     <option value="monospace">Monospace</option>
                                 </select>
                             </div>
@@ -228,8 +219,8 @@ const SmartReader = () => {
 
                         <section className="display-section medical-card">
                             <div className="display-header">
-                                <h3>Reading View</h3>
-                                {viewMode === 'simplified' && <span className="ai-badge">AI OPTIMIZED</span>}
+                                <h3 style={{ fontSize: '1.05rem', fontWeight: 700 }}>Transformed Reading Canvas</h3>
+                                {viewMode === 'simplified' && <span className="badge badge-low">✨ AI SIMPLIFIED</span>}
                             </div>
                             <div className="reader-viewport" ref={readingAreaRef}>
                                 {renderText()}

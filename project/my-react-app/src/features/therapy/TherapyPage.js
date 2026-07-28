@@ -1,9 +1,9 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Navbar from './Navbar';
-import Sidebar from './Sidebar';
+import Navbar from '../dashboard/Navbar';
+import Sidebar from '../dashboard/Sidebar';
 import ExerciseSystem from './ExerciseSystem';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../auth/AuthContext';
 
 const therapyInfo = {
     phoneme: {
@@ -53,8 +53,8 @@ const TherapyPage = () => {
                 <main className="main-content" style={{ flex: 1, padding: '2.5rem' }}>
                     <header className="medical-header" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
-                            <span className="medical-label">Digital Intervention Suite</span>
-                            <h1 style={{ fontSize: '2rem', fontWeight: 800, fontFamily: "'Outfit', sans-serif" }}>
+                            <span className="badge badge-info" style={{ marginBottom: '0.4rem' }}>🧬 Digital Intervention Suite</span>
+                            <h1 style={{ fontSize: '1.9rem', fontWeight: 800 }}>
                                 {type === 'phoneme' && '🧩 Phoneme Matching'}
                                 {type === 'morphology' && '🧬 Morphology Builder'}
                                 {type === 'naming' && '⚡ Rapid Naming (RAN)'}
@@ -63,42 +63,48 @@ const TherapyPage = () => {
                                 {type === 'video' && '📹 Live Video Session'}
                             </h1>
                         </div>
-                        <button className="medical-btn-secondary" onClick={() => navigate('/dashboard')}>← Back to Dashboard</button>
+                        <button className="btn-secondary" onClick={() => navigate('/dashboard')}>
+                            ← Back to Dashboard
+                        </button>
                     </header>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                         {/* Interactive Exercise */}
-                        <div className="medical-card" style={{ padding: '0', overflow: 'hidden', minHeight: type === 'video' ? 'auto' : '600px', width: '100%' }}>
+                        <div style={{ width: '100%' }}>
                             <ExerciseSystem type={type} onComplete={() => navigate('/dashboard')} />
                         </div>
 
                         {/* Clinical Information Panel */}
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem' }}>
                             <section className="medical-card">
-                                <h3 style={{ color: 'var(--lf-indigo-light)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
-                                    🔬 The Science
-                                </h3>
-                                <p style={{ lineHeight: '1.6', color: 'var(--lf-text-secondary)', fontWeight: 500, fontSize: '0.9rem' }}>{info.science}</p>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                                    <span className="badge badge-info" style={{ fontSize: '0.85rem' }}>🔬 The Science</span>
+                                </div>
+                                <p style={{ lineHeight: '1.6', color: 'var(--lf-text-secondary)', fontWeight: 500, fontSize: '0.9rem' }}>
+                                    {info.science}
+                                </p>
                             </section>
 
                             <section className="medical-card">
-                                <h3 style={{ color: 'var(--lf-teal-light)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
-                                    ✅ Key Benefits
-                                </h3>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                                    <span className="badge badge-low" style={{ fontSize: '0.85rem' }}>✅ Key Benefits</span>
+                                </div>
                                 <ul style={{ listStyle: 'none', padding: 0 }}>
                                     {info.benefits?.map((b, i) => (
-                                        <li key={i} style={{ marginBottom: '0.6rem', display: 'flex', gap: '10px', fontWeight: 600, color: 'var(--lf-text-secondary)', fontSize: '0.85rem' }}>
-                                            <span style={{ color: 'var(--lf-teal-light)' }}>•</span> {b}
+                                        <li key={i} style={{ marginBottom: '0.6rem', display: 'flex', gap: '8px', fontWeight: 600, color: 'var(--lf-text-secondary)', fontSize: '0.88rem' }}>
+                                            <span style={{ color: 'var(--lf-teal)' }}>✓</span> {b}
                                         </li>
                                     ))}
                                 </ul>
                             </section>
 
                             <section className="medical-card" style={{ borderLeft: '4px solid var(--lf-amber)' }}>
-                                <h3 style={{ color: 'var(--lf-amber)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '1rem' }}>
-                                    💡 Instructions
-                                </h3>
-                                <p style={{ lineHeight: '1.6', color: 'var(--lf-text-secondary)', fontWeight: 600, fontSize: '0.9rem' }}>{info.instructions}</p>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                                    <span className="badge badge-mod" style={{ fontSize: '0.85rem' }}>💡 Instructions</span>
+                                </div>
+                                <p style={{ lineHeight: '1.6', color: 'var(--lf-text-secondary)', fontWeight: 600, fontSize: '0.9rem' }}>
+                                    {info.instructions}
+                                </p>
                             </section>
                         </div>
                     </div>

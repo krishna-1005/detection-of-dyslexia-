@@ -1,16 +1,16 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Home from "./component/Home";
-import DetectPage from "./component/Detectpage.js";
-import Dashboard from "./component/Dashboard";
-import SmartReader from "./component/SmartReader";
-import TherapyPage from "./component/TherapyPage";
-import UserReport from "./component/UserReport";
-import Login from "./component/Login";
-import Signup from "./component/Signup";
-import GuideMe from "./component/GuideMe";
-import { AuthProvider } from "./component/AuthContext";
-import ProtectedRoute from "./component/ProtectedRoute";
+import Home from "./features/home/Home";
+import DetectPage from "./features/detection/Detectpage.js";
+import Dashboard from "./features/dashboard/Dashboard";
+import SmartReader from "./features/reader/SmartReader";
+import TherapyPage from "./features/therapy/TherapyPage";
+import UserReport from "./features/analytics/UserReport";
+import Login from "./features/auth/Login";
+import Signup from "./features/auth/Signup";
+import GuideMe from "./features/guideme/GuideMe";
+import { AuthProvider } from "./features/auth/AuthContext";
+import ProtectedRoute from "./features/auth/ProtectedRoute";
 import "./App.css";
 
 function App() {
