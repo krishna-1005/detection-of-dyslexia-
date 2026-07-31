@@ -8,7 +8,9 @@ import TherapyPage from "./features/therapy/TherapyPage";
 import UserReport from "./features/analytics/UserReport";
 import Login from "./features/auth/Login";
 import Signup from "./features/auth/Signup";
+import QuizPage from "./features/quiz/QuizPage";
 import GuideMe from "./features/guideme/GuideMe";
+import ChatWidget from "./features/chat/ChatWidget";
 import { AuthProvider } from "./features/auth/AuthContext";
 import ProtectedRoute from "./features/auth/ProtectedRoute";
 import "./App.css";
@@ -20,6 +22,7 @@ function App() {
         <div className="App">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/quiz" element={<QuizPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             
@@ -31,6 +34,7 @@ function App() {
             <Route path="/analysis" element={<ProtectedRoute><UserReport /></ProtectedRoute>} />
           </Routes>
           <GuideMe />
+          <ChatWidget />
         </div>
       </Router>
     </AuthProvider>

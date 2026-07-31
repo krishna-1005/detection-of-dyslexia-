@@ -342,3 +342,15 @@ h1, h2, h3, h4, h5, h6 {
 .animate-float {
   animation: floatAnimation 4s ease-in-out infinite;
 }
+
+/* ── Mobile Global Overflows & Prevent Horizontal Scroll ── */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+@media (max-width: 768px) {
+  .medical-card {
+    padding: 1.25rem 1rem !important;
+  }
+}

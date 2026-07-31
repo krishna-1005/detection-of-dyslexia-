@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './SymptomsQuiz.css';
 
-const questions = [
+const masterQuestionsPool = [
     { id: 1, text: "Has difficulty reading unfamiliar words and often guesses at them." },
     { id: 2, text: "Pauses, repeats or makes frequent mistakes when reading aloud." },
     { id: 3, text: "Mispronounces (or used to) only certain words (e.g., says 'amunul' for animal)." },
@@ -11,10 +11,26 @@ const questions = [
     { id: 7, text: "Takes a long time to finish reading or writing tasks compared to peers." },
     { id: 8, text: "Avoids reading activities or expresses frustration when asked to read." },
     { id: 9, text: "Has trouble following multi-step directions given verbally." },
-    { id: 10, text: "Displays excellent verbal ability but struggles to translate ideas to paper." }
+    { id: 10, text: "Displays excellent verbal ability but struggles to translate ideas to paper." },
+    { id: 11, text: "Reverses numbers or letters when writing (e.g., writing 15 as 51)." },
+    { id: 12, text: "Struggles to organize written thoughts in a logical sequence." },
+    { id: 13, text: "Has difficulty remembering sequences like days of the week or months." },
+    { id: 14, text: "Finds spelling inconsistent, spelling the same word differently in one text." },
+    { id: 15, text: "Complains that letters look blurred or move around on the page." },
+    { id: 16, text: "Has trouble distinguishing left from right quickly." },
+    { id: 17, text: "Struggles to tell time on an analog clock." },
+    { id: 18, text: "Shows high intelligence and curiosity but unexpectedly low reading score." },
+    { id: 19, text: "Has difficulty summarizing a story after reading it independently." },
+    { id: 20, text: "Tires quickly or gets headache/eye strain while reading continuous text." }
 ];
 
+const getRandomQuestions = (count = 10) => {
+    const shuffled = [...masterQuestionsPool].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
+};
+
 const SymptomsQuiz = () => {
+    const [questions, setQuestions] = useState(() => getRandomQuestions(10));
     const [answers, setAnswers] = useState({});
     const [result, setResult] = useState(null);
 
@@ -89,6 +105,7 @@ const SymptomsQuiz = () => {
     };
 
     const resetQuiz = () => {
+        setQuestions(getRandomQuestions(10));
         setAnswers({});
         setResult(null);
     };

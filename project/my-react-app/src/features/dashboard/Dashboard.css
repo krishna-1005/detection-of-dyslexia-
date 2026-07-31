@@ -630,6 +630,18 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* ── Scrollable Table Wrapper for Mobile ── */
+.table-scroll-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 0.5rem;
+}
+
+.table-scroll-container .dash-table {
+  min-width: 600px;
+}
+
 /* ── Print / PDF Report Modal ── */
 @media print {
   body * {
@@ -649,7 +661,7 @@
   }
 }
 
-/* ── Responsive ── */
+/* ── Comprehensive Mobile Responsiveness ── */
 @media (max-width: 1200px) {
   .achievements-grid { grid-template-columns: repeat(2, 1fr); }
   .dash-metrics-5grid { grid-template-columns: repeat(3, 1fr); }
@@ -658,9 +670,96 @@
 }
 
 @media (max-width: 768px) {
-  .achievements-grid { grid-template-columns: 1fr; }
-  .dash-metrics-5grid { grid-template-columns: 1fr 1fr; }
-  .highlight-summary-card { flex-direction: column; text-align: center; }
+  .main-content {
+    padding: 1.25rem 1rem !important;
+  }
+
+  .dash-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .dash-header > div:last-child {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .dash-header button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .user-profile-banner {
+    padding: 1.25rem 1rem;
+  }
+
+  .user-banner-left {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .user-banner-stats {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+    text-align: center;
+  }
+
+  .banner-stat-box {
+    text-align: center;
+  }
+
+  .dash-metrics-5grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .dash-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .achievements-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .highlight-summary-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.25rem;
+  }
+
+  .summary-score-badge {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .modal-content {
+    width: 94vw !important;
+    padding: 1.25rem !important;
+    border-radius: 16px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash-metrics-5grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-therapy-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dash-therapy-item > div:last-child {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .dash-therapy-btn {
+    flex: 1;
+    text-align: center;
+  }
 }
 
 

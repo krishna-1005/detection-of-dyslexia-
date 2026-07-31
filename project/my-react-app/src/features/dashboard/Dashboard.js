@@ -24,11 +24,45 @@ const Dashboard = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedTest, setSelectedTest] = useState(null);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [historyFilter, setHistoryFilter] = useState("all");
 
-  const [allTests, setAllTests] = useState([]);
-  const [therapyProgress, setTherapyProgress] = useState({});
+  const getInitialHistory = () => {
+    try {
+      const uid = currentUser?.uid;
+      const localUid = uid ? JSON.parse(localStorage.getItem(`lexiflow_history_${uid}`) || "[]") : [];
+      const localGlobal = JSON.parse(localStorage.getItem("lexiflow_history") || "[]");
+      const combined = [...localUid, ...localGlobal];
+      const seen = new Set();
+      const res = [];
+      for (const item of combined) {
+        const id = item.id || (item.date + "_" + (item.type || ""));
+        if (id && !seen.has(id)) {
+          seen.add(id);
+          res.push(item);
+        }
+      }
+      return res;
+    } catch (e) {
+      return [];
+    }
+  };
+
+  const getInitialTherapyProgress = () => {
+    try {
+      const uid = currentUser?.uid;
+      const localUid = uid ? JSON.parse(localStorage.getItem(`lexiflow_exercise_history_${uid}`) || "{}") : {};
+      const localGlobal = JSON.parse(localStorage.getItem("lexiflow_exercise_history") || "{}");
+      return { ...localGlobal, ...localUid };
+    } catch (e) {
+      return {};
+    }
+  };
+
+  const [allTests, setAllTests] = useState(getInitialHistory);
+  const [therapyProgress, setTherapyProgress] = useState(getInitialTherapyProgress);
   const [therapySessions, setTherapySessions] = useState([]);
   const [lastPlayedModule, setLastPlayedModule] = useState('phoneme');
+  const [dataLoading, setDataLoading] = useState(true);
 
   const [profile, setProfile] = useState({
     name: currentUser?.displayName || currentUser?.email?.split('@')[0] || "User",
@@ -48,6 +82,12 @@ const Dashboard = () => {
 
   useEffect(() => {
     const loadDashboardData = async () => {
+      const uid = currentUser?.uid;
+      const localHistoryUid = uid ? JSON.parse(localStorage.getItem(`lexiflow_history_${uid}`) || "[]") : [];
+      const localHistoryGlobal = JSON.parse(localStorage.getItem("lexiflow_history") || "[]");
+      const localThUid = uid ? JSON.parse(localStorage.getItem(`lexiflow_exercise_history_${uid}`) || "{}") : {};
+      const localThGlobal = JSON.parse(localStorage.getItem("lexiflow_exercise_history") || "{}");
+
       let historyList = [];
       let thProgress = {};
       let thSessions = [];
@@ -82,12 +122,8 @@ const Dashboard = () => {
         }
       }
 
-      // 2. Combine and deduplicate history from backend and local storage
-      const uid = currentUser?.uid;
-      const localHistoryUid = uid ? JSON.parse(localStorage.getItem(`lexiflow_history_${uid}`) || "[]") : [];
-      const localHistoryGlobal = JSON.parse(localStorage.getItem("lexiflow_history") || "[]");
-
-      const combinedRaw = [...historyList, ...localHistoryUid, ...localHistoryGlobal];
+      // 2. Combine and deduplicate history from local storage and backend
+      const combinedRaw = [...localHistoryUid, ...localHistoryGlobal, ...historyList];
       const seenIds = new Set();
       const combinedHistory = [];
       for (const item of combinedRaw) {
@@ -99,16 +135,14 @@ const Dashboard = () => {
       }
 
       // 3. Combine therapy progress
-      const localThUid = uid ? JSON.parse(localStorage.getItem(`lexiflow_exercise_history_${uid}`) || "{}") : {};
-      const localThGlobal = JSON.parse(localStorage.getItem("lexiflow_exercise_history") || "{}");
       const mergedTherapyProgress = { ...localThGlobal, ...localThUid, ...thProgress };
-
       const savedLastMod = (uid ? localStorage.getItem(`lexiflow_last_therapy_${uid}`) : null) || localStorage.getItem("lexiflow_last_therapy") || lastMod;
 
       setAllTests(combinedHistory);
       setTherapyProgress(mergedTherapyProgress);
       setTherapySessions(thSessions);
       setLastPlayedModule(savedLastMod);
+      setDataLoading(false);
     };
 
     loadDashboardData();
@@ -116,6 +150,13 @@ const Dashboard = () => {
 
   // Assessment Statistics
   const totalTests = allTests.length;
+  const filteredTests = allTests.filter(t => {
+    const isTherapy = (t.type || "").startsWith("Therapy:");
+    if (historyFilter === "diagnostic") return !isTherapy;
+    if (historyFilter === "therapy") return isTherapy;
+    return true;
+  });
+
   const scores = allTests.map(t => typeof t.score === 'number' ? t.score : Math.round((t.details?.risk_score || 0) * 100));
   const latestScore = scores.length > 0 ? scores[0] : 0;
 
@@ -276,7 +317,12 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {totalTests === 0 && totalTherapySessions === 0 ? (
+          {dataLoading && totalTests === 0 && totalTherapySessions === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3.5rem 1rem', color: 'var(--lf-text-muted)', fontSize: '0.95rem' }}>
+              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⚙️</div>
+              <strong>Loading Clinical Session Analytics...</strong>
+            </div>
+          ) : totalTests === 0 && totalTherapySessions === 0 ? (
             /* Empty State */
             <div className="empty-dashboard-card">
               <div className="empty-icon">🧬</div>
@@ -422,60 +468,129 @@ const Dashboard = () => {
               </div>
 
               <div className="dash-main-grid">
-                {/* 2. Assessment History Table */}
+                {/* 2. All Taken Test & Assessment History Table */}
                 <section className="medical-card dash-history-card">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-                    <h3 className="dash-card-title" style={{ margin: 0 }}>Screening History</h3>
-                    <small style={{ color: 'var(--lf-text-muted)' }}>Showing {allTests.length} Records</small>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+                    <div>
+                      <h3 className="dash-card-title" style={{ margin: 0 }}>All Taken Test Results</h3>
+                      <small style={{ color: 'var(--lf-text-muted)', fontSize: '0.78rem' }}>
+                        Showing {filteredTests.length} of {allTests.length} recorded session(s)
+                      </small>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.35rem', background: 'rgba(255, 255, 255, 0.05)', padding: '4px', borderRadius: '8px', border: '1px solid var(--lf-border)' }}>
+                      <button
+                        onClick={() => setHistoryFilter('all')}
+                        style={{
+                          background: historyFilter === 'all' ? 'var(--lf-primary)' : 'transparent',
+                          color: historyFilter === 'all' ? '#ffffff' : 'var(--lf-text-muted)',
+                          border: 'none',
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        All Tests ({allTests.length})
+                      </button>
+                      <button
+                        onClick={() => setHistoryFilter('diagnostic')}
+                        style={{
+                          background: historyFilter === 'diagnostic' ? 'var(--lf-primary)' : 'transparent',
+                          color: historyFilter === 'diagnostic' ? '#ffffff' : 'var(--lf-text-muted)',
+                          border: 'none',
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Diagnostic ({allTests.filter(t => !(t.type || "").startsWith("Therapy:")).length})
+                      </button>
+                      <button
+                        onClick={() => setHistoryFilter('therapy')}
+                        style={{
+                          background: historyFilter === 'therapy' ? 'var(--lf-primary)' : 'transparent',
+                          color: historyFilter === 'therapy' ? '#ffffff' : 'var(--lf-text-muted)',
+                          border: 'none',
+                          padding: '4px 10px',
+                          borderRadius: '6px',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Therapy ({allTests.filter(t => (t.type || "").startsWith("Therapy:")).length})
+                      </button>
+                    </div>
                   </div>
-                  <table className="dash-table">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Date & Time</th>
-                        <th>Test Type</th>
-                        <th>Score (%)</th>
-                        <th>Risk Level</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {allTests.map((test, index) => {
-                        const scoreVal = typeof test.score === 'number' ? test.score : Math.round((test.details?.risk_score || 0) * 100);
-                        const rLevel = test.riskLevel || (scoreVal > 60 ? "High" : scoreVal > 35 ? "Moderate" : "Low");
-                        return (
-                          <tr key={test.id || index}>
-                            <td style={{ fontWeight: 700, color: 'var(--lf-text-muted)' }}>#{allTests.length - index}</td>
-                            <td style={{ fontWeight: 600 }}>{test.date}</td>
-                            <td><span style={{ fontSize: '0.8rem', color: 'var(--lf-indigo-light)' }}>{test.type || "Text Analysis"}</span></td>
-                            <td style={{ fontWeight: 800 }}>{scoreVal}%</td>
-                            <td>
-                              <span className={`dash-risk-badge ${rLevel.toLowerCase()}`}>
-                                {rLevel.toUpperCase()}
-                              </span>
-                            </td>
-                            <td>
-                              <button 
-                                onClick={() => setSelectedTest(test)} 
-                                style={{
-                                  background: 'rgba(129, 140, 248, 0.12)',
-                                  color: '#818cf8',
-                                  border: '1px solid rgba(129, 140, 248, 0.25)',
-                                  padding: '4px 10px',
-                                  borderRadius: '6px',
-                                  cursor: 'pointer',
-                                  fontSize: '0.75rem',
-                                  fontWeight: 700
-                                }}
-                              >
-                                Details
-                              </button>
-                            </td>
+
+                  {filteredTests.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--lf-text-muted)', fontSize: '0.9rem' }}>
+                      No test records logged matching the selected filter.
+                    </div>
+                  ) : (
+                    <div className="table-scroll-container">
+                      <table className="dash-table">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th>Date & Time</th>
+                            <th>Test Type / Module</th>
+                            <th>Score / Accuracy</th>
+                            <th>Risk / Level</th>
+                            <th>Action</th>
                           </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                        </thead>
+                        <tbody>
+                          {filteredTests.map((test, index) => {
+                            const isTherapy = (test.type || "").startsWith("Therapy:");
+                            const scoreVal = typeof test.score === 'number' ? test.score : Math.round((test.details?.risk_score || 0) * 100);
+                            const rLevel = test.riskLevel || (isTherapy ? (scoreVal >= 70 ? "Low" : scoreVal >= 40 ? "Moderate" : "High") : (scoreVal > 60 ? "High" : scoreVal > 35 ? "Moderate" : "Low"));
+                            const badgeClass = rLevel.toLowerCase();
+
+                            return (
+                              <tr key={test.id || index}>
+                                <td style={{ fontWeight: 700, color: 'var(--lf-text-muted)' }}>#{filteredTests.length - index}</td>
+                                <td style={{ fontWeight: 600 }}>{test.date}</td>
+                                <td>
+                                  <span style={{ fontSize: '0.82rem', fontWeight: 700, color: isTherapy ? '#14b8a6' : '#818cf8' }}>
+                                    {isTherapy ? `🧩 ${test.type}` : `🔬 ${test.type || "Text Analysis"}`}
+                                  </span>
+                                </td>
+                                <td style={{ fontWeight: 800 }}>
+                                  {isTherapy ? `${scoreVal}% Acc` : `${scoreVal}% Risk`}
+                                </td>
+                                <td>
+                                  <span className={`dash-risk-badge ${badgeClass}`}>
+                                    {isTherapy ? (rLevel === "Low" ? "HIGH ACCURACY" : rLevel === "Moderate" ? "STABLE" : "NEEDS DRILL") : `${rLevel.toUpperCase()} RISK`}
+                                  </span>
+                                </td>
+                                <td>
+                                  <button 
+                                    onClick={() => setSelectedTest(test)} 
+                                    style={{
+                                      background: 'rgba(129, 140, 248, 0.12)',
+                                      color: '#818cf8',
+                                      border: '1px solid rgba(129, 140, 248, 0.25)',
+                                      padding: '4px 10px',
+                                      borderRadius: '6px',
+                                      cursor: 'pointer',
+                                      fontSize: '0.75rem',
+                                      fontWeight: 700
+                                    }}
+                                  >
+                                    Details
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
                 </section>
 
                 {/* 5. Therapy Modules Completion Status */}
@@ -564,46 +679,271 @@ const Dashboard = () => {
           {/* Test Details Modal */}
           {selectedTest && (
             <div className="modal-overlay" onClick={() => setSelectedTest(null)}>
-              <div className="modal-content" onClick={e => e.stopPropagation()}>
-                <button className="modal-close-btn" onClick={() => setSelectedTest(null)}>✕</button>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <span className="medical-label">Diagnostic Breakdown</span>
-                  <span className={`dash-risk-badge ${(selectedTest.riskLevel || 'Low').toLowerCase()}`}>
-                    {(selectedTest.riskLevel || 'Low').toUpperCase()} RISK
-                  </span>
-                </div>
-                <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '0.25rem' }}>Session Detail Analysis</h2>
-                <p style={{ color: 'var(--lf-text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>Recorded on {selectedTest.date}</p>
+              <div className="modal-content details-modal-redesign" onClick={e => e.stopPropagation()} style={{
+                background: 'linear-gradient(145deg, #1e1838 0%, #120e24 100%)',
+                border: '1px solid rgba(139, 92, 246, 0.35)',
+                borderRadius: '24px',
+                maxWidth: '680px',
+                boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(99, 102, 241, 0.2)',
+                padding: '2.25rem',
+                color: '#ffffff',
+                position: 'relative'
+              }}>
+                <button className="modal-close-btn" onClick={() => setSelectedTest(null)} style={{
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  color: '#ffffff',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  width: '36px',
+                  height: '36px',
+                  fontSize: '1rem',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+                }}>✕</button>
 
-                {selectedTest.details ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                    <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '10px', border: '1px solid var(--lf-border)' }}>
-                      <strong style={{ display: 'block', color: 'var(--lf-text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.4rem' }}>Corrected Text Output</strong>
-                      <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--lf-text-primary)', lineHeight: 1.5 }}>
-                        {selectedTest.details.corrected_sentence || "Text analysis completed successfully."}
-                      </p>
+                {(selectedTest.type && selectedTest.type.startsWith("Therapy:")) ? (
+                  /* Therapy Exercise Test Details */
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', paddingRight: '2rem' }}>
+                      <span style={{
+                        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(20, 184, 166, 0.25) 100%)',
+                        border: '1px solid rgba(129, 140, 248, 0.4)',
+                        color: '#a5b4fc',
+                        padding: '6px 14px',
+                        borderRadius: '20px',
+                        fontSize: '0.75rem',
+                        fontWeight: 800,
+                        letterSpacing: '0.05em',
+                        textTransform: 'uppercase',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}>
+                        ✨ THERAPY PERFORMANCE ANALYSIS
+                      </span>
+                      <span className={`dash-risk-badge ${(selectedTest.score >= 70 || selectedTest.riskLevel === 'Low') ? 'low' : (selectedTest.score >= 40 || selectedTest.riskLevel === 'Moderate') ? 'moderate' : 'high'}`} style={{ fontSize: '0.78rem', padding: '6px 14px', fontWeight: 800 }}>
+                        {(selectedTest.score >= 70 || selectedTest.riskLevel === 'Low') ? '✅ HIGH ACCURACY' : (selectedTest.score >= 40 || selectedTest.riskLevel === 'Moderate') ? '⚡ STABLE' : '💡 NEEDS PRACTICE'}
+                      </span>
                     </div>
 
-                    {selectedTest.details.misspelled_words && selectedTest.details.misspelled_words.length > 0 && (
-                      <div>
-                        <strong style={{ display: 'block', color: 'var(--lf-text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Detected Misspellings & Transpositions</strong>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                          {selectedTest.details.misspelled_words.map((item, i) => (
-                            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.6rem 0.85rem', background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.2)', borderRadius: '8px', fontSize: '0.85rem' }}>
-                              <span>❌ <strong style={{ color: '#f43f5e' }}>{item.original}</strong> → Suggested: <strong style={{ color: '#14b8a6' }}>{item.suggested}</strong></span>
-                              <small style={{ color: 'var(--lf-text-muted)' }}>{item.type}</small>
-                            </div>
-                          ))}
-                        </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                      <div style={{
+                        width: '56px',
+                        height: '56px',
+                        borderRadius: '16px',
+                        background: 'linear-gradient(135deg, #6366f1 0%, #0d9488 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1.8rem',
+                        boxShadow: '0 8px 20px rgba(99, 102, 241, 0.35)',
+                        flexShrink: 0
+                      }}>
+                        🧩
                       </div>
-                    )}
+                      <div>
+                        <h2 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, color: '#ffffff', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                          {selectedTest.type}
+                        </h2>
+                        <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '4px 0 0 0', fontWeight: 500 }}>
+                          🗓️ Session recorded on <strong style={{ color: '#cbd5e1' }}>{selectedTest.date}</strong>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.75rem' }}>
+                      <div style={{
+                        background: 'linear-gradient(145deg, rgba(20, 184, 166, 0.15) 0%, rgba(20, 184, 166, 0.05) 100%)',
+                        border: '1px solid rgba(20, 184, 166, 0.35)',
+                        padding: '1.1rem',
+                        borderRadius: '16px',
+                        textAlign: 'center',
+                        boxShadow: '0 4px 15px rgba(20, 184, 166, 0.1)'
+                      }}>
+                        <small style={{ color: '#5eead4', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.05em', display: 'block', marginBottom: '6px' }}>Accuracy Rate</small>
+                        <div style={{ fontSize: '2.1rem', fontWeight: 900, color: '#2dd4bf', textShadow: '0 2px 10px rgba(45, 212, 191, 0.3)' }}>{selectedTest.score}%</div>
+                      </div>
+
+                      <div style={{
+                        background: 'linear-gradient(145deg, rgba(99, 102, 241, 0.15) 0%, rgba(99, 102, 241, 0.05) 100%)',
+                        border: '1px solid rgba(129, 140, 248, 0.35)',
+                        padding: '1.1rem',
+                        borderRadius: '16px',
+                        textAlign: 'center',
+                        boxShadow: '0 4px 15px rgba(99, 102, 241, 0.1)'
+                      }}>
+                        <small style={{ color: '#a5b4fc', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.05em', display: 'block', marginBottom: '6px' }}>Score / Points</small>
+                        <div style={{ fontSize: '2.1rem', fontWeight: 900, color: '#818cf8', textShadow: '0 2px 10px rgba(129, 140, 248, 0.3)' }}>{selectedTest.details?.score ?? selectedTest.score}</div>
+                      </div>
+
+                      <div style={{
+                        background: 'linear-gradient(145deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.05) 100%)',
+                        border: '1px solid rgba(245, 158, 11, 0.35)',
+                        padding: '1.1rem',
+                        borderRadius: '16px',
+                        textAlign: 'center',
+                        boxShadow: '0 4px 15px rgba(245, 158, 11, 0.1)'
+                      }}>
+                        <small style={{ color: '#fcd34d', fontSize: '0.72rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.05em', display: 'block', marginBottom: '6px' }}>Speed / Pace</small>
+                        <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#fbbf24', marginTop: '4px', textShadow: '0 2px 10px rgba(251, 191, 36, 0.3)' }}>{selectedTest.details?.timeTaken || 'Normal Pace'}</div>
+                      </div>
+                    </div>
+
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.04)',
+                      padding: '1.25rem 1.5rem',
+                      borderRadius: '16px',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      borderLeft: '4px solid #6366f1'
+                    }}>
+                      <strong style={{ display: 'block', color: '#a5b4fc', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
+                        💡 Clinical Practice Summary & Guidance
+                      </strong>
+                      <p style={{ margin: 0, fontSize: '0.92rem', color: '#f1f5f9', lineHeight: 1.6, fontWeight: 400 }}>
+                        This interactive therapy test has been logged into your clinical history. Daily continuous practice strengthens visual-auditory neural integration, phonological awareness, and reading fluency.
+                      </p>
+                    </div>
                   </div>
                 ) : (
-                  <p style={{ color: 'var(--lf-text-muted)' }}>No additional deep analysis details recorded for this session.</p>
+                  /* Diagnostic Screening Details */
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', paddingRight: '2rem' }}>
+                      <span style={{
+                        background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(244, 63, 94, 0.25) 100%)',
+                        border: '1px solid rgba(129, 140, 248, 0.4)',
+                        color: '#a5b4fc',
+                        padding: '6px 14px',
+                        borderRadius: '20px',
+                        fontSize: '0.75rem',
+                        fontWeight: 800,
+                        letterSpacing: '0.05em',
+                        textTransform: 'uppercase'
+                      }}>
+                        🔬 DIAGNOSTIC SCREENING BREAKDOWN
+                      </span>
+                      <span className={`dash-risk-badge ${(selectedTest.riskLevel || 'Low').toLowerCase()}`} style={{ fontSize: '0.78rem', padding: '6px 14px', fontWeight: 800 }}>
+                        {(selectedTest.riskLevel || 'Low').toUpperCase()} RISK
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                      <div style={{
+                        width: '56px',
+                        height: '56px',
+                        borderRadius: '16px',
+                        background: 'linear-gradient(135deg, #4f46e5 0%, #f43f5e 100%)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '1.8rem',
+                        boxShadow: '0 8px 20px rgba(244, 63, 94, 0.35)',
+                        flexShrink: 0
+                      }}>
+                        🔬
+                      </div>
+                      <div>
+                        <h2 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, color: '#ffffff', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                          {selectedTest.type || "Linguistic Text Analysis"}
+                        </h2>
+                        <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '4px 0 0 0', fontWeight: 500 }}>
+                          🗓️ Recorded on <strong style={{ color: '#cbd5e1' }}>{selectedTest.date}</strong>
+                        </p>
+                      </div>
+                    </div>
+
+                    {selectedTest.details ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                        <div style={{
+                          background: 'rgba(255, 255, 255, 0.04)',
+                          padding: '1.25rem 1.5rem',
+                          borderRadius: '16px',
+                          border: '1px solid rgba(255, 255, 255, 0.1)',
+                          borderLeft: '4px solid #14b8a6'
+                        }}>
+                          <strong style={{ display: 'block', color: '#2dd4bf', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.05em', marginBottom: '0.5rem' }}>
+                            ✨ Corrected Text Output
+                          </strong>
+                          <p style={{ margin: 0, fontSize: '0.95rem', color: '#f8fafc', lineHeight: 1.6, fontWeight: 500 }}>
+                            {selectedTest.details.corrected_sentence || "Text analysis completed successfully."}
+                          </p>
+                        </div>
+
+                        {selectedTest.details.misspelled_words && selectedTest.details.misspelled_words.length > 0 && (
+                          <div>
+                            <strong style={{ display: 'block', color: '#94a3b8', fontSize: '0.78rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.05em', marginBottom: '0.65rem' }}>
+                              ⚠️ Detected Misspellings & Phonetic Variations
+                            </strong>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                              {selectedTest.details.misspelled_words.map((item, i) => (
+                                <div key={i} style={{
+                                  display: 'flex',
+                                  justify: 'space-between',
+                                  alignItems: 'center',
+                                  padding: '0.75rem 1rem',
+                                  background: 'rgba(244, 63, 94, 0.1)',
+                                  border: '1px solid rgba(244, 63, 94, 0.25)',
+                                  borderRadius: '12px',
+                                  fontSize: '0.88rem'
+                                }}>
+                                  <span style={{ color: '#f1f5f9' }}>
+                                    ❌ <strong style={{ color: '#f43f5e', textDecoration: 'line-through', marginRight: '6px' }}>{item.original}</strong>
+                                    ➔ Suggested: <strong style={{ color: '#2dd4bf' }}>{item.suggested}</strong>
+                                  </span>
+                                  <span style={{
+                                    background: 'rgba(255,255,255,0.08)',
+                                    color: '#cbd5e1',
+                                    padding: '3px 8px',
+                                    borderRadius: '6px',
+                                    fontSize: '0.72rem',
+                                    fontWeight: 700
+                                  }}>
+                                    {item.type}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p style={{ color: '#94a3b8' }}>No additional deep analysis details recorded for this session.</p>
+                    )}
+                  </div>
                 )}
 
-                <div style={{ marginTop: '1.75rem', textAlign: 'right' }}>
-                  <button className="medical-btn-secondary" onClick={() => setSelectedTest(null)}>Close Window</button>
+                {/* Footer Actions */}
+                <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end', gap: '0.85rem', paddingTop: '1.25rem', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                  <button className="medical-btn-secondary" onClick={() => setSelectedTest(null)} style={{
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    color: '#ffffff',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    padding: '0.65rem 1.4rem',
+                    borderRadius: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}>
+                    Close Window
+                  </button>
+                  {(selectedTest.type && selectedTest.type.startsWith("Therapy:")) && (
+                    <button onClick={() => {
+                      const rawMod = selectedTest.type.replace("Therapy:", "").trim().toLowerCase();
+                      const modId = rawMod.includes("phoneme") ? "phoneme" : rawMod.includes("morphology") ? "morphology" : rawMod.includes("naming") ? "naming" : rawMod.includes("visual") ? "visual" : rawMod.includes("auditory") ? "auditory" : "video";
+                      setSelectedTest(null);
+                      navigate(`/therapy/${modId}`);
+                    }} style={{
+                      background: 'linear-gradient(135deg, #6366f1 0%, #0d9488 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '0.65rem 1.5rem',
+                      borderRadius: '12px',
+                      fontWeight: 800,
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 15px rgba(99, 102, 241, 0.35)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}>
+                      ▶ Launch Therapy Session
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

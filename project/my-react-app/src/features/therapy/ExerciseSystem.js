@@ -40,6 +40,50 @@ export const saveTherapyProgress = async (currentUser, type, score, accuracy, ti
     details: sessionEntry
   };
 
+  // 1. Save synchronously to localStorage first to guarantee instant UI updates
+  try {
+    const uidHistKey = uid ? `lexiflow_history_${uid}` : "lexiflow_history";
+    const uidHist = JSON.parse(localStorage.getItem(uidHistKey) || "[]");
+    localStorage.setItem(uidHistKey, JSON.stringify([historyItem, ...uidHist]));
+
+    const globalHist = JSON.parse(localStorage.getItem("lexiflow_history") || "[]");
+    localStorage.setItem("lexiflow_history", JSON.stringify([historyItem, ...globalHist]));
+
+    const historyKey = uid ? `lexiflow_exercise_history_${uid}` : 'lexiflow_exercise_history';
+    const lastKey = uid ? `lexiflow_last_therapy_${uid}` : 'lexiflow_last_therapy';
+
+    let history = {};
+    try {
+      const rawHist = localStorage.getItem(historyKey) || localStorage.getItem('lexiflow_exercise_history');
+      if (rawHist) history = JSON.parse(rawHist);
+    } catch (e) {
+      history = {};
+    }
+
+    const prev = history[type] || { pb: '0 pts', pb_val: 0, sessions: 0, accuracy: '0%', level: 'Beginner' };
+    const newSessions = (prev.sessions || 0) + 1;
+    const pb_val = Math.max(prev.pb_val || 0, score);
+    const trend = accuracy >= 80 ? 'Improving' : accuracy >= 50 ? 'Stable' : 'Needs Practice';
+
+    history[type] = {
+      pb: `${pb_val} pts`,
+      pb_val: pb_val,
+      sessions: newSessions,
+      accuracy: `${accuracy}%`,
+      lastPlayed: dateStr,
+      trend: trend,
+      level: accuracy > 80 ? 'Advanced' : accuracy > 50 ? 'Intermediate' : 'Beginner'
+    };
+
+    localStorage.setItem(historyKey, JSON.stringify(history));
+    localStorage.setItem('lexiflow_exercise_history', JSON.stringify(history));
+    localStorage.setItem(lastKey, type);
+    localStorage.setItem('lexiflow_last_therapy', type);
+  } catch (err) {
+    console.warn("Local storage save error:", err);
+  }
+
+  // 2. Post to backend DB asynchronously
   if (currentUser) {
     try {
       await fetchWithAuth("/api/therapy/progress", {
@@ -54,43 +98,36 @@ export const saveTherapyProgress = async (currentUser, type, score, accuracy, ti
       console.warn("Backend therapy progress save error:", e);
     }
   }
-
-  const uidHistKey = uid ? `lexiflow_history_${uid}` : "lexiflow_history";
-  const uidHist = JSON.parse(localStorage.getItem(uidHistKey) || "[]");
-  localStorage.setItem(uidHistKey, JSON.stringify([historyItem, ...uidHist]));
-
-  const globalHist = JSON.parse(localStorage.getItem("lexiflow_history") || "[]");
-  localStorage.setItem("lexiflow_history", JSON.stringify([historyItem, ...globalHist]));
-
-  const historyKey = uid ? `lexiflow_exercise_history_${uid}` : 'lexiflow_exercise_history';
-  const lastKey = uid ? `lexiflow_last_therapy_${uid}` : 'lexiflow_last_therapy';
-
-  const history = JSON.parse(localStorage.getItem(historyKey) || localStorage.getItem('lexiflow_exercise_history') || '{}');
-  const prev = history[type] || { pb: '0 pts', pb_val: 0, sessions: 0, accuracy: '0%', level: 'Beginner' };
-  const newSessions = (prev.sessions || 0) + 1;
-  const pb_val = Math.max(prev.pb_val || 0, score);
-  const trend = accuracy >= 80 ? 'Improving' : accuracy >= 50 ? 'Stable' : 'Needs Practice';
-
-  history[type] = {
-    pb: `${pb_val} pts`,
-    pb_val: pb_val,
-    sessions: newSessions,
-    accuracy: `${accuracy}%`,
-    lastPlayed: dateStr,
-    trend: trend,
-    level: accuracy > 80 ? 'Advanced' : accuracy > 50 ? 'Intermediate' : 'Beginner'
-  };
-
-  localStorage.setItem(historyKey, JSON.stringify(history));
-  localStorage.setItem('lexiflow_exercise_history', JSON.stringify(history));
-  localStorage.setItem(lastKey, type);
-  localStorage.setItem('lexiflow_last_therapy', type);
 };
 
+// Helper utility functions for dynamic item sampling & option shuffling
+const shuffleArray = (arr) => {
+  const newArr = [...arr];
+  for (let i = newArr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+  }
+  return newArr;
+};
+
+const getRandomItems = (arr, count) => {
+  return shuffleArray(arr).slice(0, count);
+};
+
+// ---------------- VISUAL TRACKING PASSAGES POOL ----------------
+const visualPassagesPool = [
+  { text: "The soft morning sunlight filtered through the heavy curtains. A breeze moved the pages of the open book. Everything felt calm and quiet in the small library. The gentle scent of old paper filled the cool air.", targetWord: "breeze" },
+  { text: "A small blue bird perched upon the wooden fence post. The gentle whisper of the wind rustled through the oak trees. High above, golden clouds drifted across the endless blue sky.", targetWord: "whisper" },
+  { text: "Deep inside the thick forest, a hidden stream flowed over smooth pebbles. The warm glow of dusk illuminated the quiet trail. Animals gathered near the water before nightfall arrived.", targetWord: "glow" },
+  { text: "Bright stars began to sparkle across the dark midnight sky. A solitary lighthouse guided ships safely toward the calm harbor. Ocean waves lapped rhythmically against the sandy shoreline.", targetWord: "sparkle" },
+  { text: "The young explorer set out on an exciting journey up the steep mountain. Cold mountain air filled her lungs as she climbed higher. The panoramic view from the peak was truly breathtaking.", targetWord: "journey" },
+  { text: "Floating gently on the river, a light white feather drifted toward the sea. Children laughed as they chased colorful butterflies through the wildflower meadow on a warm summer day.", targetWord: "feather" }
+];
+
 const VisualTracking = ({ onComplete, speedMultiplier = 1 }) => {
-  const fullText = "The soft morning sunlight filtered through the heavy curtains. A breeze moved the pages of the open book. Everything felt calm and quiet in the small library. The gentle scent of old paper filled the cool air.";
-  const words = fullText.split(" ");
-  const targetWord = "breeze";
+  const [currentPassage, setCurrentPassage] = useState(() => getRandomItems(visualPassagesPool, 1)[0]);
+  const words = currentPassage.text.split(" ");
+  const targetWord = currentPassage.targetWord;
   
   const [activeIndex, setActiveIndex] = useState(-1);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -146,7 +183,7 @@ const VisualTracking = ({ onComplete, speedMultiplier = 1 }) => {
   }, [isPlaying, activeIndex, handleAction]);
 
   const speakText = () => {
-    const ut = new SpeechSynthesisUtterance(fullText);
+    const ut = new SpeechSynthesisUtterance(currentPassage.text);
     window.speechSynthesis.speak(ut);
   };
 
@@ -155,12 +192,22 @@ const VisualTracking = ({ onComplete, speedMultiplier = 1 }) => {
     onComplete();
   };
 
+  const resetSession = () => {
+    setCurrentPassage(getRandomItems(visualPassagesPool, 1)[0]);
+    setActiveIndex(-1);
+    setIsPlaying(true);
+    setScore(0);
+    setTotalAttempts(0);
+    setFocusPoints(0);
+    setAccuracy(100);
+  };
+
   return (
     <div className="visual-exercise-container">
       <h3>Visual Tracking Exercise</h3>
       <p className="visual-instructions">
         Follow the highlighted word with your eyes. Press <span className="key-badge">SPACE</span> or 
-        <span className="key-badge">CLICK</span> when it lands on the target word: <strong className="target-word-label">Breeze</strong>.
+        <span className="key-badge">CLICK</span> when it lands on the target word: <strong className="target-word-label" style={{ textTransform: 'capitalize' }}>{targetWord}</strong>.
       </p>
 
       <div className="reading-card">
@@ -204,28 +251,59 @@ const VisualTracking = ({ onComplete, speedMultiplier = 1 }) => {
       </div>
 
       <div className="visual-actions">
-        <button className="btn-gradient" onClick={() => { setActiveIndex(-1); setIsPlaying(true); }}>
+        <button className="btn-gradient" onClick={resetSession}>
           {activeIndex === -1 ? "▶ Start Tracking Exercise" : "🔄 Restart Session"}
         </button>
         {activeIndex >= words.length - 1 && (
-          <button className="btn-finish" style={{ marginTop: 0 }} onClick={handleFinish}>✓ Finish & Save Results</button>
+          <button className="btn-finish" style={{ marginTop: 0 }} onClick={handleFinish}>Complete & View Dashboard →</button>
         )}
       </div>
     </div>
   );
 };
 
+// ---------------- PHONEME MATCHING POOL ----------------
+const phonemePairsPool = [
+  { phoneme: 'CH', words: ['Chair', 'Chip', 'Catch', 'Bench'], options: ['Chair', 'Apple', 'Chip', 'Sun'] },
+  { phoneme: 'SH', words: ['Ship', 'Shop', 'Fish', 'Brush'], options: ['Ship', 'Book', 'Fish', 'Ball'] },
+  { phoneme: 'TH', words: ['Thin', 'That', 'Math', 'Thumb'], options: ['Thin', 'Frog', 'Math', 'Star'] },
+  { phoneme: 'WH', words: ['Whale', 'White', 'Wheel', 'Whistle'], options: ['Whale', 'Duck', 'Wheel', 'Lamp'] },
+  { phoneme: 'PH', words: ['Phone', 'Photo', 'Dolphin', 'Graph'], options: ['Phone', 'Tree', 'Photo', 'Desk'] },
+  { phoneme: 'CK', words: ['Duck', 'Clock', 'Rock', 'Sock'], options: ['Clock', 'Pen', 'Duck', 'Ring'] },
+  { phoneme: 'NG', words: ['King', 'Sing', 'Ring', 'Wing'], options: ['King', 'Cat', 'Ring', 'Moon'] },
+  { phoneme: 'TR', words: ['Tree', 'Train', 'Truck', 'Track'], options: ['Train', 'Shoe', 'Tree', 'Boat'] },
+  { phoneme: 'DR', words: ['Drum', 'Drop', 'Drive', 'Dress'], options: ['Drum', 'Bird', 'Dress', 'House'] },
+  { phoneme: 'ST', words: ['Star', 'Stop', 'Step', 'Store'], options: ['Star', 'Milk', 'Stop', 'Leaf'] },
+  { phoneme: 'FL', words: ['Flag', 'Fly', 'Flower', 'Flame'], options: ['Flag', 'Cake', 'Flower', 'Hill'] },
+  { phoneme: 'BL', words: ['Blue', 'Block', 'Blow', 'Blade'], options: ['Blue', 'Rain', 'Block', 'Door'] },
+  { phoneme: 'CL', words: ['Clock', 'Clap', 'Cloud', 'Clean'], options: ['Cloud', 'Hand', 'Clap', 'Rock'] },
+  { phoneme: 'PR', words: ['Prize', 'Print', 'Prince', 'Press'], options: ['Prize', 'Wall', 'Prince', 'Desk'] },
+  { phoneme: 'SL', words: ['Slide', 'Sleep', 'Slow', 'Slip'], options: ['Slide', 'Fish', 'Sleep', 'Bell'] }
+];
+
 const PhonemeMatching = ({ onComplete }) => {
-  const pairs = [
-    { phoneme: 'CH', words: ['Chair', 'Chip', 'Catch'], options: ['Chair', 'Apple', 'Chip', 'Sun'] },
-    { phoneme: 'SH', words: ['Ship', 'Shop', 'Fish'], options: ['Ship', 'Book', 'Fish', 'Ball'] },
-    { phoneme: 'TH', words: ['Thin', 'That', 'Math'], options: ['Thin', 'Frog', 'Math', 'Star'] },
-  ];
+  const generateNewPairs = () => {
+    const sampled = getRandomItems(phonemePairsPool, 3);
+    return sampled.map(p => ({
+      ...p,
+      options: shuffleArray(p.options)
+    }));
+  };
+
+  const [pairs, setPairs] = useState(generateNewPairs);
   const [currentPair, setCurrentPair] = useState(0);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
   const [selectedWord, setSelectedWord] = useState(null);
   const { currentUser } = useAuth();
+
+  const resetPhonemeSession = () => {
+    setPairs(generateNewPairs());
+    setCurrentPair(0);
+    setScore(0);
+    setFinished(false);
+    setSelectedWord(null);
+  };
 
   const handleMatch = async (word, isCorrect) => {
     setSelectedWord({ word, isCorrect });
@@ -285,24 +363,57 @@ const PhonemeMatching = ({ onComplete }) => {
         <div className="exercise-completion-card">
           <div className="completion-trophy">🏆</div>
           <h4 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--lf-primary)', marginBottom: '0.5rem' }}>Session Complete!</h4>
-          <p style={{ color: 'var(--lf-text-muted)', fontSize: '0.95rem', marginBottom: '2rem' }}>You correctly matched {score} out of {pairs.length} phoneme sounds.</p>
-          <button className="btn-finish" onClick={onComplete}>Complete & View Dashboard →</button>
+          <p style={{ color: 'var(--lf-text-muted)', fontSize: '0.95rem', marginBottom: '1.5rem' }}>You correctly matched {score} out of {pairs.length} phoneme sounds.</p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <button className="btn-secondary" onClick={resetPhonemeSession}>🔄 Practice New Sound Set</button>
+            <button className="btn-finish" onClick={onComplete}>Complete & View Dashboard →</button>
+          </div>
         </div>
       )}
     </div>
   );
 };
 
+// ---------------- AUDITORY PROCESSING POOL ----------------
+const auditoryTasksPool = [
+  { target: 'B', options: ['Ball', 'Dog', 'Cat', 'Fish'], correct: 'Ball' },
+  { target: 'S', options: ['Sun', 'Moon', 'Star', 'Cloud'], correct: 'Sun' },
+  { target: 'M', options: ['Apple', 'Milk', 'Bread', 'Egg'], correct: 'Milk' },
+  { target: 'P', options: ['Pencil', 'Table', 'Book', 'Chair'], correct: 'Pencil' },
+  { target: 'T', options: ['Tiger', 'Lion', 'Bear', 'Monkey'], correct: 'Tiger' },
+  { target: 'D', options: ['Drum', 'Guitar', 'Piano', 'Flute'], correct: 'Drum' },
+  { target: 'F', options: ['Feather', 'Rock', 'Stone', 'Wood'], correct: 'Feather' },
+  { target: 'V', options: ['Violin', 'Harp', 'Organ', 'Trumpet'], correct: 'Violin' },
+  { target: 'K', options: ['Kite', 'Plane', 'Train', 'Car'], correct: 'Kite' },
+  { target: 'G', options: ['Garden', 'Forest', 'Desert', 'River'], correct: 'Garden' },
+  { target: 'R', options: ['Rainbow', 'Cloud', 'Storm', 'Snow'], correct: 'Rainbow' },
+  { target: 'L', options: ['Lemon', 'Orange', 'Grape', 'Peach'], correct: 'Lemon' },
+  { target: 'N', options: ['Nest', 'Tree', 'Leaf', 'Branch'], correct: 'Nest' },
+  { target: 'W', options: ['Water', 'Fire', 'Air', 'Earth'], correct: 'Water' },
+  { target: 'H', options: ['House', 'Road', 'Path', 'Bridge'], correct: 'House' }
+];
+
 const AuditoryProcessing = ({ onComplete }) => {
-  const tasks = [
-    { target: 'B', options: ['Ball', 'Dog', 'Cat', 'Fish'], correct: 'Ball' },
-    { target: 'S', options: ['Sun', 'Moon', 'Star', 'Cloud'], correct: 'Sun' },
-    { target: 'M', options: ['Apple', 'Milk', 'Bread', 'Egg'], correct: 'Milk' },
-  ];
+  const generateNewTasks = () => {
+    const sampled = getRandomItems(auditoryTasksPool, 3);
+    return sampled.map(t => ({
+      ...t,
+      options: shuffleArray(t.options)
+    }));
+  };
+
+  const [tasks, setTasks] = useState(generateNewTasks);
   const [currentTask, setCurrentTask] = useState(0);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
   const { currentUser } = useAuth();
+
+  const resetAuditorySession = () => {
+    setTasks(generateNewTasks());
+    setCurrentTask(0);
+    setScore(0);
+    setFinished(false);
+  };
 
   const playWord = (word) => {
     const ut = new SpeechSynthesisUtterance(word);
@@ -353,24 +464,57 @@ const AuditoryProcessing = ({ onComplete }) => {
         <div className="exercise-completion-card">
           <div className="completion-trophy">🎧</div>
           <h4 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--lf-primary)', marginBottom: '0.5rem' }}>Auditory Exercise Complete!</h4>
-          <p style={{ color: 'var(--lf-text-muted)', fontSize: '0.95rem', marginBottom: '2rem' }}>You identified {score} out of {tasks.length} initial sound targets correctly.</p>
-          <button className="btn-finish" onClick={onComplete}>Complete & View Dashboard →</button>
+          <p style={{ color: 'var(--lf-text-muted)', fontSize: '0.95rem', marginBottom: '1.5rem' }}>You identified {score} out of {tasks.length} initial sound targets correctly.</p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <button className="btn-secondary" onClick={resetAuditorySession}>🔄 Practice New Sound Targets</button>
+            <button className="btn-finish" onClick={onComplete}>Complete & View Dashboard →</button>
+          </div>
         </div>
       )}
     </div>
   );
 };
 
+// ---------------- MORPHOLOGY BUILDER POOL ----------------
+const morphologyTasksPool = [
+  { root: 'Play', options: ['Played', 'Player', 'Playful'], instruction: 'Select the word that means "someone who plays".', correct: 'Player' },
+  { root: 'Happy', options: ['Happily', 'Unhappy', 'Happiness'], instruction: 'Select the word that means "not happy".', correct: 'Unhappy' },
+  { root: 'Read', options: ['Reading', 'Readable', 'Misread'], instruction: 'Select the word that means "easy to read".', correct: 'Readable' },
+  { root: 'Care', options: ['Careful', 'Careless', 'Caring'], instruction: 'Select the word that means "without care".', correct: 'Careless' },
+  { root: 'Hope', options: ['Hopeless', 'Hopeful', 'Hoping'], instruction: 'Select the word that means "full of hope".', correct: 'Hopeful' },
+  { root: 'Act', options: ['Action', 'Actor', 'Active'], instruction: 'Select the word that means "a person who acts".', correct: 'Actor' },
+  { root: 'Form', options: ['Format', 'Transform', 'Formless'], instruction: 'Select the word that means "to change shape or structure".', correct: 'Transform' },
+  { root: 'Use', options: ['Useful', 'Useless', 'Reusable'], instruction: 'Select the word that means "able to be used again".', correct: 'Reusable' },
+  { root: 'Move', options: ['Movement', 'Movable', 'Unmoved'], instruction: 'Select the word that means "able to be moved".', correct: 'Movable' },
+  { root: 'Create', options: ['Creator', 'Creative', 'Creation'], instruction: 'Select the word that means "having the ability to create".', correct: 'Creative' },
+  { root: 'View', options: ['Viewer', 'Preview', 'Review'], instruction: 'Select the word that means "to look at beforehand".', correct: 'Preview' },
+  { root: 'Direct', options: ['Director', 'Direction', 'Indirect'], instruction: 'Select the word that means "not direct".', correct: 'Indirect' },
+  { root: 'Sign', options: ['Signature', 'Signal', 'Resign'], instruction: 'Select the word that means "a person\'s written name".', correct: 'Signature' },
+  { root: 'Struct', options: ['Structure', 'Construct', 'Destruct'], instruction: 'Select the word that means "to build together".', correct: 'Construct' },
+  { root: 'Flex', options: ['Flexible', 'Reflex', 'Flexibility'], instruction: 'Select the word that means "capable of bending".', correct: 'Flexible' }
+];
+
 const MorphologyBuilder = ({ onComplete }) => {
-  const tasks = [
-    { root: 'Play', options: ['Played', 'Player', 'Playful'], instruction: 'Select the word that means "someone who plays".', correct: 'Player' },
-    { root: 'Happy', options: ['Happily', 'Unhappy', 'Happiness'], instruction: 'Select the word that means "not happy".', correct: 'Unhappy' },
-    { root: 'Read', options: ['Reading', 'Readable', 'Misread'], instruction: 'Select the word that means "easy to read".', correct: 'Readable' },
-  ];
+  const generateNewTasks = () => {
+    const sampled = getRandomItems(morphologyTasksPool, 3);
+    return sampled.map(t => ({
+      ...t,
+      options: shuffleArray(t.options)
+    }));
+  };
+
+  const [tasks, setTasks] = useState(generateNewTasks);
   const [currentTask, setCurrentTask] = useState(0);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
   const { currentUser } = useAuth();
+
+  const resetMorphologySession = () => {
+    setTasks(generateNewTasks());
+    setCurrentTask(0);
+    setScore(0);
+    setFinished(false);
+  };
 
   const handleChoice = async (choice) => {
     const isCorrect = choice === tasks[currentTask].correct;
@@ -406,20 +550,44 @@ const MorphologyBuilder = ({ onComplete }) => {
         <div className="exercise-completion-card">
           <div className="completion-trophy">🧬</div>
           <h4 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--lf-primary)', marginBottom: '0.5rem' }}>Morphology Module Complete!</h4>
-          <p style={{ color: 'var(--lf-text-muted)', fontSize: '0.95rem', marginBottom: '2rem' }}>You derived {score} out of {tasks.length} morphological structures correctly.</p>
-          <button className="btn-finish" onClick={onComplete}>Complete & View Dashboard →</button>
+          <p style={{ color: 'var(--lf-text-muted)', fontSize: '0.95rem', marginBottom: '1.5rem' }}>You derived {score} out of {tasks.length} morphological structures correctly.</p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <button className="btn-secondary" onClick={resetMorphologySession}>🔄 Practice New Root Words</button>
+            <button className="btn-finish" onClick={onComplete}>Complete & View Dashboard →</button>
+          </div>
         </div>
       )}
     </div>
   );
 };
 
+// ---------------- RAPID AUTOMATED NAMING (RAN) POOLS ----------------
+const ranCategoryPools = [
+  ['🍎', '🍌', '🍇', '🍊', '🍓', '🥝', '🫐', '🍍', '🍒', '🍉'],
+  ['🐶', '🐱', '🦁', '🐯', '🐰', '🦊', '🐻', '🐼', '🐸', '🐵'],
+  ['🔴', '🟦', '🟢', '🟡', '🟣', '🟠', '⭐', '🔺', '🔷', '🖤'],
+  ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'],
+  ['🚗', '🚕', '🚌', '🏎️', '🚓', '🚑', '🚒', '🚀', '🚁', '⛵']
+];
+
 const RapidNaming = ({ onComplete }) => {
-  const items = ['🍎', '🍌', '🍇', '🍊', '🍓', '🥝', '🫐', '🍍', '🍒', '🍉'];
+  const generateNewItems = () => {
+    const chosenCategory = getRandomItems(ranCategoryPools, 1)[0];
+    return shuffleArray(chosenCategory);
+  };
+
+  const [items, setItems] = useState(generateNewItems);
   const [startTime, setStartTime] = useState(null);
   const [elapsed, setElapsed] = useState(null);
   const [isActive, setIsActive] = useState(false);
   const { currentUser } = useAuth();
+
+  const resetRANSession = () => {
+    setItems(generateNewItems());
+    setStartTime(null);
+    setElapsed(null);
+    setIsActive(false);
+  };
 
   const startTest = () => {
     setStartTime(Date.now());
@@ -436,7 +604,7 @@ const RapidNaming = ({ onComplete }) => {
   return (
     <div className="exercise-session">
       <h3>Rapid Automated Naming (RAN)</h3>
-      <p className="exercise-desc">Name each symbol or fruit aloud from left to right as quickly and accurately as possible.</p>
+      <p className="exercise-desc">Name each symbol or item aloud from left to right as quickly and accurately as possible.</p>
       
       <div className="naming-grid">
         {items.map((item, idx) => (
@@ -455,7 +623,10 @@ const RapidNaming = ({ onComplete }) => {
           <div className="completion-trophy">⚡</div>
           <h4 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--lf-primary)', marginBottom: '0.5rem' }}>RAN Session Complete!</h4>
           <p style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--lf-teal)', marginBottom: '1.5rem' }}>Completion Time: {elapsed} seconds</p>
-          <button className="btn-finish" onClick={onComplete}>Complete & Save Results →</button>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <button className="btn-secondary" onClick={resetRANSession}>🔄 Practice New Symbol Set</button>
+            <button className="btn-finish" onClick={onComplete}>Complete & View Dashboard →</button>
+          </div>
         </div>
       )}
     </div>

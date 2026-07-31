@@ -180,3 +180,45 @@
   gap: 1rem;
   justify-content: center;
 }
+
+/* ── Mobile Responsive Adjustments ── */
+@media (max-width: 768px) {
+  .quiz-list-container {
+    margin: 1rem 0.5rem;
+  }
+
+  .quiz-header-bar {
+    padding: 1rem;
+  }
+
+  .quiz-body-content {
+    padding: 1.25rem 1rem;
+  }
+
+  .row-options {
+    width: 100%;
+  }
+
+  .row-btn {
+    flex: 1;
+    padding: 0.55rem 0;
+    text-align: center;
+  }
+
+  .finish-btn {
+    width: 100%;
+  }
+
+  .quiz-result-card {
+    margin: 1rem 0.5rem;
+    padding: 1.5rem 1rem !important;
+  }
+
+  .result-actions {
+    flex-direction: column;
+  }
+
+  .result-actions button {
+    width: 100%;
+  }
+}

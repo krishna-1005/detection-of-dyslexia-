@@ -286,3 +286,29 @@
   border-left: 3px solid var(--lf-primary);
   max-width: 90%;
 }
+
+/* ── Mobile Responsive Adjustments ── */
+@media (max-width: 768px) {
+  .live-practice {
+    padding: 1rem 0.5rem;
+  }
+
+  .live-practice-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .live-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .live-controls button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .oral-report-container div[style*="gridTemplateColumns: repeat(3, 1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+}

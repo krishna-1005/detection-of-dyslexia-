@@ -118,6 +118,36 @@
   align-items: flex-start;
 }
 
+/* ── Mobile Responsiveness for New Home Sections ── */
+@media (max-width: 900px) {
+  .metrics-cards-4grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .bionic-sandbox-panel {
+    grid-template-columns: 1fr !important;
+    padding: 1.25rem !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .phoneme-sampler-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .metrics-cards-4grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .home-screening-banner-card div[style*="gridTemplateColumns: repeat(3, 1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  div[style*="gridTemplateColumns: repeat(4, 1fr)"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 /* ── Mockup Hero Left Content ── */
 .hero-badge-green {
   display: inline-flex;

@@ -95,3 +95,21 @@
   grid-template-columns: 1fr 1fr 1fr;
   gap: 1.5rem;
 }
+
+/* ── Mobile Responsive Adjustments ── */
+@media (max-width: 768px) {
+  div[style*="gridTemplateColumns: 1.4fr 1fr"],
+  div[style*="grid-template-columns: 1.4fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .analysis-input {
+    min-height: 140px;
+    padding: 0.85rem;
+    font-size: 0.95rem;
+  }
+
+  .skeleton-grid {
+    grid-template-columns: 1fr;
+  }
+}

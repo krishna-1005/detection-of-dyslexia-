@@ -37,6 +37,7 @@ const Sidebar = () => {
   const mainLinks = [
     { path: '/dashboard', label: 'Overview', icon: '📊' },
     { path: '/detect', label: 'Diagnostic Engine', icon: '🧬' },
+    { path: '/quiz', label: 'Symptoms Quiz', icon: '📋' },
     { path: '/reader', label: 'Smart AI Reader', icon: '✨' },
   ];
 
