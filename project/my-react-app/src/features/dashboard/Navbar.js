@@ -8,6 +8,15 @@ const Navbar = ({ user: propUser, showDropdown, setShowDropdown }) => {
   const location = useLocation();
   const { currentUser, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const user = currentUser || propUser;
   const displayName = user?.displayName || user?.name || user?.email?.split('@')[0] || "Clinician";
@@ -32,7 +41,7 @@ const Navbar = ({ user: propUser, showDropdown, setShowDropdown }) => {
   ];
 
   return (
-    <nav className="navbar">
+    <nav className={`navbar ${scrolled ? 'navbar-blue-scrolled' : ''}`}>
       <div className="nav-left-group">
         <button 
           className="mobile-hamburger-btn" 

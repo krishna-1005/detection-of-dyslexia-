@@ -75,6 +75,25 @@
   letter-spacing: 0.06em;
 }
 
+/* AI Pills & Tags */
+.sidebar-ai-pill {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 12px;
+  background: rgba(37, 99, 235, 0.08);
+  color: var(--lf-primary);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.sidebar-ai-pill.therapy-pill {
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.1), rgba(37, 99, 235, 0.1));
+  color: #0d9488;
+  border-color: rgba(13, 148, 136, 0.3);
+}
+
 /* Guide Me Suite Card */
 .sidebar-guide-card {
   margin: 0.65rem 0.25rem;

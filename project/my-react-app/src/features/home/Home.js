@@ -437,6 +437,15 @@ const HeroDashboardShowcase = () => {
 
 const Home = () => {
   const { currentUser, logout } = useAuth();
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -452,7 +461,7 @@ const Home = () => {
         <div className="bg-grid"></div>
       </div>
 
-      <nav className="home-navbar">
+      <nav className={`home-navbar ${scrolled ? 'navbar-blue-scrolled' : ''}`}>
         <div className="nav-brand">
           <div className="nav-logo-icon">L</div>
           <h2>LexiFlow Clinical</h2>
