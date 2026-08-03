@@ -10,33 +10,13 @@ const quickPrompts = [
   "🏆 Explain Orton-Gillingham"
 ];
 
-const getFrontendFallback = (userMessage) => {
-  const msg = (userMessage || '').toLowerCase();
-  
-  if (msg.includes('bionic') || msg.includes('reader') || msg.includes('fixation')) {
-    return "✨ **Bionic Reading & Smart Reader Guide**:\n\n• **Bionic Fixation**: Bolds initial letters to create natural visual anchor points.\n• **OpenDyslexic Font**: Heavy-bottomed letter forms prevent letter swapping.\n• **Line Focus**: Highlighting single lines reduces visual crowding.\n\n💡 *Try our Bionic Reader Sandbox on the Home page or launch Smart Reader from the Dashboard!*";
-  } else if (msg.includes('phoneme') || msg.includes('sound') || msg.includes('auditory')) {
-    return "🧩 **Phoneme & Auditory Processing**:\n\n• **Phonemic Awareness**: The ability to identify individual sounds in spoken words.\n• **Phoneme Matching Therapy**: Connects visual letters with audio cues.\n• **Auditory Drills**: Syllable isolation exercises for decoding accuracy.\n\n💡 *Try our Multisensory Phoneme Sampler deck on the Home page!*";
-  } else if (msg.includes('orton') || msg.includes('gillingham') || msg.includes('method') || msg.includes('science')) {
-    return "🏆 **Orton-Gillingham Approach**:\n\n• **Multisensory**: Engages visual, auditory, and kinesthetic pathways.\n• **Sequential & Structured**: Teaches phonics rules in explicit steps.\n• **Prescriptive**: Dynamically adjusts difficulty based on learner accuracy.\n\nLexiFlow's 6 therapy modules are 100% OG-aligned.";
-  } else if (msg.includes('tip') || msg.includes('fluency') || msg.includes('improve')) {
-    return "📖 **5 Proven Reading Fluency Tips**:\n\n1. **Use Bionic Reading Overlays** to speed up visual tracking.\n2. **Combine Speech Audio** with visual reading (multisensory).\n3. **Increase Line & Letter Spacing** to reduce visual clutter.\n4. **Keep Sessions Short** (10-15 minutes daily).\n5. **Use Cream/Dark Background Tints** to ease eye strain.";
-  } else if (msg.includes('quiz') || msg.includes('screen') || msg.includes('test')) {
-    return "📋 **Dyslexia Symptoms Screening**:\n\n• Takes under 3 minutes to evaluate 10 developmental reading indicators.\n• Questions refresh dynamically for re-testing accuracy.\n• Provides instant clinical metrics and action steps.\n\n🔗 Visit `/quiz` or click 'Start Screening' on the Home page.";
-  } else if (msg.includes('therapy') || msg.includes('exercise')) {
-    return "🧠 **LexiFlow Therapy Suite**:\n\n• **Phoneme Matching**: Sound-symbol correspondence.\n• **Morphology**: Prefixes & root words.\n• **Rapid Naming**: Automatized naming speed.\n• **Visual Tracking**: Saccadic eye tracking.\n• **Auditory Processing**: Sound discrimination.\n• **Video Practice**: Real-time Azure speech feedback.";
-  } else {
-    return "👋 **LexiAI Clinical Assistant**:\n\nI'm here to support you with evidence-based dyslexia strategies and LexiFlow reading tools!\n\nAsk me about:\n• **Bionic Reading** & OpenDyslexic fonts\n• **Phoneme Matching** & Auditory Therapy\n• **Orton-Gillingham** principles\n• **Reading Fluency Tips**\n• **LexiFlow Diagnostics & Therapy**";
-  }
-};
-
 const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
       id: 1,
       sender: 'ai',
-      text: "👋 Hi there! I'm **LexiAI**, your Dyslexia Clinical Specialist & Assistant. How can I help you today with reading strategies, therapy exercises, or platform tools?"
+      text: "👋 Hi there! I'm **LexiAI**, your Dyslexia Clinical Specialist & Assistant. Powered live by **Gemini AI Engine**. How can I help you today?"
     }
   ]);
   const [inputMsg, setInputMsg] = useState('');
@@ -71,7 +51,6 @@ const ChatWidget = () => {
     setIsLoading(true);
 
     try {
-      // Build history payload for Gemini context
       const historyPayload = messages.map(m => ({
         sender: m.sender === 'user' ? 'user' : 'model',
         text: m.text
@@ -88,13 +67,11 @@ const ChatWidget = () => {
 
       const data = await res.json();
 
-      if (!res.ok || data.error) {
-        // Friendly local response if API limit or server error occurs
-        const fallbackText = getFrontendFallback(text);
+      if (data.error) {
         setMessages(prev => [...prev, {
           id: Date.now() + 1,
           sender: 'ai',
-          text: fallbackText
+          text: `⚠️ **AI Service Notice**: ${data.error}`
         }]);
       } else {
         setMessages(prev => [...prev, {
@@ -105,11 +82,10 @@ const ChatWidget = () => {
       }
     } catch (err) {
       console.error("Chat error:", err);
-      const fallbackText = getFrontendFallback(text);
       setMessages(prev => [...prev, {
         id: Date.now() + 1,
         sender: 'ai',
-        text: fallbackText
+        text: "⚠️ Couldn't reach LexiAI Flask server on port 5000. Please make sure the Python backend is running."
       }]);
     } finally {
       setIsLoading(false);
@@ -175,7 +151,7 @@ const ChatWidget = () => {
               <div className="bot-avatar">🤖</div>
               <div>
                 <h4>LexiAI Clinical Specialist <span className="online-badge">● Online</span></h4>
-                <small>✨ Powered by Groq AI Engine & Llama 3</small>
+                <small>✨ Powered by Gemini AI Engine</small>
               </div>
             </div>
 

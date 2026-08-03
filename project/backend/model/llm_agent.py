@@ -132,7 +132,18 @@ def simplify_for_dyslexia(text):
 def get_local_clinical_response(user_message):
     msg = user_message.lower()
     
-    if "bionic" in msg or "reader" in msg or "fixation" in msg:
+    if "dyslexia" in msg or "what is" in msg or "definition" in msg or "symptom" in msg or "sign" in msg or "cause" in msg:
+        return (
+            "📖 **Understanding Dyslexia & Key Symptoms**:\n\n"
+            "Dyslexia is a neurobiological reading difference that affects phonological processing, word decoding, and reading fluency. It is **unrelated** to intelligence.\n\n"
+            "**Common Symptoms & Indicators**:\n"
+            "• **Phonological Bottlenecks**: Difficulty breaking words into individual sound components (phonemes).\n"
+            "• **Letter Reversals**: Frequently swapping visually similar letters (e.g. 'b' vs 'd', 'p' vs 'q').\n"
+            "• **Slow Reading Rate**: Hesitant visual tracking that reduces reading comprehension and causes fatigue.\n"
+            "• **Spelling & Rapid Naming**: Trouble recalling letter sounds or spelling unfamiliar multi-syllable words.\n\n"
+            "💡 *Try LexiFlow's 3-minute Symptoms Assessment at `/quiz` or explore our Bionic Reader and Therapy Modules on the Dashboard!*"
+        )
+    elif "bionic" in msg or "reader" in msg or "fixation" in msg:
         return (
             "✨ **Bionic Reading & Smart Reader Guide**:\n\n"
             "• **Bionic Fixation**: Bolds the initial letters of words to create natural visual anchor points, guiding your eyes smoothly across text.\n"
@@ -165,7 +176,7 @@ def get_local_clinical_response(user_message):
             "4. **Short, Consistent Sessions**: 10–15 minutes daily yields better retention than long cramming.\n"
             "5. **Color Contrast Tuning**: Warm cream or dark background tints reduce eye strain."
         )
-    elif "quiz" in msg or "screen" in msg or "symptom" in msg or "test" in msg:
+    elif "quiz" in msg or "screen" in msg or "assessment" in msg or "test" in msg:
         return (
             "📋 **LexiFlow Dyslexia Symptoms Screening**:\n\n"
             "• **Quick & Non-Invasive**: Takes less than 3 minutes to evaluate 10 developmental reading indicators.\n"
@@ -188,6 +199,7 @@ def get_local_clinical_response(user_message):
             "👋 **LexiAI Clinical Assistant**:\n\n"
             "I'm here to support you with evidence-based dyslexia strategies, reading tools, and therapy exercises!\n\n"
             "You can ask me about:\n"
+            "• **What is Dyslexia & Key Symptoms**\n"
             "• **Bionic Reading** & OpenDyslexic fonts\n"
             "• **Phoneme Matching** & Auditory Therapy\n"
             "• **Orton-Gillingham** principles\n"
@@ -200,10 +212,75 @@ def chat_with_gemini(user_message, history=None):
     if not api_key:
         return {"reply": get_local_clinical_response(user_message)}
     
+    api_key_str = api_key.strip()
+    
+    system_instruction = """You are LexiAI, an expert AI Clinical Specialist and Educational Assistant for LexiFlow.
+Your goal is to assist parents, educators, clinicians, and learners dealing with dyslexia, reading difficulties, and phonological challenges.
+
+Core Principles:
+1. Provide empathetic, science-backed, and clear advice based on established methods (e.g. Orton-Gillingham, multisensory learning, phonological awareness, bionic reading).
+2. Format answers with clear bullet points, short paragraphs, and high-readability spacing.
+3. If asked about LexiFlow features, explain how to use the Diagnostic Engine, Smart Bionic Reader, Therapy Suite (Phoneme Matching, Morphology, Rapid Naming, Visual Tracking, Auditory Processing, Video Practice), and Symptoms Quiz.
+4. Always remain encouraging, warm, professional, and accessible.
+5. Keep answers concise (under 200 words)."""
+
+    formatted_contents = []
+    if history and isinstance(history, list):
+        for h in history:
+            role = "user" if h.get("sender") == "user" else "model"
+            text = h.get("text", "")
+            if text:
+                formatted_contents.append(f"{role.upper()}: {text}")
+    
+    formatted_contents.append(f"USER: {user_message}")
+    prompt = system_instruction + "\n\nCONVERSATION:\n" + "\n".join(formatted_contents) + "\n\nLEXIAI:"
+
+    # Support OAuth bearer tokens (keys starting with AQ. or ya29.)
+    if api_key_str.startswith("AQ.") or api_key_str.startswith("ya29."):
+        print("DEBUG: Authenticating Gemini API using OAuth Bearer Token flow...")
+        candidate_models = ["gemini-1.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
+        last_err = None
+        for model in candidate_models:
+            try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+                headers = {
+                    "Authorization": f"Bearer {api_key_str}",
+                    "Content-Type": "application/json"
+                }
+                payload = {
+                    "contents": [
+                        {
+                            "parts": [
+                                {"text": prompt}
+                            ]
+                        }
+                    ]
+                }
+                print(f"DEBUG: Posting to Gemini REST URL: {url}")
+                resp = requests.post(url, headers=headers, json=payload, timeout=15)
+                if resp.status_code == 200:
+                    resp_json = resp.json()
+                    candidates = resp_json.get("candidates") or []
+                    if candidates:
+                        content = candidates[0].get("content") or {}
+                        parts = content.get("parts") or []
+                        if parts:
+                            reply_text = parts[0].get("text", "").strip()
+                            print(f"DEBUG: Gemini OAuth SUCCESS! Reply length: {len(reply_text)} chars")
+                            return {"reply": reply_text}
+                    last_err = f"Gemini response structure unexpected: {resp_json}"
+                else:
+                    last_err = f"Status {resp.status_code}: {resp.text}"
+                    print(f"DEBUG: Gemini OAuth attempt failed: {last_err}")
+            except Exception as e:
+                last_err = str(e)
+                print(f"DEBUG: Gemini OAuth model {model} error: {e}")
+                continue
+        return {"error": f"Gemini OAuth Failed: {last_err}"}
+
+    # Standard AI Studio Client Flow
     try:
-        client = genai.Client(api_key=api_key)
-        
-        # Step 1: List candidate models
+        client = genai.Client(api_key=api_key_str)
         candidate_models = [
             "models/gemini-1.5-flash",
             "gemini-1.5-flash",
@@ -215,28 +292,7 @@ def chat_with_gemini(user_message, history=None):
             "gemini-2.0-flash",
             "gemini-2.5-flash"
         ]
-
-        system_instruction = """You are LexiAI, an expert AI Clinical Specialist and Educational Assistant for LexiFlow.
-Your goal is to assist parents, educators, clinicians, and learners dealing with dyslexia, reading difficulties, and phonological challenges.
-
-Core Principles:
-1. Provide empathetic, science-backed, and clear advice based on established methods (e.g. Orton-Gillingham, multisensory learning, phonological awareness, bionic reading).
-2. Format answers with clear bullet points, short paragraphs, and high-readability spacing.
-3. If asked about LexiFlow features, explain how to use the Diagnostic Engine, Smart Bionic Reader, Therapy Suite (Phoneme Matching, Morphology, Rapid Naming, Visual Tracking, Auditory Processing, Video Practice), and Symptoms Quiz.
-4. Always remain encouraging, warm, professional, and accessible.
-5. Keep answers concise (under 200 words)."""
-
-        formatted_contents = []
-        if history and isinstance(history, list):
-            for h in history:
-                role = "user" if h.get("sender") == "user" else "model"
-                text = h.get("text", "")
-                if text:
-                    formatted_contents.append(f"{role.upper()}: {text}")
         
-        formatted_contents.append(f"USER: {user_message}")
-        prompt = system_instruction + "\n\nCONVERSATION:\n" + "\n".join(formatted_contents) + "\n\nLEXIAI:"
-
         last_error = None
         for model in candidate_models:
             try:
@@ -255,22 +311,19 @@ Core Principles:
                 last_error = err_msg
                 continue
 
-        # If all API calls were quota-exhausted or failed, use local clinical fallback
-        print("DEBUG: All Gemini API model calls hit rate limits/quota. Activating local clinical fallback.")
-        return {"reply": get_local_clinical_response(user_message)}
-
+        return {"error": f"Gemini Client Error: {last_error}"}
     except Exception as e:
-        print(f"DEBUG: Chatbot fallback triggered: {str(e)}")
-        return {"reply": get_local_clinical_response(user_message)}
+        print(f"DEBUG: Gemini Client Exception: {str(e)}")
+        return {"error": f"Gemini Client Exception: {str(e)}"}
 
 def chat_with_groq(user_message, history=None):
     groq_key = os.getenv("GROQ_API_KEY")
-    if not groq_key or groq_key == "YOUR_GROQ_API_KEY_HERE" or not groq_key.strip():
-        print("DEBUG: GROQ_API_KEY not set or placeholder in .env")
-        return None
+    if not groq_key or not groq_key.strip() or groq_key == "YOUR_GROQ_API_KEY_HERE":
+        print("DEBUG: GROQ_API_KEY missing in .env")
+        return {"error": "GROQ_API_KEY is missing in backend/.env file. Please add GROQ_API_KEY=gsk_..."}
 
     try:
-        print("DEBUG: Calling Groq Llama3 API...")
+        print(f"DEBUG: Calling Groq AI API for query: '{user_message[:40]}...'")
         headers = {
             "Authorization": f"Bearer {groq_key.strip()}",
             "Content-Type": "application/json"
@@ -283,13 +336,15 @@ def chat_with_groq(user_message, history=None):
             "1. Provide empathetic, science-backed, and clear advice based on established methods (e.g. Orton-Gillingham, multisensory learning, phonological awareness, bionic reading).\n"
             "2. Format answers with clear bullet points, short paragraphs, and high-readability spacing.\n"
             "3. If asked about LexiFlow features, explain how to use the Diagnostic Engine, Smart Bionic Reader, Therapy Suite, and Symptoms Quiz.\n"
-            "4. Keep answers concise (under 200 words)."
+            "4. Keep answers concise (under 180 words)."
         )
 
         messages = [{"role": "system", "content": system_instruction}]
         
+        # Token Economy: Only send the last 2 turns of conversation history to stay well under TPM rate limits
         if history and isinstance(history, list):
-            for h in history:
+            recent_history = history[-2:]
+            for h in recent_history:
                 role = "user" if h.get("sender") == "user" else "assistant"
                 text = h.get("text", "")
                 if text:
@@ -297,117 +352,57 @@ def chat_with_groq(user_message, history=None):
                     
         messages.append({"role": "user", "content": user_message})
 
-        # Candidate Groq models
+        # High-Quota Groq Models (llama-3.1-8b-instant has 5x higher TPM limit than 70b!)
         groq_models = [
-            "llama-3.3-70b-versatile",
+            "llama-3.1-8b-instant",
             "llama3-8b-8192",
-            "llama3-70b-8192",
-            "mixtral-8x7b-32768",
-            "gemma2-9b-it"
+            "gemma2-9b-it",
+            "llama-3.3-70b-versatile",
+            "mixtral-8x7b-32768"
         ]
 
+        last_error = None
         for model_name in groq_models:
             try:
                 payload = {
                     "model": model_name,
                     "messages": messages,
-                    "max_tokens": 450,
-                    "temperature": 0.7
+                    "max_tokens": 300,
+                    "temperature": 0.65
                 }
-                resp = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload, timeout=10)
+                resp = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload, timeout=12)
                 if resp.status_code == 200:
                     res_json = resp.json()
                     reply = res_json["choices"][0]["message"]["content"].strip()
-                    print(f"DEBUG: Groq ({model_name}) success! Reply length: {len(reply)} chars")
+                    print(f"DEBUG: Groq AI ({model_name}) SUCCESS! Response length: {len(reply)} chars")
                     return {"reply": reply}
                 else:
-                    print(f"DEBUG: Groq {model_name} returned status {resp.status_code}: {resp.text[:120]}")
+                    last_error = f"Model {model_name} status {resp.status_code}: {resp.text[:150]}"
+                    print(f"DEBUG: {last_error}")
             except Exception as m_err:
+                last_error = str(m_err)
                 print(f"DEBUG: Groq model {model_name} failed: {m_err}")
                 continue
 
-        return None
+        return {"error": f"Groq AI Quota Notice: {last_error}"}
     except Exception as e:
-        print(f"DEBUG: Groq API error: {str(e)}")
-        return None
-
-def chat_with_openai(user_message, history=None):
-    openai_key = os.getenv("OPENAI_API_KEY")
-    if not openai_key or openai_key == "YOUR_OPENAI_API_KEY_HERE" or not openai_key.strip():
-        print("DEBUG: OPENAI_API_KEY not set or placeholder in .env")
-        return None
-
-    try:
-        print("DEBUG: Calling OpenAI ChatGPT API (gpt-4o-mini)...")
-        headers = {
-            "Authorization": f"Bearer {openai_key.strip()}",
-            "Content-Type": "application/json"
-        }
-        
-        system_instruction = (
-            "You are LexiAI, an expert AI Clinical Specialist and Educational Assistant for LexiFlow. "
-            "Your goal is to assist parents, educators, clinicians, and learners dealing with dyslexia, reading difficulties, and phonological challenges. "
-            "Core Principles:\n"
-            "1. Provide empathetic, science-backed, and clear advice based on established methods (e.g. Orton-Gillingham, multisensory learning, phonological awareness, bionic reading).\n"
-            "2. Format answers with clear bullet points, short paragraphs, and high-readability spacing.\n"
-            "3. If asked about LexiFlow features, explain how to use the Diagnostic Engine, Smart Bionic Reader, Therapy Suite, and Symptoms Quiz.\n"
-            "4. Keep answers concise (under 200 words)."
-        )
-
-        messages = [{"role": "system", "content": system_instruction}]
-        
-        if history and isinstance(history, list):
-            for h in history:
-                role = "user" if h.get("sender") == "user" else "assistant"
-                text = h.get("text", "")
-                if text:
-                    messages.append({"role": role, "content": text})
-                    
-        messages.append({"role": "user", "content": user_message})
-
-        # Try gpt-4o-mini first, fallback to gpt-3.5-turbo and gpt-4o
-        for model_name in ["gpt-4o-mini", "gpt-3.5-turbo", "gpt-4o"]:
-            try:
-                payload = {
-                    "model": model_name,
-                    "messages": messages,
-                    "max_tokens": 400,
-                    "temperature": 0.7
-                }
-                resp = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload, timeout=12)
-                if resp.status_code == 200:
-                    res_json = resp.json()
-                    reply = res_json["choices"][0]["message"]["content"].strip()
-                    print(f"DEBUG: ChatGPT ({model_name}) success! Reply length: {len(reply)} chars")
-                    return {"reply": reply}
-                else:
-                    print(f"DEBUG: OpenAI {model_name} returned status {resp.status_code}: {resp.text[:120]}")
-            except Exception as m_err:
-                print(f"DEBUG: OpenAI model {model_name} failed: {m_err}")
-                continue
-
-        return None
-    except Exception as e:
-        print(f"DEBUG: OpenAI API error: {str(e)}")
-        return None
+        print(f"DEBUG: Groq API Exception: {str(e)}")
+        return {"error": f"Groq API Exception: {str(e)}"}
 
 def chat_with_llm(user_message, history=None):
-    # 1. Primary: Try Groq API (High Speed & Free Llama 3.3)
+    # 1. Primary: Try Groq API (fast, free, high quota)
     groq_res = chat_with_groq(user_message, history)
     if groq_res and "reply" in groq_res:
         return groq_res
 
-    # 2. Secondary: Try OpenAI ChatGPT API if configured
-    openai_res = chat_with_openai(user_message, history)
-    if openai_res and "reply" in openai_res:
-        return openai_res
+    # 2. Secondary: Try Gemini API if GOOGLE_API_KEY is set with a valid AIzaSy... key
+    google_key = os.getenv("GOOGLE_API_KEY", "")
+    if google_key and not google_key.startswith("AQ.") and not google_key.startswith("ya29."):
+        gemini_res = chat_with_gemini(user_message, history)
+        if gemini_res and "reply" in gemini_res:
+            return gemini_res
 
-    # 3. Tertiary: Try Gemini API
-    gemini_res = chat_with_gemini(user_message, history)
-    if gemini_res and "reply" in gemini_res:
-        return gemini_res
-
-    # 4. Fallback: Local Clinical Knowledge Base Engine
+    # 3. Tertiary: Local Clinical Knowledge Base (always available offline)
     return {"reply": get_local_clinical_response(user_message)}
 
 

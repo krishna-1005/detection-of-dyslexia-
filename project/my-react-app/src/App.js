@@ -9,6 +9,7 @@ import UserReport from "./features/analytics/UserReport";
 import Login from "./features/auth/Login";
 import Signup from "./features/auth/Signup";
 import QuizPage from "./features/quiz/QuizPage";
+import SaccadicPage from "./features/home/SaccadicPage";
 import GuideMe from "./features/guideme/GuideMe";
 import ChatWidget from "./features/chat/ChatWidget";
 import { AuthProvider } from "./features/auth/AuthContext";
@@ -23,6 +24,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/quiz" element={<QuizPage />} />
+            <Route path="/simulator" element={<SaccadicPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             

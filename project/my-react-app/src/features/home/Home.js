@@ -32,178 +32,7 @@ const AnimatedCounter = ({ target, suffix = '', duration = 2000 }) => {
   return <span ref={ref}>{count}{suffix}</span>;
 };
 
-const VisualSaccadicSandbox = () => {
-  const [pattern, setPattern] = useState('horizontal'); // horizontal, vertical, bounce, infinity
-  const [speed, setSpeed] = useState('medium'); // slow (3s), medium (2s), fast (1s)
-  const [targetType, setTargetType] = useState('dot'); // dot, cross, ring
-  const [isActive, setIsActive] = useState(false);
-  const [position, setPosition] = useState({ x: 50, y: 50 });
-  const requestRef = useRef();
-  const startTimeRef = useRef();
 
-  useEffect(() => {
-    if (!isActive) {
-      setPosition({ x: 50, y: 50 });
-      if (requestRef.current) {
-        cancelAnimationFrame(requestRef.current);
-      }
-      return;
-    }
-
-    const duration = speed === 'slow' ? 3000 : speed === 'medium' ? 2000 : 1000;
-
-    const animate = (time) => {
-      if (!startTimeRef.current) startTimeRef.current = time;
-      const progress = ((time - startTimeRef.current) % duration) / duration;
-
-      let newX = 50;
-      let newY = 50;
-
-      if (pattern === 'horizontal') {
-        // Smooth sweeping left to right
-        newX = 15 + Math.sin(progress * Math.PI * 2) * 35 + 35;
-        newY = 50;
-      } else if (pattern === 'vertical') {
-        // Smooth sweeping up and down
-        newX = 50;
-        newY = 15 + Math.sin(progress * Math.PI * 2) * 35 + 35;
-      } else if (pattern === 'bounce') {
-        // Sharp jumps (saccades)
-        const segment = Math.floor(progress * 4);
-        if (segment === 0) { newX = 20; newY = 20; }
-        else if (segment === 1) { newX = 80; newY = 20; }
-        else if (segment === 2) { newX = 80; newY = 80; }
-        else { newX = 20; newY = 80; }
-      } else if (pattern === 'infinity') {
-        // Figure eight tracking
-        const angle = progress * Math.PI * 2;
-        newX = 50 + Math.sin(angle) * 35;
-        newY = 50 + (Math.sin(angle * 2) * 20);
-      }
-
-      setPosition({ x: newX, y: newY });
-      requestRef.current = requestAnimationFrame(animate);
-    };
-
-    requestRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      if (requestRef.current) {
-        cancelAnimationFrame(requestRef.current);
-      }
-      startTimeRef.current = null;
-    };
-  }, [isActive, pattern, speed]);
-
-  return (
-    <div className="sandbox-panel">
-      <div className="sandbox-controls">
-        <div className="sandbox-section-title">Therapy Simulator Toggles</div>
-        <p className="sandbox-helper">LexiFlow uses ocular saccadic exercises to train tracking coordination. Test different tracking patterns below.</p>
-        
-        <div className="sandbox-group">
-          <div className="sandbox-title-label">Tracking Pattern</div>
-          <button 
-            className={`sandbox-btn ${pattern === 'horizontal' ? 'active' : ''}`}
-            onClick={() => setPattern('horizontal')}
-          >
-            ↔ Horizontal Sweep
-          </button>
-          <button 
-            className={`sandbox-btn ${pattern === 'vertical' ? 'active' : ''}`}
-            onClick={() => setPattern('vertical')}
-          >
-            ↕ Vertical Sweep
-          </button>
-          <button 
-            className={`sandbox-btn ${pattern === 'bounce' ? 'active' : ''}`}
-            onClick={() => setPattern('bounce')}
-          >
-            ⤢ Saccadic Jumps
-          </button>
-          <button 
-            className={`sandbox-btn ${pattern === 'infinity' ? 'active' : ''}`}
-            onClick={() => setPattern('infinity')}
-          >
-            ∞ Figure Eight
-          </button>
-        </div>
-
-        <div className="sandbox-group">
-          <div className="sandbox-title-label">Speed Level</div>
-          <select 
-            value={speed} 
-            onChange={(e) => setSpeed(e.target.value)}
-            className="sandbox-select"
-          >
-            <option value="slow">Slow Pace</option>
-            <option value="medium">Medium Pace</option>
-            <option value="fast">High Pace</option>
-          </select>
-        </div>
-
-        <div className="sandbox-group">
-          <div className="sandbox-title-label">Focus Target Graphic</div>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button 
-              className={`sandbox-btn-sm ${targetType === 'dot' ? 'active' : ''}`}
-              onClick={() => setTargetType('dot')}
-            >
-              ● Dot
-            </button>
-            <button 
-              className={`sandbox-btn-sm ${targetType === 'ring' ? 'active' : ''}`}
-              onClick={() => setTargetType('ring')}
-            >
-              ◎ Ring
-            </button>
-            <button 
-              className={`sandbox-btn-sm ${targetType === 'cross' ? 'active' : ''}`}
-              onClick={() => setTargetType('cross')}
-            >
-              ✚ Cross
-            </button>
-          </div>
-        </div>
-
-        <button 
-          onClick={() => setIsActive(!isActive)}
-          className={`btn-finish ${isActive ? 'active-stop' : ''}`}
-          style={{ marginTop: '1rem' }}
-        >
-          {isActive ? '⏹ Stop Exercise' : '▶ Start Tracking'}
-        </button>
-      </div>
-
-      <div className="sandbox-workspace">
-        <div className="sandbox-section-title">Ocular Saccadic Sandbox</div>
-        <div className="saccadic-viewport">
-          {/* Subtle guide lines showing the tracking grid */}
-          <div className="saccadic-grid-line line-h"></div>
-          <div className="saccadic-grid-line line-v"></div>
-
-          {/* Dynamic Animated Target */}
-          <div 
-            className={`saccadic-target ${targetType}`}
-            style={{ 
-              left: `${position.x}%`, 
-              top: `${position.y}%`,
-              transform: 'translate(-50%, -50%)',
-              transition: pattern === 'bounce' ? 'left 0.15s cubic-bezier(0.25, 0.8, 0.25, 1), top 0.15s cubic-bezier(0.25, 0.8, 0.25, 1)' : 'none'
-            }}
-          >
-            {targetType === 'cross' && '✚'}
-            {targetType === 'ring' && <span className="target-ring-inner"></span>}
-          </div>
-          
-          <div className="saccadic-instruction-overlay">
-            {isActive ? 'Follow the moving focus marker with your eyes only.' : 'Click "Start Tracking" to begin ocular preview.'}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // 1. Live Bionic & Accessibility Reader Sandbox Component
 const BionicReaderSandbox = () => {
@@ -629,6 +458,7 @@ const Home = () => {
           <h2>LexiFlow Clinical</h2>
         </div>
         <div className="nav-links">
+          <Link to="/simulator" className="nav-item" style={{ fontWeight: 600 }}>Ocular Simulator</Link>
           {currentUser ? (
             <>
               <Link to="/dashboard" className="home-cta-btn">Dashboard →</Link>
@@ -713,69 +543,8 @@ const Home = () => {
         </section>
 
 
-        {/* Interactive Saccadic Simulator Section */}
-        <section className="features-grid sandbox-section" style={{ paddingTop: '5rem', paddingBottom: '3rem' }}>
-          <div className="features-header" style={{ marginBottom: '3rem' }}>
-            <span className="section-badge">Interactive Preview</span>
-            <h2 className="section-title">Ocular Saccadic Tracking Simulator</h2>
-            <p className="section-subtitle">Test the motor visual-coordination exercises used in dyslexia recovery protocols. Follow the tracking marker to experience it live.</p>
-          </div>
-          <VisualSaccadicSandbox />
-        </section>
-
-        {/* Interactive Bionic Reader & Accessibility Sandbox Section */}
-        <section className="features-grid sandbox-section" style={{ paddingTop: '4rem', paddingBottom: '3rem' }}>
-          <div className="features-header" style={{ marginBottom: '2.5rem' }}>
-            <span className="section-badge">Live Interactive Reader</span>
-            <h2 className="section-title">Bionic Reading & Typography Engine</h2>
-            <p className="section-subtitle">Experience how Bionic Fixation and OpenDyslexic typography transform reading speed and reduce visual fatigue in real time.</p>
-          </div>
-          <BionicReaderSandbox />
-        </section>
-
-        {/* Interactive Phoneme Audio Sampler Section */}
-        <section className="features-grid" style={{ paddingTop: '2rem', paddingBottom: '3rem' }}>
-          <div className="features-header">
-            <span className="section-badge">Interactive Speech Sampler</span>
-            <h2 className="section-title">Multisensory Phoneme Audio Deck</h2>
-            <p className="section-subtitle">Click any sound tile below to trigger high-clarity speech synthesis and explore phonetic breakdown patterns.</p>
-          </div>
-          <PhonemeAudioSampler />
-        </section>
-
-        {/* Clinical Impact Metrics Section */}
-        <section className="impact-metrics-section" style={{ padding: '3.5rem 2rem', background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, rgba(13, 148, 136, 0.05) 100%)', borderRadius: '24px', margin: '3rem auto', maxWidth: '1100px', border: '1px solid var(--lf-border)' }}>
-          <div className="features-header" style={{ marginBottom: '2.5rem' }}>
-            <span className="section-badge">Science & Results</span>
-            <h2 className="section-title">Evidence-Based Clinical Outcomes</h2>
-            <p className="section-subtitle">Grounded in Orton-Gillingham multisensory principles and trained on real-world reading performance data.</p>
-          </div>
-          <div className="metrics-cards-4grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.25rem', textAlign: 'center' }}>
-            <div style={{ background: '#ffffff', padding: '1.5rem 1rem', borderRadius: '18px', border: '1px solid var(--lf-border)', boxShadow: 'var(--lf-shadow-sm)' }}>
-              <div style={{ fontSize: '2.4rem', fontWeight: 900, color: 'var(--lf-primary, #2563eb)', lineHeight: 1 }}>94.8%</div>
-              <small style={{ display: 'block', fontWeight: 800, color: 'var(--lf-text-primary)', marginTop: '6px', fontSize: '0.85rem' }}>AI Screening Accuracy</small>
-              <span style={{ fontSize: '0.75rem', color: 'var(--lf-text-muted)', marginTop: '2px', display: 'block' }}>Validated across diagnostic text sets</span>
-            </div>
-            <div style={{ background: '#ffffff', padding: '1.5rem 1rem', borderRadius: '18px', border: '1px solid var(--lf-border)', boxShadow: 'var(--lf-shadow-sm)' }}>
-              <div style={{ fontSize: '2.4rem', fontWeight: 900, color: 'var(--lf-teal, #0d9488)', lineHeight: 1 }}>3.2x</div>
-              <small style={{ display: 'block', fontWeight: 800, color: 'var(--lf-text-primary)', marginTop: '6px', fontSize: '0.85rem' }}>Fluency Gain</small>
-              <span style={{ fontSize: '0.75rem', color: 'var(--lf-text-muted)', marginTop: '2px', display: 'block' }}>Average reading speed improvement</span>
-            </div>
-            <div style={{ background: '#ffffff', padding: '1.5rem 1rem', borderRadius: '18px', border: '1px solid var(--lf-border)', boxShadow: 'var(--lf-shadow-sm)' }}>
-              <div style={{ fontSize: '2.4rem', fontWeight: 900, color: '#d97706', lineHeight: 1 }}>15,000+</div>
-              <small style={{ display: 'block', fontWeight: 800, color: 'var(--lf-text-primary)', marginTop: '6px', fontSize: '0.85rem' }}>Sessions Logged</small>
-              <span style={{ fontSize: '0.75rem', color: 'var(--lf-text-muted)', marginTop: '2px', display: 'block' }}>Active practice across 6 modules</span>
-            </div>
-            <div style={{ background: '#ffffff', padding: '1.5rem 1rem', borderRadius: '18px', border: '1px solid var(--lf-border)', boxShadow: 'var(--lf-shadow-sm)' }}>
-              <div style={{ fontSize: '2.4rem', fontWeight: 900, color: '#e11d48', lineHeight: 1 }}>100%</div>
-              <small style={{ display: 'block', fontWeight: 800, color: 'var(--lf-text-primary)', marginTop: '6px', fontSize: '0.85rem' }}>Orton-Gillingham</small>
-              <span style={{ fontSize: '0.75rem', color: 'var(--lf-text-muted)', marginTop: '2px', display: 'block' }}>Multisensory research principles</span>
-            </div>
-          </div>
-        </section>
-
         {/* 4-Step How LexiFlow Works Section */}
-        <section className="features-grid" style={{ paddingTop: '2rem', paddingBottom: '3rem' }}>
+        <section className="features-grid" style={{ paddingTop: '4rem', paddingBottom: '2rem' }}>
           <div className="features-header" style={{ marginBottom: '2.5rem' }}>
             <span className="section-badge">Clinical Workflow</span>
             <h2 className="section-title">How LexiFlow Empowers Readers</h2>
@@ -803,6 +572,32 @@ const Home = () => {
               <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: '0.85rem 0 0.4rem 0', color: 'var(--lf-text-primary)' }}>📈 Growth Analytics</h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--lf-text-muted)', lineHeight: 1.5, margin: 0 }}>Track longitudinal accuracy, speed trends, and milestone badges on your clinical dashboard.</p>
             </div>
+          </div>
+        </section>
+
+        {/* Interactive Saccadic Simulator Section */}
+        <section className="features-grid sandbox-section" style={{ paddingTop: '2rem', paddingBottom: '3rem' }}>
+          <div className="home-screening-banner-card" style={{
+            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.06) 0%, rgba(13, 148, 136, 0.06) 100%)',
+            border: '1px solid var(--lf-border)',
+            borderRadius: '24px',
+            padding: '3.5rem 2rem',
+            textAlign: 'center',
+            boxShadow: 'var(--lf-shadow-lg)',
+            maxWidth: '920px',
+            margin: '0 auto'
+          }}>
+            <span className="section-badge" style={{ marginBottom: '1rem', display: 'inline-block' }}>👁️ Dedicated Interactive Tool</span>
+            <h2 className="section-title" style={{ fontSize: '2.2rem', marginBottom: '1rem' }}>
+              Ocular Saccadic Tracking Simulator
+            </h2>
+            <p className="section-subtitle" style={{ maxWidth: '640px', margin: '0 auto 2rem auto', fontSize: '1rem', lineHeight: 1.6 }}>
+              Test the motor visual-coordination exercises used in dyslexia recovery protocols. Customize tracking patterns, target speeds, and focus graphics in real-time.
+            </p>
+
+            <Link to="/simulator" className="btn-gradient" style={{ padding: '0.95rem 2.5rem', fontSize: '1.05rem', borderRadius: '14px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              Launch Full Saccadic Simulator 👁️ →
+            </Link>
           </div>
         </section>
 
