@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import './Exercises.css';
 import VideoPractice from './VideoPractice';
+import SoundQuest from './SoundQuest';
+import MorphologyQuest from './MorphologyQuest';
+import MorphoSnake from './MorphoSnake';
+import MarioPhonemeJumper from './MarioPhonemeJumper';
+import MorphologySnakeGame from './MorphologySnakeGame';
+import BalloonPopRAN from './BalloonPopRAN';
+import MirrorMatchHighway from './MirrorMatchHighway';
 import { useAuth } from '../auth/AuthContext';
 import { fetchWithAuth } from '../../services/api';
 
@@ -364,8 +371,11 @@ const PhonemeMatching = ({ onComplete }) => {
           <div className="completion-trophy">🏆</div>
           <h4 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--lf-primary)', marginBottom: '0.5rem' }}>Session Complete!</h4>
           <p style={{ color: 'var(--lf-text-muted)', fontSize: '0.95rem', marginBottom: '1.5rem' }}>You correctly matched {score} out of {pairs.length} phoneme sounds.</p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-            <button className="btn-secondary" onClick={resetPhonemeSession}>🔄 Practice New Sound Set</button>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button className="btn-finish" style={{ background: 'linear-gradient(135deg, #ff7675, #d63031)', boxShadow: '0 4px 15px rgba(214,48,49,0.3)' }} onClick={resetPhonemeSession}>
+              🔄 PLAY AGAIN
+            </button>
+            <button className="btn-secondary" onClick={resetPhonemeSession}>Practice New Sound Set</button>
             <button className="btn-finish" onClick={onComplete}>Complete & View Dashboard →</button>
           </div>
         </div>
@@ -465,8 +475,11 @@ const AuditoryProcessing = ({ onComplete }) => {
           <div className="completion-trophy">🎧</div>
           <h4 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--lf-primary)', marginBottom: '0.5rem' }}>Auditory Exercise Complete!</h4>
           <p style={{ color: 'var(--lf-text-muted)', fontSize: '0.95rem', marginBottom: '1.5rem' }}>You identified {score} out of {tasks.length} initial sound targets correctly.</p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-            <button className="btn-secondary" onClick={resetAuditorySession}>🔄 Practice New Sound Targets</button>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button className="btn-finish" style={{ background: 'linear-gradient(135deg, #ff7675, #d63031)', boxShadow: '0 4px 15px rgba(214,48,49,0.3)' }} onClick={resetAuditorySession}>
+              🔄 PLAY AGAIN
+            </button>
+            <button className="btn-secondary" onClick={resetAuditorySession}>Practice New Sound Targets</button>
             <button className="btn-finish" onClick={onComplete}>Complete & View Dashboard →</button>
           </div>
         </div>
@@ -507,6 +520,7 @@ const MorphologyBuilder = ({ onComplete }) => {
   const [currentTask, setCurrentTask] = useState(0);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
+  const [selectedChoice, setSelectedChoice] = useState(null);
   const { currentUser } = useAuth();
 
   const resetMorphologySession = () => {
@@ -514,36 +528,138 @@ const MorphologyBuilder = ({ onComplete }) => {
     setCurrentTask(0);
     setScore(0);
     setFinished(false);
+    setSelectedChoice(null);
+  };
+
+  const playSFX = (isCorrect) => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      if (isCorrect) {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.18);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.22);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.22);
+      } else {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(260, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(190, ctx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.25);
+      }
+    } catch (e) {}
+  };
+
+  const speakText = (text) => {
+    try {
+      window.speechSynthesis.cancel();
+      const ut = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(ut);
+    } catch (e) {}
   };
 
   const handleChoice = async (choice) => {
+    if (selectedChoice !== null) return;
     const isCorrect = choice === tasks[currentTask].correct;
+    setSelectedChoice({ choice, isCorrect });
+    playSFX(isCorrect);
+    speakText(isCorrect ? `Correct! ${choice}` : `Try again! ${choice}`);
+
     const nextScore = isCorrect ? score + 1 : score;
     if (isCorrect) setScore(nextScore);
 
-    if (currentTask < tasks.length - 1) {
-      setCurrentTask(currentTask + 1);
-    } else {
-      setFinished(true);
-      const finalAccuracy = Math.round((nextScore / tasks.length) * 100);
-      await saveTherapyProgress(currentUser, 'morphology', nextScore * 100, finalAccuracy);
-    }
+    setTimeout(async () => {
+      setSelectedChoice(null);
+      if (currentTask < tasks.length - 1) {
+        setCurrentTask(currentTask + 1);
+      } else {
+        setFinished(true);
+        const finalAccuracy = Math.round((nextScore / tasks.length) * 100);
+        await saveTherapyProgress(currentUser, 'morphology', nextScore * 100, finalAccuracy);
+      }
+    }, 700);
   };
+
+  const currentTaskObj = tasks[currentTask];
 
   return (
     <div className="exercise-session">
-      <h3>Morphology Word Builder</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: '0.5rem' }}>
+        <h3 style={{ margin: 0 }}>Morphology Word Builder</h3>
+        {!finished && (
+          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--lf-primary)', background: 'var(--lf-primary-soft)', padding: '4px 12px', borderRadius: '20px' }}>
+            Question {currentTask + 1} of {tasks.length}
+          </span>
+        )}
+      </div>
+
       {!finished ? (
         <>
-          <p className="exercise-desc">Root Word: <strong style={{ color: 'var(--lf-primary)' }}>{tasks[currentTask].root}</strong></p>
-          <div className="badge badge-info" style={{ marginBottom: '1.5rem', alignSelf: 'flex-start', padding: '6px 12px', fontSize: '0.85rem' }}>
-            💡 {tasks[currentTask].instruction}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '0.75rem' }}>
+            <p className="exercise-desc" style={{ margin: 0 }}>
+              Root Word: <strong style={{ color: 'var(--lf-primary)', fontSize: '1.25rem' }}>{currentTaskObj.root}</strong>
+            </p>
+            <button
+              onClick={() => speakText(`Root word: ${currentTaskObj.root}. ${currentTaskObj.instruction}`)}
+              style={{
+                background: 'var(--lf-primary-soft)',
+                color: 'var(--lf-primary)',
+                border: 'none',
+                padding: '4px 12px',
+                borderRadius: '20px',
+                fontWeight: 700,
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              🔊 Listen
+            </button>
+          </div>
+
+          <div className="badge badge-info" style={{ marginBottom: '1.5rem', alignSelf: 'flex-start', padding: '8px 14px', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>💡</span> {currentTaskObj.instruction}
           </div>
           
           <div className="match-grid">
-            {tasks[currentTask].options.map(opt => (
-              <button key={opt} className="match-btn-tile" onClick={() => handleChoice(opt)}>{opt}</button>
-            ))}
+            {currentTaskObj.options.map(opt => {
+              const isSelected = selectedChoice?.choice === opt;
+              const isCorrectTile = isSelected && selectedChoice.isCorrect;
+              const isIncorrectTile = isSelected && !selectedChoice.isCorrect;
+
+              return (
+                <button
+                  key={opt}
+                  className={`match-btn-tile ${isCorrectTile ? 'correct-selected' : ''} ${isIncorrectTile ? 'incorrect-selected' : ''}`}
+                  onClick={() => handleChoice(opt)}
+                  disabled={selectedChoice !== null}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    transition: 'all 0.2s ease',
+                    transform: isSelected ? 'scale(1.03)' : 'scale(1)',
+                  }}
+                >
+                  <span>{opt}</span>
+                  {isCorrectTile && <span>✅</span>}
+                  {isIncorrectTile && <span>❌</span>}
+                </button>
+              );
+            })}
           </div>
         </>
       ) : (
@@ -551,8 +667,11 @@ const MorphologyBuilder = ({ onComplete }) => {
           <div className="completion-trophy">🧬</div>
           <h4 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--lf-primary)', marginBottom: '0.5rem' }}>Morphology Module Complete!</h4>
           <p style={{ color: 'var(--lf-text-muted)', fontSize: '0.95rem', marginBottom: '1.5rem' }}>You derived {score} out of {tasks.length} morphological structures correctly.</p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-            <button className="btn-secondary" onClick={resetMorphologySession}>🔄 Practice New Root Words</button>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button className="btn-finish" style={{ background: 'linear-gradient(135deg, #ff7675, #d63031)', boxShadow: '0 4px 15px rgba(214,48,49,0.3)' }} onClick={resetMorphologySession}>
+              🔄 PLAY AGAIN
+            </button>
+            <button className="btn-secondary" onClick={resetMorphologySession}>Practice New Root Words</button>
             <button className="btn-finish" onClick={onComplete}>Complete & View Dashboard →</button>
           </div>
         </div>
@@ -623,8 +742,11 @@ const RapidNaming = ({ onComplete }) => {
           <div className="completion-trophy">⚡</div>
           <h4 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--lf-primary)', marginBottom: '0.5rem' }}>RAN Session Complete!</h4>
           <p style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--lf-teal)', marginBottom: '1.5rem' }}>Completion Time: {elapsed} seconds</p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-            <button className="btn-secondary" onClick={resetRANSession}>🔄 Practice New Symbol Set</button>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button className="btn-finish" style={{ background: 'linear-gradient(135deg, #ff7675, #d63031)', boxShadow: '0 4px 15px rgba(214,48,49,0.3)' }} onClick={resetRANSession}>
+              🔄 PLAY AGAIN
+            </button>
+            <button className="btn-secondary" onClick={resetRANSession}>Practice New Symbol Set</button>
             <button className="btn-finish" onClick={onComplete}>Complete & View Dashboard →</button>
           </div>
         </div>
@@ -638,11 +760,13 @@ const ExerciseSystem = ({ type, onComplete }) => {
   const [isAdvanced, setIsAdvanced] = useState(false);
   const { currentUser } = useAuth();
 
+  const [showFullAnalytics, setShowFullAnalytics] = useState(false);
+
   useEffect(() => {
     if (!currentUser) return;
     const historyKey = `lexiflow_exercise_history_${currentUser.uid}`;
     const history = JSON.parse(localStorage.getItem(historyKey) || localStorage.getItem('lexiflow_exercise_history') || '{}');
-    const typeStats = history[type] || { pb: '200 pts', pb_val: 200, sessions: 1, accuracy: '67%', trend: 'Stable', level: 'Intermediate', lastPlayed: 'Recent' };
+    const typeStats = history[type] || { pb: '3020 pts', pb_val: 3020, sessions: 1, accuracy: '67%', trend: 'Stable', level: 'Intermediate', lastPlayed: 'Recent' };
     setExerciseStats(typeStats);
   }, [type, currentUser]);
 
@@ -652,7 +776,7 @@ const ExerciseSystem = ({ type, onComplete }) => {
 
   return (
     <div className="exercise-container-flat">
-        {type !== 'video' && <aside className="exercise-stats-sidebar">
+        {showFullAnalytics && type !== 'video' && <aside className="exercise-stats-sidebar">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
             <span className="medical-label" style={{ margin: 0 }}>PERFORMANCE</span>
             <button 
@@ -676,7 +800,7 @@ const ExerciseSystem = ({ type, onComplete }) => {
             <div className="ex-stat-icon-wrap indigo">🏆</div>
             <div>
               <small className="medical-label">PERSONAL BEST</small>
-              <span className="ex-stat-val-big">{exerciseStats?.pb || '200 pts'}</span>
+              <span className="ex-stat-val-big">{exerciseStats?.pb || '3020 pts'}</span>
             </div>
           </div>
 
@@ -717,11 +841,55 @@ const ExerciseSystem = ({ type, onComplete }) => {
         </aside>}
 
         <div className="exercise-content-area">
-          {type === 'visual' && <VisualTracking onComplete={onComplete} speedMultiplier={isAdvanced ? 0.6 : 1} />}
-          {type === 'phoneme' && <PhonemeMatching onComplete={onComplete} advanced={isAdvanced} />}
+          {/* Top Quick-Stats Header Bar for Theatrical Full-Width Game View */}
+          <div style={{
+            width: '100%',
+            background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
+            border: '1.5px solid rgba(251,191,36,0.35)',
+            borderRadius: '16px',
+            padding: '0.65rem 1.25rem',
+            marginBottom: '0.85rem',
+            color: '#f8fafc',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', fontSize: '0.85rem', fontWeight: 800 }}>
+              <span>🏆 Personal Best: <strong style={{ color: '#fbbf24' }}>{exerciseStats?.pb || '3020 pts'}</strong></span>
+              <span>🎯 Accuracy: <strong style={{ color: '#4ade80' }}>{exerciseStats?.accuracy || '67%'}</strong></span>
+              <span>⭐ Level: <strong style={{ color: '#38bdf8' }}>{isAdvanced ? 'Advanced Tier' : (exerciseStats?.level || 'Intermediate')}</strong></span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+              <button 
+                onClick={toggleAdvanced}
+                style={{
+                  background: isAdvanced ? '#3b82f6' : 'rgba(255,255,255,0.1)',
+                  color: '#ffffff',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '50px',
+                  padding: '4px 12px',
+                  fontSize: '0.75rem',
+                  fontWeight: 800,
+                  cursor: 'pointer'
+                }}
+              >
+                {isAdvanced ? '🔥 ADVANCED' : '⚙️ NORMAL'}
+              </button>
+              <button 
+                onClick={() => setShowFullAnalytics(!showFullAnalytics)}
+                style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: '0.78rem', textDecoration: 'underline', cursor: 'pointer', fontWeight: 700 }}
+              >
+                {showFullAnalytics ? 'Hide Analytics ▲' : 'View Full Analytics ▾'}
+              </button>
+            </div>
+          </div>
+
+          {type === 'visual' && <MirrorMatchHighway onComplete={onComplete} />}
+          {type === 'phoneme' && <MarioPhonemeJumper onComplete={onComplete} />}
           {type === 'auditory' && <AuditoryProcessing onComplete={onComplete} advanced={isAdvanced} />}
-          {type === 'morphology' && <MorphologyBuilder onComplete={onComplete} advanced={isAdvanced} />}
-          {type === 'naming' && <RapidNaming onComplete={onComplete} advanced={isAdvanced} />}
+          {type === 'morphology' && <MorphoSnake onComplete={onComplete} />}
+          {type === 'naming' && <BalloonPopRAN onComplete={onComplete} />}
           {type === 'video' && <VideoPractice onComplete={onComplete} />}
         </div>
     </div>
@@ -729,3 +897,4 @@ const ExerciseSystem = ({ type, onComplete }) => {
 };
 
 export default ExerciseSystem;
+

@@ -1,0 +1,420 @@
+/* ── MORPHOLOGY BUILDER ARCADE: MORPHEME BREW LAB STYLES ── */
+.alchemist-lab-container {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  background: radial-gradient(circle at 50% 20%, #1a1638 0%, #0b091a 100%);
+  border-radius: 28px;
+  border: 4px solid #2B1B12;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 0 40px rgba(0, 0, 0, 0.7);
+  padding: 1.75rem;
+  box-sizing: border-box;
+  font-family: 'Fredoka', cursive, sans-serif;
+  color: #f8fafc;
+  overflow: hidden;
+}
+
+/* Ambient Floating Magic Particles */
+.magic-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.6) 0%, rgba(56, 189, 248, 0) 70%);
+  pointer-events: none;
+  animation: magicFloat 8s ease-in-out infinite alternate;
+}
+.magic-particle.p1 { width: 180px; height: 180px; top: -40px; left: -40px; }
+.magic-particle.p2 { width: 220px; height: 220px; bottom: -50px; right: -50px; background: radial-gradient(circle, rgba(56, 189, 248, 0.5) 0%, rgba(168, 85, 247, 0) 70%); }
+
+@keyframes magicFloat {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(-25px) scale(1.15); }
+}
+
+/* Alchemist Top HUD Bar */
+.alchemist-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.85);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 0.85rem 1.4rem;
+  margin-bottom: 1.25rem;
+  backdrop-filter: blur(10px);
+}
+
+.alchemist-hud-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #FFC93C;
+}
+
+.alchemist-hud-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.alchemist-stat-pill {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Speech Bubble Prompt Banner */
+.alchemist-speech-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(135deg, rgba(30, 27, 65, 0.9), rgba(15, 23, 42, 0.9));
+  border: 2.5px solid #2B1B12;
+  border-radius: 20px;
+  padding: 12px 18px;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.alchemist-sparky-avatar {
+  font-size: 2.2rem;
+  background: rgba(255, 201, 60, 0.15);
+  border: 2px solid #FFC93C;
+  border-radius: 50%;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alchemist-bubble-text { flex: 1; }
+.alchemist-bubble-text small {
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: #FFC93C;
+  letter-spacing: 0.05em;
+}
+
+.alchemist-target-prompt {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 2px;
+}
+
+.alchemist-sound-btn {
+  background: rgba(255, 201, 60, 0.2);
+  border: 1.5px solid #FFC93C;
+  color: #FFC93C;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+.alchemist-sound-btn:hover {
+  background: #FFC93C;
+  color: #020617;
+}
+
+.alchemist-hurdle-counter {
+  font-size: 0.88rem;
+  font-weight: 900;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1.5px solid #38bdf8;
+  padding: 6px 14px;
+  border-radius: 50px;
+}
+
+/* 🧩 INTERLOCKING PUZZLE TRAY */
+.word-puzzle-tray-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 3px solid #2B1B12;
+  border-radius: 22px;
+  padding: 1rem 1.4rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.puzzle-tray-label {
+  font-size: 0.8rem;
+  font-weight: 900;
+  color: #FFC93C;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
+.puzzle-tokens-assembled {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.puzzle-token {
+  position: relative;
+  min-width: 110px;
+  height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 16px;
+  border: 2.5px solid #2B1B12;
+  font-weight: 900;
+  font-size: 1.15rem;
+  cursor: pointer;
+  user-select: none;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+  transition: all 0.2s ease;
+}
+.puzzle-token small { font-size: 0.65rem; opacity: 0.8; letter-spacing: 0.05em; }
+
+.puzzle-token.prefix-token {
+  background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+  color: #ffffff;
+  border-radius: 18px 8px 8px 18px;
+}
+.puzzle-token.root-token {
+  background: linear-gradient(135deg, #10B981, #047857);
+  color: #ffffff;
+  border-radius: 8px;
+}
+.puzzle-token.suffix-token {
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+  color: #ffffff;
+  border-radius: 8px 18px 18px 8px;
+}
+
+.puzzle-tab-right {
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #FFC93C;
+  font-size: 0.9rem;
+  font-weight: 900;
+  z-index: 5;
+}
+.puzzle-notch-left {
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #FFC93C;
+  font-size: 0.9rem;
+  font-weight: 900;
+  z-index: 5;
+}
+
+.puzzle-token-placeholder {
+  min-width: 110px;
+  height: 52px;
+  border: 2.5px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+/* Main Brewing Grid: Cauldron + Shelf */
+.brewing-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .brewing-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cauldron-station {
+  background: rgba(15, 23, 42, 0.7);
+  border: 3px solid #2B1B12;
+  border-radius: 28px;
+  padding: 1.75rem;
+  text-align: center;
+  backdrop-filter: blur(8px);
+}
+
+.cauldron-pot {
+  position: relative;
+  width: 220px;
+  height: 170px;
+  margin: 0 auto 1.5rem;
+  background: radial-gradient(circle at 50% 40%, #332d56 0%, #181433 100%);
+  border: 6px solid #2B1B12;
+  border-radius: 20px 20px 90px 90px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 -15px 30px rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cauldron-liquid {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  right: 15px;
+  height: 40px;
+  background: linear-gradient(90deg, #c084fc, #38bdf8, #4ade80);
+  border-radius: 50%;
+  box-shadow: 0 0 20px rgba(192, 132, 252, 0.8);
+  animation: bubblePulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes bubblePulse {
+  0% { transform: scale(1); filter: brightness(1); }
+  100% { transform: scale(1.04); filter: brightness(1.25); }
+}
+
+.btn-brew-spell {
+  background: linear-gradient(135deg, #FFC93C, #f59e0b);
+  border: none;
+  color: #0f172a;
+  padding: 16px 40px;
+  border-radius: 50px;
+  font-weight: 900;
+  font-size: 1.15rem;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(255, 201, 60, 0.4);
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+.btn-brew-spell:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 201, 60, 0.6);
+}
+.btn-brew-spell:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Ingredient Shelf (Right Side) */
+.ingredient-shelf {
+  background: rgba(15, 23, 42, 0.75);
+  border: 3px solid #2B1B12;
+  border-radius: 28px;
+  padding: 1.5rem;
+  backdrop-filter: blur(8px);
+}
+
+.shelf-section-title {
+  font-size: 0.8rem;
+  font-weight: 900;
+  color: #38bdf8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+.ingredients-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 1.25rem;
+}
+
+.ingredient-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 2.5px solid #2B1B12;
+  border-radius: 14px;
+  padding: 8px 16px;
+  color: #fff;
+  font-family: inherit;
+  font-weight: 900;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.ingredient-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 14px rgba(255, 201, 60, 0.4);
+}
+.ingredient-btn.prefix {
+  background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+  border-radius: 18px 8px 8px 18px;
+}
+.ingredient-btn.root {
+  background: linear-gradient(135deg, #10B981, #047857);
+  border-radius: 8px;
+}
+.ingredient-btn.suffix {
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+  border-radius: 8px 18px 18px 8px;
+}
+
+/* 60FPS Snake Canvas Viewport & Controls */
+.snake-canvas-viewport {
+  margin-bottom: 1.25rem;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.snake-controls-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.85);
+  border: 2.5px solid #2B1B12;
+  border-radius: 22px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.snake-dpad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.snake-ctrl-btn {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1.5px solid #38bdf8;
+  color: #38bdf8;
+  padding: 6px 16px;
+  border-radius: 50px;
+  font-weight: 900;
+  font-size: 0.85rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.snake-ctrl-btn:hover, .snake-ctrl-btn:active {
+  background: #38bdf8;
+  color: #020617;
+}
+
+.alchemist-footer {
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #94a3b8;
+  margin-top: 1.25rem;
+}

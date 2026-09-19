@@ -1,0 +1,279 @@
+/* ── WORD NINJA SLICER ARCADE STYLES ── */
+
+.wns-container {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  background: radial-gradient(ellipse at 50% 0%, #180828 0%, #080210 100%);
+  border-radius: 20px;
+  border: 3px solid #d946ef;
+  box-shadow: 0 0 35px rgba(217, 70, 239, 0.18), 0 12px 35px rgba(0,0,0,0.6);
+  padding: 0.65rem 0.85rem;
+  box-sizing: border-box;
+  font-family: 'Lexend', 'Fredoka', cursive, sans-serif;
+  color: #f8fafc;
+  overflow: hidden;
+}
+
+/* ── HUD ── */
+.wns-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(24, 8, 40, 0.92);
+  border: 1.5px solid rgba(217, 70, 239, 0.4);
+  border-radius: 14px;
+  padding: 0.4rem 0.85rem;
+  margin-bottom: 0.4rem;
+  backdrop-filter: blur(10px);
+  gap: 8px;
+}
+.wns-hud-title {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #d946ef;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.02em;
+}
+.wns-hud-stats { display: flex; gap: 8px; align-items: center; }
+.wns-stat-pill {
+  background: rgba(255,255,255,0.09);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 3px 12px;
+  border-radius: 50px;
+  font-size: 0.88rem;
+  font-weight: 900;
+}
+
+/* ── TIER BUTTONS ── */
+.wns-tier-btn {
+  padding: 4px 12px;
+  border-radius: 50px;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.08);
+  color: #94a3b8;
+  font-weight: 800;
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+.wns-tier-btn.active.easy { border-color: #4ade80; color: #4ade80; background: rgba(74,222,128,0.15); }
+.wns-tier-btn.active.medium { border-color: #fbbf24; color: #fbbf24; background: rgba(251,191,36,0.15); }
+.wns-tier-btn.active.hard { border-color: #f87171; color: #f87171; background: rgba(248,113,113,0.15); }
+
+/* ── CLUE BANNER & FUSED CARD ── */
+.wns-clue-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 0.4rem;
+}
+.wns-clue-banner {
+  flex: 1;
+  background: linear-gradient(135deg, rgba(217,70,239,0.15), rgba(168,85,247,0.08));
+  border: 1.5px solid rgba(217,70,239,0.45);
+  border-radius: 14px;
+  padding: 0.4rem 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.wns-clue-badge {
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: #d946ef;
+  background: rgba(217,70,239,0.2);
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(217,70,239,0.4);
+  white-space: nowrap;
+}
+.wns-clue-prompt {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #ffffff;
+  flex: 1;
+  line-height: 1.25;
+}
+.wns-listen-btn {
+  background: rgba(217,70,239,0.2);
+  border: 1.5px solid rgba(217,70,239,0.5);
+  color: #d946ef;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-weight: 900;
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+.wns-listen-btn:hover { background: rgba(217,70,239,0.35); }
+
+.wns-fused-card {
+  background: rgba(24, 8, 40, 0.92);
+  border: 1.5px solid rgba(217,70,239,0.3);
+  border-radius: 14px;
+  padding: 0.4rem 0.75rem;
+  min-width: 160px;
+  text-align: center;
+}
+.wns-fused-card small {
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #d946ef;
+  letter-spacing: 0.08em;
+  display: block;
+}
+.wns-fused-word {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: #38bdf8;
+  letter-spacing: 0.04em;
+}
+
+/* ── DOJO STAGE ── */
+.wns-dojo-stage {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  background: radial-gradient(circle at 50% 30%, #2e104d 0%, #0d031a 100%);
+  border: 2px solid rgba(217,70,239,0.25);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: inset 0 0 40px rgba(0,0,0,0.6);
+  cursor: crosshair;
+}
+
+/* ── FLOATING BUBBLES ── */
+.wns-floating-bubble {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 12px 22px;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #38bdf8, #0284c7);
+  border: 3.5px solid #7dd3fc;
+  box-shadow: 0 0 20px rgba(56,189,248,0.4), 0 8px 20px rgba(0,0,0,0.5);
+  color: #fff;
+  font-weight: 900;
+  font-size: 1.25rem;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.1s ease;
+}
+.wns-floating-bubble:hover { transform: translate(-50%, -50%) scale(1.08); }
+
+.wns-floating-bubble.prefix { background: linear-gradient(135deg, #0284c7, #0369a1); border-color: #38bdf8; }
+.wns-floating-bubble.root { background: linear-gradient(135deg, #16a34a, #15803d); border-color: #4ade80; }
+.wns-floating-bubble.suffix { background: linear-gradient(135deg, #d97706, #b45309); border-color: #fbbf24; }
+.wns-floating-bubble.bomb {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border-color: #fca5a5;
+  box-shadow: 0 0 25px rgba(239,68,68,0.6);
+}
+
+/* Sliced Burst Effect */
+.wns-floating-bubble.sliced {
+  animation: wnsSliceFade 0.4s ease forwards;
+  pointer-events: none;
+}
+@keyframes wnsSliceFade {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  50% { transform: translate(-50%, -50%) scale(1.3) rotate(15deg); opacity: 0.8; }
+  100% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+}
+
+/* ── FOOTER & SPARKY HINT ── */
+.wns-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+.wns-fullview-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  color: #d946ef;
+  padding: 5px 14px;
+  border-radius: 50px;
+  font-weight: 800;
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+.wns-sparky-hint {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+/* ── START & COMPLETE MODALS ── */
+.wns-start-card, .wns-complete-card {
+  background: linear-gradient(145deg, #180828, #080210);
+  border: 3px solid #d946ef;
+  border-radius: 28px;
+  padding: 1.75rem;
+  max-width: 620px;
+  margin: 1rem auto;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+}
+.wns-start-icon, .wns-complete-emojis { font-size: 3.5rem; margin-bottom: 0.5rem; }
+.wns-start-title, .wns-complete-title {
+  font-size: 1.9rem;
+  font-weight: 900;
+  color: #d946ef;
+  margin-bottom: 0.5rem;
+}
+.wns-start-desc, .wns-complete-sub {
+  color: #cbd5e1;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  margin-bottom: 1.25rem;
+}
+.wns-start-btn, .wns-btn-next {
+  background: linear-gradient(135deg, #d946ef, #a855f7);
+  border: none;
+  color: #fff;
+  padding: 13px 36px;
+  border-radius: 50px;
+  font-weight: 900;
+  font-size: 1.15rem;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 5px 20px rgba(217,70,239,0.45);
+}
+.wns-btn-hq {
+  background: rgba(255,255,255,0.1);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  color: #fff;
+  padding: 13px 28px;
+  border-radius: 50px;
+  font-weight: 800;
+  font-size: 1.05rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+.wns-complete-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+.wns-stat-box { background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 0.75rem; }
+.wns-stat-box small { font-size: 0.72rem; text-transform: uppercase; font-weight: 900; color: #64748b; display: block; margin-bottom: 2px; }
+.wns-stat-box .val { font-size: 1.6rem; font-weight: 900; }
+.wns-complete-btns { display: flex; gap: 12px; justify-content: center; }
+
+/* FULLSCREEN */
+.wns-container:fullscreen,
+.wns-container.wns-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  border-radius: 0 !important;
+  border: none !important;
+  z-index: 999999 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: 1rem 2rem !important;
+}

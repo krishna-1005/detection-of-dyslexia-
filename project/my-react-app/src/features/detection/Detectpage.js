@@ -115,7 +115,7 @@ const DetectPage = () => {
   const history = JSON.parse(localStorage.getItem(storageKey) || localStorage.getItem("lexiflow_history") || "[]");
 
   return (
-    <div className={`page-container ${isDyslexiaFriendly ? "dyslexia-friendly" : ""}`}>
+    <div className={`page-container kids-page-bg ${isDyslexiaFriendly ? "dyslexia-friendly" : ""}`} style={{ minHeight: '100vh', background: 'radial-gradient(circle at 10% 20%, rgba(255, 242, 210, 0.5) 0%, rgba(224, 247, 250, 0.5) 50%, rgba(243, 229, 245, 0.5) 100%)' }}>
       <Navbar user={user} showDropdown={showDropdown} setShowDropdown={setShowDropdown} />
       <FocusRuler isActive={isFocusRulerActive} />
 
@@ -124,10 +124,12 @@ const DetectPage = () => {
 
         <main className="main-content" style={{ flex: 1, padding: '2.5rem' }}>
           <header className="medical-header" style={{ marginBottom: '2rem' }}>
-            <span className="badge badge-info" style={{ marginBottom: '0.4rem' }}>🧬 Neural Engine v4.2</span>
-            <h1 style={{ fontSize: '1.9rem', fontWeight: 800 }}>Linguistic Diagnostic Engine</h1>
-            <p style={{ color: 'var(--lf-text-muted)', fontSize: '0.9rem', marginTop: '0.2rem' }}>
-              Input clinical linguistic text samples or upload document files (.pdf, .docx, .txt) for AI dyslexia screening.
+            <span className="title-kids-badge" style={{ fontSize: '0.85rem', padding: '4px 12px', marginBottom: '0.4rem', display: 'inline-block' }}>✨ AI Diagnostic Quest</span>
+            <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#2f3542', margin: 0, fontFamily: 'var(--kids-font-display, "Fredoka", sans-serif)' }}>
+              🔬 AI Reading & Dyslexia Screener 🎈
+            </h1>
+            <p style={{ color: '#57606f', fontSize: '0.95rem', marginTop: '0.4rem', fontWeight: 600 }}>
+              Input linguistic text samples or upload document files (.pdf, .docx, .txt) for instant AI dyslexia screening & visual focus analysis!
             </p>
           </header>
 

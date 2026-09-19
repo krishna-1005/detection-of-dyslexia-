@@ -111,17 +111,19 @@ const SmartReader = () => {
     };
 
     return (
-        <div className="page-container smart-reader-page">
+        <div className="page-container kids-page-bg smart-reader-page" style={{ minHeight: '100vh', background: 'radial-gradient(circle at 10% 20%, rgba(255, 242, 210, 0.5) 0%, rgba(224, 247, 250, 0.5) 50%, rgba(243, 229, 245, 0.5) 100%)' }}>
             <Navbar user={user} />
             <div className="dashboard-layout" style={{ display: 'flex' }}>
                 <Sidebar />
                 <main className="main-content reader-main" style={{ flex: 1, padding: '2.5rem' }}>
                     <header className="reader-header" style={{ marginBottom: '2rem' }}>
                         <div className="title-area">
-                            <span className="badge badge-info" style={{ marginBottom: '0.4rem' }}>✨ AI Reading Accessibility Suite</span>
-                            <h1 style={{ fontSize: '1.9rem', fontWeight: 800 }}>Smart AI Reader & Simplifier</h1>
-                            <p style={{ color: 'var(--lf-text-muted)', fontSize: '0.9rem', marginTop: '0.2rem' }}>
-                                Transform dense, complex paragraphs into high-readability dyslexia-friendly formats.
+                            <span className="title-kids-badge" style={{ fontSize: '0.85rem', padding: '4px 12px', marginBottom: '0.4rem', display: 'inline-block' }}>✨ AI Story Accessibility 🎈</span>
+                            <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#2f3542', margin: 0, fontFamily: 'var(--kids-font-display, "Fredoka", sans-serif)' }}>
+                                📖 Smart AI Story Reader & Simplifier 🎈
+                            </h1>
+                            <p style={{ color: '#57606f', fontSize: '0.95rem', marginTop: '0.4rem', fontWeight: 600 }}>
+                                Transform complex paragraphs into high-readability dyslexia-friendly story formats with audio reading assist!
                             </p>
                         </div>
                         <div className="header-actions">

@@ -8,20 +8,18 @@
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background: var(--lf-bg-primary);
-  background-image: radial-gradient(rgba(37, 99, 235, 0.08) 1.5px, transparent 1.5px);
-  background-size: 24px 24px;
+  background: radial-gradient(circle at 10% 20%, rgba(255, 242, 210, 0.5) 0%, rgba(224, 247, 250, 0.5) 50%, rgba(243, 229, 245, 0.5) 100%) !important;
   position: relative;
 }
 
 .auth-card {
-  background: #ffffff;
+  background: #ffffff !important;
   width: 100%;
-  max-width: 440px;
+  max-width: 450px;
   padding: 3rem 2.5rem;
-  border-radius: var(--lf-radius-xl);
-  border: 1px solid var(--lf-border);
-  box-shadow: var(--lf-shadow-xl);
+  border-radius: 32px !important;
+  border: 3.5px solid #ffeaa7 !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08) !important;
   text-align: center;
   z-index: 10;
   animation: fadeInUp 0.4s ease-out;

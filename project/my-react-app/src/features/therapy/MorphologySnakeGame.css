@@ -1,0 +1,320 @@
+/* ── CYBER SNAKE MORPHOLOGY GAME STYLES ── */
+
+.msg-container {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  background: radial-gradient(ellipse at 50% 0%, #064e3b 0%, #022c22 100%);
+  border-radius: 20px;
+  border: 3px solid #10b981;
+  box-shadow: 0 0 35px rgba(16, 185, 129, 0.18), 0 12px 35px rgba(0,0,0,0.6);
+  padding: 0.65rem 0.85rem;
+  box-sizing: border-box;
+  font-family: 'Lexend', 'Fredoka', cursive, sans-serif;
+  color: #f8fafc;
+  overflow: hidden;
+}
+
+/* ── HUD ── */
+.msg-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(6, 78, 59, 0.92);
+  border: 1.5px solid rgba(16, 185, 129, 0.4);
+  border-radius: 14px;
+  padding: 0.4rem 0.85rem;
+  margin-bottom: 0.4rem;
+  backdrop-filter: blur(10px);
+  gap: 8px;
+}
+.msg-hud-title {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #10b981;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.02em;
+}
+.msg-hud-stats { display: flex; gap: 8px; align-items: center; }
+.msg-stat-pill {
+  background: rgba(255,255,255,0.09);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 3px 12px;
+  border-radius: 50px;
+  font-size: 0.88rem;
+  font-weight: 900;
+}
+
+/* ── TIER BUTTONS ── */
+.msg-tier-btn {
+  padding: 4px 12px;
+  border-radius: 50px;
+  border: 1.5px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.08);
+  color: #94a3b8;
+  font-weight: 800;
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+.msg-tier-btn.active.easy { border-color: #4ade80; color: #4ade80; background: rgba(74,222,128,0.15); }
+.msg-tier-btn.active.medium { border-color: #fbbf24; color: #fbbf24; background: rgba(251,191,36,0.15); }
+.msg-tier-btn.active.hard { border-color: #f87171; color: #f87171; background: rgba(248,113,113,0.15); }
+
+/* ── CLUE BANNER & TARGET CARD ── */
+.msg-clue-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 0.4rem;
+}
+.msg-clue-banner {
+  flex: 1;
+  background: linear-gradient(135deg, rgba(16,185,129,0.18), rgba(5,150,105,0.08));
+  border: 1.5px solid rgba(16,185,129,0.45);
+  border-radius: 14px;
+  padding: 0.4rem 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.msg-clue-badge {
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: #10b981;
+  background: rgba(16,185,129,0.2);
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(16,185,129,0.4);
+  white-space: nowrap;
+}
+.msg-clue-prompt {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #ffffff;
+  flex: 1;
+  line-height: 1.25;
+}
+.msg-listen-btn {
+  background: rgba(16,185,129,0.2);
+  border: 1.5px solid rgba(16,185,129,0.5);
+  color: #10b981;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-weight: 900;
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+.msg-listen-btn:hover { background: rgba(16,185,129,0.35); }
+
+.msg-target-card {
+  background: rgba(6, 78, 59, 0.92);
+  border: 1.5px solid rgba(16,185,129,0.4);
+  border-radius: 14px;
+  padding: 0.4rem 0.75rem;
+  min-width: 150px;
+  text-align: center;
+}
+.msg-target-card small {
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #10b981;
+  letter-spacing: 0.08em;
+  display: block;
+}
+.msg-target-word {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #fbbf24;
+}
+
+/* ── 2D GRID ARENA ── */
+.msg-grid-arena {
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  grid-template-rows: repeat(16, 1fr);
+  gap: 2px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-height: 330px;
+  background: rgba(2, 44, 34, 0.95);
+  border: 2px solid rgba(16,185,129,0.3);
+  border-radius: 16px;
+  padding: 4px;
+  box-sizing: border-box;
+  box-shadow: inset 0 0 30px rgba(0,0,0,0.6);
+  margin: 0 auto;
+}
+.msg-grid-cell {
+  background: rgba(255,255,255,0.02);
+  border-radius: 4px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Snake Segments */
+.msg-grid-cell.snake-head {
+  background: #10b981;
+  border-radius: 6px;
+  box-shadow: 0 0 12px #10b981;
+  z-index: 3;
+}
+.snake-eyes { font-size: 0.65rem; }
+
+.msg-grid-cell.snake-body {
+  background: #059669;
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(5,150,105,0.6);
+}
+
+.msg-grid-cell.rainbow {
+  background: linear-gradient(135deg, #fbbf24, #ef4444, #3b82f6, #10b981);
+  box-shadow: 0 0 15px #fbbf24;
+}
+
+/* ── PELLETS ── */
+.msg-pellet {
+  padding: 2px 6px;
+  border-radius: 8px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+  white-space: nowrap;
+  box-shadow: 0 0 8px rgba(0,0,0,0.5);
+  z-index: 2;
+}
+.msg-pellet.prefix { background: #0284c7; border-color: #38bdf8; }
+.msg-pellet.root { background: #16a34a; border-color: #4ade80; }
+.msg-pellet.suffix { background: #d97706; border-color: #fbbf24; }
+
+.msg-pellet.target-glow {
+  animation: msgTargetPulse 0.8s infinite alternate;
+}
+@keyframes msgTargetPulse {
+  from { transform: scale(1); box-shadow: 0 0 8px #fbbf24; }
+  to { transform: scale(1.15); box-shadow: 0 0 18px #fbbf24, 0 0 25px #fbbf24; }
+}
+
+/* ── FOOTER & D-PAD ── */
+.msg-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+.msg-fullview-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  color: #10b981;
+  padding: 5px 14px;
+  border-radius: 50px;
+  font-weight: 800;
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+.msg-dpad-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.msg-dpad-row { display: flex; gap: 3px; }
+.msg-dpad-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(16,185,129,0.25);
+  border: 1.5px solid #10b981;
+  color: #10b981;
+  font-size: 0.9rem;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.msg-dpad-btn:active { background: #10b981; color: #022c22; }
+
+.msg-sparky-hint {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+/* ── START & COMPLETE MODALS ── */
+.msg-start-card, .msg-complete-card {
+  background: linear-gradient(145deg, #064e3b, #022c22);
+  border: 3px solid #10b981;
+  border-radius: 28px;
+  padding: 1.75rem;
+  max-width: 620px;
+  margin: 1rem auto;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+}
+.msg-start-icon, .msg-complete-emojis { font-size: 3.5rem; margin-bottom: 0.5rem; }
+.msg-start-title, .msg-complete-title {
+  font-size: 1.9rem;
+  font-weight: 900;
+  color: #10b981;
+  margin-bottom: 0.5rem;
+}
+.msg-start-desc, .msg-complete-sub {
+  color: #cbd5e1;
+  font-size: 0.98rem;
+  line-height: 1.55;
+  margin-bottom: 1.25rem;
+}
+.msg-start-btn, .msg-btn-next {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: none;
+  color: #fff;
+  padding: 13px 36px;
+  border-radius: 50px;
+  font-weight: 900;
+  font-size: 1.15rem;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 5px 20px rgba(16,185,129,0.45);
+}
+.msg-btn-hq {
+  background: rgba(255,255,255,0.1);
+  border: 1.5px solid rgba(255,255,255,0.25);
+  color: #fff;
+  padding: 13px 28px;
+  border-radius: 50px;
+  font-weight: 800;
+  font-size: 1.05rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+.msg-complete-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 1.25rem; }
+.msg-stat-box { background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 0.75rem; }
+.msg-stat-box small { font-size: 0.72rem; text-transform: uppercase; font-weight: 900; color: #64748b; display: block; margin-bottom: 2px; }
+.msg-stat-box .val { font-size: 1.6rem; font-weight: 900; }
+.msg-complete-btns { display: flex; gap: 12px; justify-content: center; }
+
+/* FULLSCREEN */
+.msg-container:fullscreen,
+.msg-container.msg-fullscreen {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  border-radius: 0 !important;
+  border: none !important;
+  z-index: 999999 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  padding: 1rem 2rem !important;
+}

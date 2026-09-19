@@ -115,18 +115,24 @@ const UserReport = () => {
   }
 
   return (
-    <div className="page-container">
+    <div className="page-container kids-page-bg" style={{ minHeight: '100vh', background: 'radial-gradient(circle at 10% 20%, rgba(255, 242, 210, 0.5) 0%, rgba(224, 247, 250, 0.5) 50%, rgba(243, 229, 245, 0.5) 100%)' }}>
       <Navbar user={user} />
       <div className="dashboard-layout" style={{ display: 'flex' }}>
         <Sidebar />
         <main className="main-content" style={{ flex: 1, padding: '2.5rem' }}>
           <header className="medical-header" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <span className="medical-label">Patient Analytics</span>
-              <h1 style={{ fontSize: '2rem', fontWeight: 800, fontFamily: "'Outfit', sans-serif" }}>Comprehensive Therapy Analysis</h1>
-              <p style={{ color: 'var(--lf-text-muted)', fontSize: '0.9rem' }}>Clinical Diagnostic Summary - {reportData.lastActive}</p>
+              <span className="title-kids-badge" style={{ fontSize: '0.85rem', padding: '4px 12px', marginBottom: '0.4rem', display: 'inline-block' }}>📊 Kids Therapy Analysis 🎈</span>
+              <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#2f3542', margin: 0, fontFamily: 'var(--kids-font-display, "Fredoka", sans-serif)' }}>
+                🏆 Comprehensive Performance Report 🎈
+              </h1>
+              <p style={{ color: '#57606f', fontSize: '0.95rem', marginTop: '0.4rem', fontWeight: 600 }}>
+                Clinical & Arcade Summary - {reportData.lastActive}
+              </p>
             </div>
-            <button className="medical-btn-primary" onClick={() => window.print()}>🖨️ Download Report</button>
+            <button className="kids-logout-btn" style={{ background: 'linear-gradient(135deg, #74b9ff, #0984e3)', border: 'none', color: '#fff', boxShadow: '0 5px 0 #0984e3', fontSize: '0.9rem', padding: '0.55rem 1.3rem' }} onClick={() => window.print()}>
+              🖨️ Download Report 🚀
+            </button>
           </header>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
@@ -165,6 +171,73 @@ const UserReport = () => {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* SoundQuest Telemetry & Mistake Analytics Card */}
+            <div className="medical-card" style={{ gridColumn: 'span 2' }}>
+              <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem', fontWeight: 800, color: 'var(--lf-text-primary)' }}>
+                🎮 SoundQuest Phoneme Telemetry & Section Breakdown
+              </h3>
+              {(() => {
+                const sqData = JSON.parse(localStorage.getItem(`sq_analytics_${currentUser?.uid}`) || '{}');
+                const phonemeStats = sqData.phonemeStats || {};
+                const keys = Object.keys(phonemeStats);
+
+                if (keys.length === 0) {
+                  return (
+                    <p style={{ color: 'var(--lf-text-muted)', fontSize: '0.9rem' }}>
+                      No SoundQuest arcade telemetry recorded yet. Play a few missions in SoundQuest to see response times and mistake breakdowns!
+                    </p>
+                  );
+                }
+
+                const easySec = (sqData.easyTimeMs / 1000 || 0).toFixed(1);
+                const mediumSec = (sqData.mediumTimeMs / 1000 || 0).toFixed(1);
+                const hardSec = (sqData.hardTimeMs / 1000 || 0).toFixed(1);
+
+                return (
+                  <div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.25rem' }}>
+                      <div style={{ padding: '0.85rem', background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: '14px', textAlign: 'center' }}>
+                        <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#15803d' }}>🟢 Easy Level Time</span>
+                        <strong style={{ fontSize: '1.4rem', color: '#14532d' }}>{easySec}s</strong>
+                      </div>
+                      <div style={{ padding: '0.85rem', background: '#fefce8', border: '1.5px solid #fde047', borderRadius: '14px', textAlign: 'center' }}>
+                        <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#b45309' }}>🟡 Medium Level Time</span>
+                        <strong style={{ fontSize: '1.4rem', color: '#78350f' }}>{mediumSec}s</strong>
+                      </div>
+                      <div style={{ padding: '0.85rem', background: '#fef2f2', border: '1.5px solid #fca5a5', borderRadius: '14px', textAlign: 'center' }}>
+                        <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#be123c' }}>🔴 Hard Level Time</span>
+                        <strong style={{ fontSize: '1.4rem', color: '#881337' }}>{hardSec}s</strong>
+                      </div>
+                    </div>
+
+                    <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--lf-text-secondary)', marginBottom: '0.5rem' }}>
+                      Phoneme Mistake Breakdown & Response Times:
+                    </h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {keys.map(p => {
+                        const item = phonemeStats[p];
+                        const avg = item.attempts > 0 ? (item.totalTimeMs / (item.attempts * 1000)).toFixed(1) : '0.0';
+                        return (
+                          <div key={p} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 14px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                            <div>
+                              <strong style={{ color: '#0369a1', fontSize: '0.95rem' }}>{p}</strong>
+                              <span style={{ marginLeft: '10px', fontSize: '0.85rem', color: '#64748b' }}>{item.targetWord} ({item.difficulty?.toUpperCase()})</span>
+                            </div>
+                            <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>
+                              <span style={{ color: '#64748b', marginRight: '14px' }}>Avg: {avg}s</span>
+                              <span style={{ color: item.mistakes > 0 ? '#dc2626' : '#166534', background: item.mistakes > 0 ? '#fee2e2' : '#dcfce7', padding: '3px 10px', borderRadius: '20px' }}>
+                                {item.mistakes > 0 ? `⚠️ ${item.mistakes} Mistakes` : '✨ Perfect'}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Clinical Insights */}

@@ -405,4 +405,146 @@ def chat_with_llm(user_message, history=None):
     # 3. Tertiary: Local Clinical Knowledge Base (always available offline)
     return {"reply": get_local_clinical_response(user_message)}
 
+def generate_ai_phoneme_missions(focus_phoneme=None):
+    """
+    Generates dynamic AI phoneme missions for LexiFlow Sound Quest.
+    Returns structured JSON with target phonemes, words, distractor choices, and Sparky teaching tips.
+    """
+    fallback_missions = [
+        {
+            "id": 1,
+            "type": "find_sound",
+            "title": "AI Quest: Master the /SH/ Sound!",
+            "targetPhoneme": "/SH/",
+            "targetWord": "SHIP",
+            "emoji": "🚢",
+            "teachingTip": "The /SH/ sound is made by shushing softly with your lips rounded!",
+            "choices": [
+                { "text": "SHIP", "emoji": "🚢", "isCorrect": True, "phoneme": "/SH/" },
+                { "text": "CHIP", "emoji": "🍟", "isCorrect": False, "phoneme": "/CH/" },
+                { "text": "SUN", "emoji": "☀️", "isCorrect": False, "phoneme": "/S/" }
+            ],
+            "color": "#38bdf8"
+        },
+        {
+            "id": 2,
+            "type": "bloop_mistake",
+            "title": "Fix Bloop's /TR/ Mixup!",
+            "targetPhoneme": "/TR/",
+            "targetWord": "TREE",
+            "emoji": "🌲",
+            "bloopGuess": "CAR 🚗",
+            "bloopSpeech": "Is it CAR? Oops! Help me find TREE!",
+            "teachingTip": "/TR/ starts like 't-r', like a train engine starting up!",
+            "choices": [
+                { "text": "CAR", "emoji": "🚗", "isCorrect": False, "phoneme": "/C/" },
+                { "text": "TREE", "emoji": "🌲", "isCorrect": True, "phoneme": "/TR/" },
+                { "text": "FISH", "emoji": "🐟", "isCorrect": False, "phoneme": "/F/" }
+            ],
+            "color": "#34d399"
+        },
+        {
+            "id": 3,
+            "type": "echo_challenge",
+            "title": "Echo's /BL/ Sound Echo!",
+            "targetPhoneme": "/BL/",
+            "targetWord": "BLUE",
+            "emoji": "🔵",
+            "teachingTip": "/BL/ combines B and L smoothly together, like blowing a bubble!",
+            "choices": [
+                { "text": "RED", "emoji": "🔴", "isCorrect": False, "phoneme": "/R/" },
+                { "text": "GREEN", "emoji": "🟢", "isCorrect": False, "phoneme": "/GR/" },
+                { "text": "BLUE", "emoji": "🔵", "isCorrect": True, "phoneme": "/BL/" }
+            ],
+            "color": "#8b5cf6"
+        },
+        {
+            "id": 4,
+            "type": "zip_race",
+            "title": "Zip Speed Race: /CL/ Planet!",
+            "targetPhoneme": "/CL/",
+            "targetWord": "CLOCK",
+            "emoji": "⏰",
+            "teachingTip": "/CL/ makes a crisp clicking sound at the front of your mouth!",
+            "choices": [
+                { "text": "CLOCK", "emoji": "⏰", "isCorrect": True, "phoneme": "/CL/" },
+                { "text": "STAR", "emoji": "⭐", "isCorrect": False, "phoneme": "/ST/" },
+                { "text": "MOON", "emoji": "🌙", "isCorrect": False, "phoneme": "/M/" }
+            ],
+            "color": "#fbbf24"
+        },
+        {
+            "id": 5,
+            "type": "sound_treasure",
+            "title": "Unlock the /ST/ Star Treasure!",
+            "targetPhoneme": "/ST/",
+            "targetWord": "STAR",
+            "emoji": "⭐",
+            "teachingTip": "/ST/ starts with a gentle hiss then a clean T tap!",
+            "choices": [
+                { "text": "MOON", "emoji": "🌙", "isCorrect": False, "phoneme": "/M/" },
+                { "text": "STAR", "emoji": "⭐", "isCorrect": True, "phoneme": "/ST/" },
+                { "text": "CLOUD", "emoji": "☁️", "isCorrect": False, "phoneme": "/CL/" }
+            ],
+            "color": "#f472b6"
+        }
+    ]
+
+    groq_key = os.getenv("GROQ_API_KEY")
+    if groq_key and groq_key.strip() and groq_key != "YOUR_GROQ_API_KEY_HERE":
+        try:
+            prompt = f"""
+            Role: Dyslexia Phonological Therapy Game Designer.
+            Task: Generate 5 fun, kid-friendly phoneme challenge missions for Sound Quest space arcade.
+            {"Focus Phoneme: " + focus_phoneme if focus_phoneme else "Use diverse phonemes like /SH/, /CH/, /TH/, /BL/, /TR/, /FL/."}
+            
+            Return ONLY a valid JSON array of 5 mission objects with this exact structure:
+            [
+              {{
+                "id": 1,
+                "type": "find_sound",
+                "title": "Find the /SH/ Sound!",
+                "targetPhoneme": "/SH/",
+                "targetWord": "SHIP",
+                "emoji": "🚢",
+                "teachingTip": "Short tip on how to pronounce or spot /SH/",
+                "choices": [
+                  {{ "text": "SHIP", "emoji": "🚢", "isCorrect": true, "phoneme": "/SH/" }},
+                  {{ "text": "CAT", "emoji": "🐱", "isCorrect": false, "phoneme": "/C/" }},
+                  {{ "text": "SUN", "emoji": "☀️", "isCorrect": false, "phoneme": "/S/" }}
+                ],
+                "color": "#38bdf8"
+              }}
+            ]
+            
+            Ensure 1 correct choice per mission, simple words, colorful emojis, and encouraging phonics teaching tips!
+            """
+
+            headers = {
+                "Authorization": f"Bearer {groq_key.strip()}",
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "model": "llama-3.1-8b-instant",
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 800,
+                "temperature": 0.7
+            }
+
+            resp = requests.post("https://api.groq.com/openai/v1/chat/completions", headers=headers, json=payload, timeout=12)
+            if resp.status_code == 200:
+                raw_text = resp.json()["choices"][0]["message"]["content"].strip()
+                if "```json" in raw_text:
+                    raw_text = raw_text.split("```json")[1].split("```")[0].strip()
+                elif "```" in raw_text:
+                    raw_text = raw_text.split("```")[1].split("```")[0].strip()
+                parsed = json.loads(raw_text)
+                if isinstance(parsed, list) and len(parsed) > 0:
+                    return {"source": "Groq AI", "missions": parsed}
+        except Exception as e:
+            print(f"DEBUG: AI Phoneme Mission Groq Generation Error: {e}")
+
+    return {"source": "Standard Clinical Engine", "missions": fallback_missions}
+
+
 

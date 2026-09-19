@@ -97,6 +97,18 @@ const Sidebar = () => {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [location.pathname]);
 
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    return localStorage.getItem('lexiflow_sidebar_collapsed') === 'true';
+  });
+
+  const toggleSidebar = () => {
+    setIsCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('lexiflow_sidebar_collapsed', next.toString());
+      return next;
+    });
+  };
+
   const toggleStepCompleted = (index) => {
     setCompletedSteps(prev => ({
       ...prev,
@@ -104,9 +116,31 @@ const Sidebar = () => {
     }));
   };
 
+  if (isCollapsed) {
+    return (
+      <button
+        onClick={toggleSidebar}
+        className="sidebar-floating-expand-btn"
+        title="Expand Navigation Sidebar"
+      >
+        <span>▶</span>
+        <span className="expand-text">Sidebar</span>
+      </button>
+    );
+  }
+
   return (
     <aside className="sidebar">
-      <div className="sidebar-section-title">Diagnostics</div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0.25rem 0 0.5rem 0.25rem' }}>
+        <div className="sidebar-section-title" style={{ margin: 0 }}>Diagnostics</div>
+        <button
+          onClick={toggleSidebar}
+          className="sidebar-toggle-btn"
+          title="Collapse Navigation Sidebar"
+        >
+          ◀ Hide
+        </button>
+      </div>
       {mainLinks.map((link) => (
         <Link 
           key={link.path} 

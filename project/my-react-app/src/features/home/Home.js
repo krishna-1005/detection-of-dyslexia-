@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './Home.css';
 import { useAuth } from '../auth/AuthContext';
+import mascotImg from '../../images/lexi_owl_mascot.png';
+import { speakText } from '../../utils/speechHelper';
 
 const AnimatedCounter = ({ target, suffix = '', duration = 2000 }) => {
   const [count, setCount] = useState(0);
@@ -32,17 +34,16 @@ const AnimatedCounter = ({ target, suffix = '', duration = 2000 }) => {
   return <span ref={ref}>{count}{suffix}</span>;
 };
 
-
-
-// 1. Live Bionic & Accessibility Reader Sandbox Component
+// 1. Fairy Tale Bionic Reader Sandbox for Kids
 const BionicReaderSandbox = () => {
   const [inputText, setInputText] = useState(
-    "Dyslexia is a neurobiological difference that affects how the brain decodes written letters. With multisensory instruction and bionic visual cues, reading speed and comprehension improve dramatically."
+    "Once upon a time, Barnaby the Little Dragon found a glowing magic map in the Whispering Forest! With bionic magic vision, reading every word becomes easy, fast, and super fun for every young adventurer!"
   );
   const [bionicActive, setBionicActive] = useState(true);
   const [dyslexicFont, setDyslexicFont] = useState(true);
   const [focusLine, setFocusLine] = useState(false);
   const [compareMode, setCompareMode] = useState(false);
+  const [fontSize, setFontSize] = useState('1.1rem');
 
   const formatBionicText = (text) => {
     return text.split(' ').map((word, wIdx) => {
@@ -52,7 +53,7 @@ const BionicReaderSandbox = () => {
       const restPart = word.slice(mid);
       return (
         <span key={wIdx} className="bionic-word">
-          <strong style={{ color: 'var(--lf-primary, #2563eb)', fontWeight: 800 }}>{boldPart}</strong>
+          <strong style={{ color: '#ff4757', fontWeight: 800 }}>{boldPart}</strong>
           <span>{restPart}</span>{' '}
         </span>
       );
@@ -60,93 +61,115 @@ const BionicReaderSandbox = () => {
   };
 
   return (
-    <div className="sandbox-panel bionic-sandbox-panel" style={{ background: '#ffffff', border: '1px solid var(--lf-border)', borderRadius: '24px', padding: '2rem', boxShadow: 'var(--lf-shadow-lg)' }}>
+    <div className="sandbox-panel bionic-sandbox-panel kids-card-box">
       <div className="sandbox-controls">
-        <div className="sandbox-section-title">Live Accessibility Controls</div>
-        <p className="sandbox-helper">Experience LexiFlow's real-time AI reader transformations directly below.</p>
+        <div className="sandbox-section-title">✨ Magic Story Reader Sandbox</div>
+        <p className="sandbox-helper">Try turning on Bionic Fixation & Dyslexia Magic Font to see how easy reading becomes!</p>
         
         <div className="sandbox-group">
-          <div className="sandbox-title-label">Interactive Toggles</div>
+          <div className="sandbox-title-label">🎮 Interactive Magic Toggles</div>
           <button 
-            className={`sandbox-btn ${bionicActive ? 'active' : ''}`}
+            className={`sandbox-btn kids-btn-toggle ${bionicActive ? 'active-kids' : ''}`}
             onClick={() => setBionicActive(!bionicActive)}
           >
-            ✨ Bionic Fixation ({bionicActive ? 'ON' : 'OFF'})
+            ✨ Bionic Fixation ({bionicActive ? 'ON 🌟' : 'OFF'})
           </button>
           <button 
-            className={`sandbox-btn ${dyslexicFont ? 'active' : ''}`}
+            className={`sandbox-btn kids-btn-toggle ${dyslexicFont ? 'active-kids' : ''}`}
             onClick={() => setDyslexicFont(!dyslexicFont)}
           >
-            📖 OpenDyslexic Font ({dyslexicFont ? 'ON' : 'OFF'})
+            📖 OpenDyslexic Font ({dyslexicFont ? 'ON 🦄' : 'OFF'})
           </button>
           <button 
-            className={`sandbox-btn ${focusLine ? 'active' : ''}`}
+            className={`sandbox-btn kids-btn-toggle ${focusLine ? 'active-kids' : ''}`}
             onClick={() => setFocusLine(!focusLine)}
           >
-            🔍 Focus Highlight ({focusLine ? 'ON' : 'OFF'})
+            🔍 Focus Reading Beam ({focusLine ? 'ON 🔦' : 'OFF'})
           </button>
           <button 
-            className={`sandbox-btn ${compareMode ? 'active' : ''}`}
+            className={`sandbox-btn kids-btn-toggle ${compareMode ? 'active-kids-compare' : ''}`}
             onClick={() => setCompareMode(!compareMode)}
-            style={{ background: compareMode ? 'rgba(13, 148, 136, 0.1)' : '', borderColor: compareMode ? '#0d9488' : '', color: compareMode ? '#0d9488' : '' }}
           >
             ⚖️ Split Compare Mode
           </button>
         </div>
 
         <div className="sandbox-group">
-          <div className="sandbox-title-label">Sample Input Passage</div>
+          <div className="sandbox-title-label">🔤 Font Zoom Level</div>
+          <div style={{ display: 'flex', gap: '0.4rem' }}>
+            <button 
+              className={`sandbox-btn-sm ${fontSize === '0.95rem' ? 'active-kids' : ''}`} 
+              onClick={() => setFontSize('0.95rem')}
+            >
+              Normal A
+            </button>
+            <button 
+              className={`sandbox-btn-sm ${fontSize === '1.15rem' ? 'active-kids' : ''}`} 
+              onClick={() => setFontSize('1.15rem')}
+            >
+              Big A+
+            </button>
+            <button 
+              className={`sandbox-btn-sm ${fontSize === '1.35rem' ? 'active-kids' : ''}`} 
+              onClick={() => setFontSize('1.35rem')}
+            >
+              Super A++
+            </button>
+          </div>
+        </div>
+
+        <div className="sandbox-group">
+          <div className="sandbox-title-label">✏️ Try Your Own Story</div>
           <textarea 
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            className="analysis-input"
-            style={{ minHeight: '90px', fontSize: '0.88rem', padding: '0.75rem', borderRadius: '12px' }}
-            placeholder="Type or paste any text to test accessibility transformation..."
+            className="analysis-input kids-textarea"
+            placeholder="Type or paste any story text to transform into magic text..."
           />
         </div>
       </div>
 
       <div className="sandbox-workspace">
         <div className="sandbox-section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>Transformed Reading Canvas</span>
-          <span style={{ fontSize: '0.75rem', color: 'var(--lf-teal, #0d9488)', fontWeight: 700 }}>LIVE PREVIEW</span>
+          <span>📖 Transformed Storybook Canvas</span>
+          <span className="kids-live-pill">LIVE MAGIC PREVIEW ✨</span>
         </div>
 
         {compareMode ? (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
-            <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '16px', border: '1px solid var(--lf-border)' }}>
-              <small style={{ display: 'block', fontSize: '0.7rem', fontWeight: 800, color: 'var(--lf-text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>Standard Web Text</small>
-              <p style={{ fontSize: '0.95rem', lineHeight: 1.5, color: '#334155', margin: 0 }}>{inputText}</p>
+            <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '20px', border: '2px solid #e2e8f0' }}>
+              <small style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>Standard Book Text</small>
+              <p style={{ fontSize: fontSize, lineHeight: 1.6, color: '#334155', margin: 0 }}>{inputText}</p>
             </div>
             <div style={{
-              background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.04) 0%, rgba(13, 148, 136, 0.04) 100%)',
+              background: 'linear-gradient(135deg, rgba(255, 242, 210, 0.5) 0%, rgba(224, 247, 250, 0.6) 100%)',
               padding: '1.25rem',
-              borderRadius: '16px',
-              border: '1px solid rgba(37, 99, 235, 0.25)',
+              borderRadius: '20px',
+              border: '2px solid #38ada9',
               fontFamily: dyslexicFont ? "'OpenDyslexic', 'Comic Sans MS', sans-serif" : 'inherit',
               letterSpacing: dyslexicFont ? '0.04em' : 'normal',
-              lineHeight: 1.8
+              lineHeight: 1.85
             }}>
-              <small style={{ display: 'block', fontSize: '0.7rem', fontWeight: 800, color: 'var(--lf-primary)', textTransform: 'uppercase', marginBottom: '8px' }}>✨ LexiFlow Bionic Reader</small>
-              <p style={{ fontSize: '0.98rem', color: '#0f172a', margin: 0 }}>
+              <small style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#079992', textTransform: 'uppercase', marginBottom: '8px' }}>✨ LexiFlow Magic Reader</small>
+              <p style={{ fontSize: fontSize, color: '#1e272e', margin: 0 }}>
                 {bionicActive ? formatBionicText(inputText) : inputText}
               </p>
             </div>
           </div>
         ) : (
           <div style={{
-            background: focusLine ? 'linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(37,99,235,0.08) 50%, rgba(255,255,255,1) 100%)' : '#ffffff',
-            padding: '1.5rem',
-            borderRadius: '16px',
-            border: '1px solid var(--lf-border)',
-            minHeight: '160px',
+            background: focusLine ? 'linear-gradient(180deg, #ffffff 0%, rgba(255, 221, 89, 0.25) 50%, #ffffff 100%)' : '#ffffff',
+            padding: '1.75rem',
+            borderRadius: '20px',
+            border: '2px solid #78e08f',
+            minHeight: '170px',
             marginTop: '1rem',
             fontFamily: dyslexicFont ? "'OpenDyslexic', 'Comic Sans MS', sans-serif" : 'inherit',
             letterSpacing: dyslexicFont ? '0.05em' : 'normal',
-            lineHeight: 1.85,
-            boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.02)'
+            lineHeight: 1.9,
+            boxShadow: '0 4px 15px rgba(0, 0, 0, 0.04)'
           }}>
-            <p style={{ fontSize: '1.05rem', color: 'var(--lf-text-primary, #0f172a)', margin: 0 }}>
+            <p style={{ fontSize: fontSize, color: '#2f3542', margin: 0 }}>
               {bionicActive ? formatBionicText(inputText) : inputText}
             </p>
           </div>
@@ -156,27 +179,26 @@ const BionicReaderSandbox = () => {
   );
 };
 
-// 2. Interactive Sound & Phoneme Audio Sampler
+// 2. Interactive Sound & Phoneme Audio Sampler for Kids
 const PhonemeAudioSampler = () => {
   const [activePhoneme, setActivePhoneme] = useState(null);
+  const [popParticle, setPopParticle] = useState(null);
 
   const phonemeList = [
-    { sound: '/ch/', word: 'Chair', breakdown: '/ch/ - /ɛər/', color: '#2563eb' },
-    { sound: '/sh/', word: 'Shadow', breakdown: '/sh/ - /æd/ - /oʊ/', color: '#0d9488' },
-    { sound: '/th/', word: 'Think', breakdown: '/th/ - /ɪŋk/', color: '#d97706' },
-    { sound: '/ph/', word: 'Phonics', breakdown: '/f/ - /ɒn/ - /ɪks/', color: '#e11d48' },
-    { sound: '/bl/', word: 'Blend', breakdown: '/bl/ - /ɛnd/', color: '#7c3aed' },
-    { sound: '/str/', word: 'Stream', breakdown: '/str/ - /iːm/', color: '#059669' }
+    { sound: '/ch/', word: 'Chair 🪑', breakdown: '/ch/ - /ɛər/', color: '#ff4757', emoji: '🪑' },
+    { sound: '/sh/', word: 'Shark 🦈', breakdown: '/sh/ - /ɑːrk/', color: '#2e86de', emoji: '🦈' },
+    { sound: '/th/', word: 'Thunder ⚡', breakdown: '/th/ - /ʌn/ - /dər/', color: '#ffa801', emoji: '⚡' },
+    { sound: '/ph/', word: 'Phone 📱', breakdown: '/f/ - /oʊn/', color: '#ff6b81', emoji: '📱' },
+    { sound: '/bl/', word: 'Blast 🚀', breakdown: '/bl/ - /æst/', color: '#9c88ff', emoji: '🚀' },
+    { sound: '/str/', word: 'Star ⭐', breakdown: '/str/ - /ɑːr/', color: '#1dd1a1', emoji: '⭐' }
   ];
 
   const playAudio = (item) => {
     setActivePhoneme(item.sound);
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(`${item.word}. Sound: ${item.sound.replace(/\//g, '')}`);
-      utterance.rate = 0.85;
-      window.speechSynthesis.speak(utterance);
-    }
+    setPopParticle(item.sound);
+    setTimeout(() => setPopParticle(null), 600);
+
+    speakText(`${item.word}. Sound: ${item.sound.replace(/\//g, '')}`, { rate: 0.9, pitch: 1.08 });
   };
 
   return (
@@ -185,42 +207,29 @@ const PhonemeAudioSampler = () => {
         <div 
           key={item.sound}
           onClick={() => playAudio(item)}
+          className={`kids-sound-card ${activePhoneme === item.sound ? 'active-sound' : ''} ${popParticle === item.sound ? 'pop-bounce' : ''}`}
           style={{
-            background: activePhoneme === item.sound ? 'linear-gradient(135deg, rgba(37,99,235,0.08) 0%, rgba(13,148,136,0.08) 100%)' : '#ffffff',
-            border: activePhoneme === item.sound ? `2px solid ${item.color}` : '1px solid var(--lf-border)',
-            borderRadius: '18px',
-            padding: '1.35rem 1.25rem',
-            cursor: 'pointer',
-            boxShadow: 'var(--lf-shadow-sm)',
-            transition: 'all 0.2s ease',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem'
+            background: activePhoneme === item.sound ? 'linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,242,210,0.8) 100%)' : '#ffffff',
+            borderColor: item.color
           }}
         >
-          <div style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '14px',
-            background: `${item.color}15`,
-            color: item.color,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '1.25rem',
-            fontWeight: 900,
-            flexShrink: 0
-          }}>
-            🔊
+          <div 
+            className="kids-sound-icon-box"
+            style={{ background: `${item.color}20`, color: item.color }}
+          >
+            {item.emoji}
           </div>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <strong style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--lf-text-primary)' }}>{item.sound}</strong>
-              <span style={{ fontSize: '0.78rem', fontWeight: 700, color: item.color }}>({item.word})</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <strong style={{ fontSize: '1.3rem', fontWeight: 900, color: '#2f3542' }}>{item.sound}</strong>
+              <span className="sound-word-tag" style={{ background: `${item.color}15`, color: item.color }}>{item.word}</span>
             </div>
-            <small style={{ color: 'var(--lf-text-muted)', fontSize: '0.75rem', fontWeight: 600, display: 'block', marginTop: '2px' }}>
-              {item.breakdown}
+            <small style={{ color: '#747d8c', fontSize: '0.8rem', fontWeight: 700, display: 'block', marginTop: '4px' }}>
+              Breakdown: {item.breakdown}
             </small>
+          </div>
+          <div className="kids-speaker-bubble" style={{ background: item.color }}>
+            🔊
           </div>
         </div>
       ))}
@@ -228,209 +237,109 @@ const PhonemeAudioSampler = () => {
   );
 };
 
-const HeroDashboardShowcase = () => {
-  const [showVideoModal, setShowVideoModal] = useState(false);
+// 3. Hero Kids Adventure Hub & Mascot Showcase
+const HeroKidsArcadeShowcase = () => {
+  const [activeTab, setActiveTab] = useState('games');
 
   return (
-    <div className="hero-dashboard-showcase-container">
-      {/* Background Radial Glow Effects */}
-      <div className="glow-spot glow-cyan-top"></div>
-      <div className="glow-spot glow-cyan-bottom"></div>
-      <div className="glow-spot glow-purple-right"></div>
+    <div className="hero-dashboard-showcase-container kids-arcade-container">
+      {/* Background Floating Rainbow Stars & Bubbles */}
+      <div className="kids-floating-bubble bubble-1">🎈</div>
+      <div className="kids-floating-bubble bubble-2">⭐</div>
+      <div className="kids-floating-bubble bubble-3">✨</div>
+      <div className="kids-floating-bubble bubble-4">🚀</div>
 
-      {/* Floating Decorative Outline Doodles */}
-      <div className="doodle-icon doodle-book-top">📖</div>
-      <div className="doodle-icon doodle-brain-top">🧠</div>
-      <div className="doodle-icon doodle-sparkle-mid">✨</div>
-      <div className="doodle-icon doodle-book-bot">📚</div>
-      <div className="doodle-icon doodle-sparkle-bot">✨</div>
-
-      {/* Floating Overlay Cards (exact match from mockup) */}
-      <div className="showcase-float-card float-badge-complete">
-        <div className="float-badge-icon">✓</div>
+      {/* Floating Star & Streak Badges */}
+      <div className="showcase-float-card kids-float-stars">
+        <div className="float-badge-icon" style={{ background: '#fff200', color: '#d97706' }}>⭐</div>
         <div>
-          <strong>AI Analysis</strong>
-          <small style={{ color: '#10b981' }}>Complete</small>
+          <strong>450 Stars</strong>
+          <small style={{ color: '#ff9f43', fontWeight: 800 }}>Collected!</small>
         </div>
       </div>
 
-      <div className="showcase-float-card float-badge-improvement">
-        <div className="float-arrow-box">↑</div>
+      <div className="showcase-float-card kids-float-streak">
+        <div className="float-arrow-box" style={{ background: '#ff6b6b15', color: '#ff6b6b' }}>🔥</div>
         <div>
-          <strong>Reading Improvement</strong>
-          <small style={{ color: '#10b981', fontWeight: 800 }}>+18%</small>
+          <strong>7 Day Streak</strong>
+          <small style={{ color: '#ee5253', fontWeight: 800 }}>Super Reader!</small>
         </div>
       </div>
 
-      <div className="showcase-float-card float-badge-sessions">
-        <span style={{ fontSize: '1.2rem' }}>🗓️</span>
+      <div className="showcase-float-card kids-float-level">
+        <span style={{ fontSize: '1.2rem' }}>🏆</span>
         <div>
-          <strong>24 Therapy</strong>
-          <small style={{ fontWeight: 700 }}>Sessions</small>
+          <strong>Level 5 Master</strong>
+          <small style={{ fontWeight: 700, color: '#10b981' }}>Unstoppable!</small>
         </div>
       </div>
 
-      <div className="showcase-float-card float-badge-progress">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
-          <strong style={{ fontSize: '0.78rem' }}>Therapy Progress</strong>
-          <strong style={{ color: '#4f46e5', fontSize: '0.78rem' }}>82%</strong>
-        </div>
-        <div className="mini-progress-bar">
-          <div className="mini-progress-fill" style={{ width: '82%' }}></div>
-        </div>
-      </div>
-
-      {/* Main Mock Application Window */}
-      <div className="mock-app-window">
-        {/* Top App Bar */}
-        <div className="mock-app-navbar">
+      {/* Main Mascot & Arcade Window */}
+      <div className="mock-app-window kids-window-frame">
+        {/* Top Playful Bar */}
+        <div className="mock-app-navbar kids-top-bar">
           <div className="mock-app-brand">
-            <div className="mock-app-logo">L</div>
-            <span>Application</span>
+            <div className="kids-logo-badge">🌈</div>
+            <span style={{ fontWeight: 900, color: '#2f3542', fontSize: '1rem' }}>LexiFlow Kids Arcade</span>
           </div>
-          <button className="mock-demo-btn" onClick={() => setShowVideoModal(true)}>
-            ▶ Live Demo
-          </button>
+          <div className="kids-streak-pill">
+            <span>⭐ 450 Stars</span>
+          </div>
         </div>
 
-        {/* Inner App Body */}
-        <div className="mock-app-body">
-          {/* App Sidebar */}
-          <div className="mock-app-sidebar">
-            <div className="mock-nav-item active">🏠</div>
-            <div className="mock-nav-item">👥</div>
-            <div className="mock-nav-item">⚙️</div>
-          </div>
-
-          {/* App Content Grid */}
-          <div className="mock-app-content">
-            {/* Left Column: Risk Donut + Line Chart */}
-            <div className="mock-col-left">
-              {/* Donut Card */}
-              <div className="mock-panel-card">
-                <span className="mock-panel-title">Dyslexia Risk Level</span>
-                <div className="donut-chart-wrapper">
-                  <svg className="donut-svg" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="38" fill="none" stroke="#e2e8f0" strokeWidth="9" />
-                    <circle 
-                      cx="50" cy="50" r="38" fill="none" 
-                      stroke="url(#donutGrad)" strokeWidth="9" 
-                      strokeDasharray="238" strokeDashoffset="75"
-                      strokeLinecap="round"
-                    />
-                    <defs>
-                      <linearGradient id="donutGrad" x1="0" y1="0" x2="1" y2="1">
-                        <stop offset="0%" stopColor="#f59e0b" />
-                        <stop offset="100%" stopColor="#3b82f6" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  <div className="donut-center-label">
-                    <strong>Moderate Risk</strong>
-                    <span>(68%)</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Line Chart Card */}
-              <div className="mock-panel-card">
-                <span className="mock-panel-title">Progress Line Chart</span>
-                <div style={{ width: '100%', height: '50px', marginTop: '4px' }}>
-                  <svg viewBox="0 0 200 50" style={{ width: '100%', height: '100%' }}>
-                    <path 
-                      d="M 0 40 Q 30 35, 60 42 T 120 20 T 170 30 T 200 10" 
-                      fill="none" stroke="#3b82f6" strokeWidth="3" strokeLinecap="round"
-                    />
-                    <path 
-                      d="M 0 40 Q 30 35, 60 42 T 120 20 T 170 30 T 200 10 L 200 50 L 0 50 Z" 
-                      fill="rgba(59, 130, 246, 0.15)"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column: Score + Therapy Modules */}
-            <div className="mock-col-right">
-              {/* Assessment Score Card */}
-              <div className="mock-panel-card score-card">
-                <span className="mock-panel-title">Assessment Score</span>
-                <div className="big-score-val">720<span className="score-max">/1000</span></div>
-              </div>
-
-              {/* Recommended Therapy Modules */}
-              <div className="mock-panel-card">
-                <span className="mock-panel-title">Recommended Therapy Modules</span>
-                <div className="mock-therapy-mini-list">
-                  <div className="mini-therapy-row">
-                    <span>💡 Phoneme Matching</span>
-                  </div>
-                  <div className="mini-therapy-row">
-                    <span>👁️ Visual Tracking</span>
-                  </div>
-                  <div className="mini-therapy-row">
-                    <span>🎧 Auditory Processing</span>
-                  </div>
-                  <div className="mini-therapy-row">
-                    <span>⚡ Rapid Naming</span>
-                  </div>
-                </div>
-              </div>
+        {/* Mascot Greeting Banner */}
+        <div className="kids-mascot-hero-card">
+          <img src={mascotImg} alt="Lexi Owl Mascot" className="kids-mascot-img-large" />
+          <div className="kids-mascot-speech-bubble">
+            <div className="speech-arrow"></div>
+            <h3>Hi! I'm Lexi 🦉</h3>
+            <p>Welcome to your reading quest! Ready to play games and collect stars?</p>
+            <div className="kids-mascot-tags">
+              <span className="kids-tag tag-pink">🎮 8 Mini Games</span>
+              <span className="kids-tag tag-yellow">🏆 Star Trophies</span>
             </div>
           </div>
         </div>
 
-        {/* Bottom Mock Overlay Cards */}
-        <div className="mock-bottom-history-overlay">
-          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#0f172a', display: 'block', marginBottom: '4px' }}>Assessment History</span>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.6rem', color: '#64748b', borderBottom: '1px solid #e2e8f0', paddingBottom: '2px' }}>
-            <span>Date</span><span>Updated</span><span>Score</span>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.62rem', fontWeight: 700, color: '#334155', marginTop: '2px' }}>
-            <span>12/16/24</span><span>01/03/2025</span><strong style={{ color: '#4f46e5' }}>720</strong>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.62rem', fontWeight: 700, color: '#334155', marginTop: '2px' }}>
-            <span>12/30/24</span><span>02/08/2025</span><strong style={{ color: '#10b981' }}>750</strong>
-          </div>
-        </div>
+        {/* Game Modules Grid */}
+        <div className="kids-arcade-games-grid">
+          <Link to="/therapy/phoneme" className="kids-game-card game-jar">
+            <div className="game-icon">🫙</div>
+            <div className="game-info">
+              <h4>Phoneme Jar Collector</h4>
+              <p>Catch falling letter sounds in magic jars!</p>
+            </div>
+            <span className="game-play-btn">Play ➔</span>
+          </Link>
 
-        <div className="mock-bottom-weekly-overlay">
-          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#0f172a', display: 'block', marginBottom: '4px' }}>Weekly Progress</span>
-          <div style={{ display: 'flex', gap: '8px', fontSize: '0.6rem', color: '#64748b' }}>
-            <div><small style={{ display: 'block' }}>10m</small><strong style={{ color: '#4f46e5' }}>35m</strong></div>
-            <div><small style={{ display: 'block' }}>44m</small><strong style={{ color: '#10b981' }}>45%</strong></div>
-            <div><small style={{ display: 'block' }}>Time</small><strong style={{ color: '#0f172a' }}>30</strong></div>
-          </div>
+          <Link to="/therapy/phoneme" className="kids-game-card game-cannon">
+            <div className="game-icon">🚀</div>
+            <div className="game-info">
+              <h4>Sound Blast Cannon</h4>
+              <p>Pop sound bubbles in space!</p>
+            </div>
+            <span className="game-play-btn">Play ➔</span>
+          </Link>
+
+          <Link to="/therapy/phoneme" className="kids-game-card game-ninja">
+            <div className="game-icon">🥷</div>
+            <div className="game-info">
+              <h4>Flash Word Ninja</h4>
+              <p>Slice sight words before they land!</p>
+            </div>
+            <span className="game-play-btn">Play ➔</span>
+          </Link>
+
+          <Link to="/therapy/phoneme" className="kids-game-card game-maze">
+            <div className="game-icon">🌀</div>
+            <div className="game-info">
+              <h4>Mirror Letter Maze</h4>
+              <p>Untangle tricky 'b' & 'd' letters!</p>
+            </div>
+            <span className="game-play-btn">Play ➔</span>
+          </Link>
         </div>
       </div>
-
-      {/* Video Modal Preview */}
-      {showVideoModal && (
-        <div className="modal-overlay" onClick={() => setShowVideoModal(false)}>
-          <div className="modal-content video-modal-box" onClick={e => e.stopPropagation()} style={{ maxWidth: '750px' }}>
-            <button className="modal-close-btn" onClick={() => setShowVideoModal(false)}>✕</button>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.85rem', color: 'var(--lf-text-primary)' }}>
-              LexiFlow AI Reading & Diagnostic Demonstration
-            </h3>
-            
-            <div className="modal-video-container">
-              <video 
-                controls 
-                autoPlay 
-                className="full-modal-video"
-                src="https://cdn.coverr.co/videos/coverr-a-child-reading-a-book-5668/1080p.mp4"
-              />
-            </div>
-
-            <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="dash-status">● SCIENCE-BACKED DYSLEXIA INTERVENTION</span>
-              <button className="medical-btn-primary" onClick={() => setShowVideoModal(false)}>
-                Close Preview
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
@@ -456,215 +365,246 @@ const Home = () => {
   };
 
   return (
-    <div className="home-container">
-      <div className="home-bg-effects">
-        <div className="bg-grid"></div>
-      </div>
-
-      <nav className={`home-navbar ${scrolled ? 'navbar-blue-scrolled' : ''}`}>
-        <div className="nav-brand">
-          <div className="nav-logo-icon">L</div>
-          <h2>LexiFlow Clinical</h2>
-        </div>
+    <div className="home-container kids-home-theme">
+      {/* Navbar */}
+      <nav className={`home-navbar kids-navbar ${scrolled ? 'navbar-kids-scrolled' : ''}`}>
+        <Link to="/" className="nav-brand">
+          <div className="nav-logo-icon kids-logo-rainbow">🌈</div>
+          <h2 className="kids-brand-title">LexiFlow <span className="title-kids-badge">Kids 🎈</span></h2>
+        </Link>
         <div className="nav-links">
-          <Link to="/simulator" className="nav-item" style={{ fontWeight: 600 }}>Ocular Simulator</Link>
+          <Link to="/simulator" className="nav-item kids-nav-item">👁️ Tracking Simulator</Link>
+          <Link to="/therapy/phoneme" className="nav-item kids-nav-item">🎮 Therapy Games</Link>
+          <Link to="/quiz" className="nav-item kids-nav-item">📋 Quick Quiz</Link>
           {currentUser ? (
             <>
-              <Link to="/dashboard" className="home-cta-btn">Dashboard →</Link>
+              <Link to="/dashboard" className="home-cta-btn kids-cta-btn">Kid Dashboard 🚀</Link>
               <button 
                 onClick={handleLogout} 
-                className="nav-item"
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--lf-rose, #f43f5e)', fontWeight: 600 }}
+                className="kids-logout-btn"
               >
                 Sign Out
               </button>
             </>
           ) : (
             <>
-              <Link to="/login" className="nav-item">Login</Link>
-              <Link to="/signup" className="home-cta-btn">Get Started →</Link>
+              <Link to="/login" className="kids-nav-item kids-login-btn">Login</Link>
+              <Link to="/signup" className="home-cta-btn kids-cta-btn">Start Adventure 🚀</Link>
             </>
           )}
         </div>
       </nav>
 
       <main>
-        {/* Refined Hero Section matching Mockup */}
-        <section className="hero-section">
+        {/* Playful Hero Section */}
+        <section className="hero-section kids-hero-bg">
           <div className="hero-container-inner">
             <div className="hero-content-left">
               {/* Badge */}
-              <span className="hero-badge-green">
+              <span className="hero-badge-green kids-hero-badge">
                 <span className="badge-dot-green"></span>
-                AI-Powered Dyslexia Screening
+                🌟 100% Kid Friendly & Science Backed
               </span>
 
               {/* Heading */}
-              <h1 className="hero-title-mockup">
-                Helping Every Child <br />
-                Read with Confidence.
+              <h1 className="hero-title-mockup kids-title">
+                Make Reading Your <br />
+                <span className="highlight-text-sparkle">Superpower! 🚀✨</span>
               </h1>
 
-              {/* Highlighted Subtitle Pill Box */}
-              <div className="hero-subtitle-highlight-box">
-                Powered by AI. Guided by Personalized Therapy.
+              {/* Subtitle Highlight Pill */}
+              <div className="hero-subtitle-highlight-box kids-subtitle-box">
+                Fun Therapy Games • Bionic Story Reader • Star Rewards 🏆
               </div>
 
-              {/* Feature Chips (2x2 Grid with pastel tints) */}
+              {/* Feature Chips */}
               <div className="hero-chips-grid-2x2">
-                <span className="mock-chip chip-blue">🔍 AI-Powered Screening</span>
-                <span className="mock-chip chip-pink">👤 Interactive Therapy</span>
-                <span className="mock-chip chip-green">📈 Progress Dashboard</span>
-                <span className="mock-chip chip-orange">🧠 Personalized Learning</span>
+                <span className="mock-chip chip-blue">🎮 8+ Playful Games</span>
+                <span className="mock-chip chip-pink">📖 Magic Story Reader</span>
+                <span className="mock-chip chip-green">🏆 Star Badges & Trophies</span>
+                <span className="mock-chip chip-orange">🔊 Sound Blast Power</span>
               </div>
 
               {/* CTA Buttons */}
               <div className="hero-btn-group-mockup">
-                <Link to={currentUser ? "/detect" : "/signup"} className="btn-royal-blue">
-                  Start Dyslexia Assessment
+                <Link to={currentUser ? "/detect" : "/signup"} className="btn-royal-blue kids-btn-primary">
+                  Start Your Fun Quest! 🚀
                 </Link>
-                <Link to="/therapy/phoneme" className="btn-outline-white">
-                  Explore Therapy Modules
+                <Link to="/therapy/phoneme" className="btn-outline-white kids-btn-secondary">
+                  Play Therapy Games 🎮
                 </Link>
               </div>
 
               {/* Trust Indicators Row */}
               <div className="hero-trust-row-mockup">
                 <div className="trust-box-item">
-                  <div className="trust-icon-box">🔒</div>
-                  <span>Secure User<br />Accounts</span>
+                  <div className="trust-icon-box" style={{ background: '#ffeaa7', color: '#d97706' }}>🔒</div>
+                  <span>100% Safe &<br />Ad-Free</span>
                 </div>
                 <div className="trust-box-item">
-                  <div className="trust-icon-box">🧠</div>
-                  <span>AI-Powered<br />Analysis</span>
+                  <div className="trust-icon-box" style={{ background: '#74b9ff20', color: '#0984e3' }}>👨‍👩‍👧</div>
+                  <span>Loved by Parents<br />& Teachers</span>
                 </div>
                 <div className="trust-box-item">
-                  <div className="trust-icon-box">🔮</div>
-                  <span>Personalized<br />Learning</span>
+                  <div className="trust-icon-box" style={{ background: '#55efc420', color: '#00b894' }}>🧠</div>
+                  <span>Orton-Gillingham<br />Multisensory</span>
                 </div>
               </div>
             </div>
 
             <div className="hero-content-right">
-              <HeroDashboardShowcase />
+              <HeroKidsArcadeShowcase />
             </div>
           </div>
         </section>
 
 
-        {/* 4-Step How LexiFlow Works Section */}
-        <section className="features-grid" style={{ paddingTop: '4rem', paddingBottom: '2rem' }}>
-          <div className="features-header" style={{ marginBottom: '2.5rem' }}>
-            <span className="section-badge">Clinical Workflow</span>
-            <h2 className="section-title">How LexiFlow Empowers Readers</h2>
-            <p className="section-subtitle">A seamless 4-step pipeline bridging diagnostic identification with engaging therapeutic intervention.</p>
+        {/* 4-Step Kids Quest Roadmap */}
+        <section className="features-grid kids-features-section">
+          <div className="features-header">
+            <span className="section-badge kids-badge-pill">🗺️ Your Reading Quest</span>
+            <h2 className="section-title kids-section-title">Your Reading Adventure in 4 Easy Steps!</h2>
+            <p className="section-subtitle">Discover how LexiFlow transforms reading practice into an exciting, reward-filled quest!</p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.25rem' }}>
-            <div style={{ background: '#ffffff', padding: '1.5rem', borderRadius: '18px', border: '1px solid var(--lf-border)', boxShadow: 'var(--lf-shadow-sm)', position: 'relative' }}>
-              <span style={{ fontSize: '0.7rem', fontWeight: 900, color: 'var(--lf-primary)', background: 'rgba(37,99,235,0.08)', padding: '4px 10px', borderRadius: '12px' }}>STEP 01</span>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: '0.85rem 0 0.4rem 0', color: 'var(--lf-text-primary)' }}>🔍 Diagnostic Ingestion</h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--lf-text-muted)', lineHeight: 1.5, margin: 0 }}>Input text samples or upload documents to analyze phonetic & visual reading bottlenecks.</p>
+          <div className="kids-roadmap-grid">
+            <div className="kids-step-card step-1">
+              <div className="step-num-bubble">STEP 01</div>
+              <h3>🎯 Take the Fun Quiz Quest</h3>
+              <p>Answer 10 short, colorful questions to uncover your unique reading superpowers!</p>
             </div>
-            <div style={{ background: '#ffffff', padding: '1.5rem', borderRadius: '18px', border: '1px solid var(--lf-border)', boxShadow: 'var(--lf-shadow-sm)', position: 'relative' }}>
-              <span style={{ fontSize: '0.7rem', fontWeight: 900, color: 'var(--lf-teal)', background: 'rgba(13,148,136,0.08)', padding: '4px 10px', borderRadius: '12px' }}>STEP 02</span>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: '0.85rem 0 0.4rem 0', color: 'var(--lf-text-primary)' }}>🧩 Cognitive Drills</h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--lf-text-muted)', lineHeight: 1.5, margin: 0 }}>Engage in randomized phoneme matching, morphology, and ocular tracking exercises.</p>
+            <div className="kids-step-card step-2">
+              <div className="step-num-bubble">STEP 02</div>
+              <h3>🎧 Play Sound Games</h3>
+              <p>Catch falling sound jars, blast phoneme bubbles, and slice sight words in mid-air!</p>
             </div>
-            <div style={{ background: '#ffffff', padding: '1.5rem', borderRadius: '18px', border: '1px solid var(--lf-border)', boxShadow: 'var(--lf-shadow-sm)', position: 'relative' }}>
-              <span style={{ fontSize: '0.7rem', fontWeight: 900, color: '#d97706', background: 'rgba(217,119,6,0.08)', padding: '4px 10px', borderRadius: '12px' }}>STEP 03</span>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: '0.85rem 0 0.4rem 0', color: 'var(--lf-text-primary)' }}>✨ Smart Reader</h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--lf-text-muted)', lineHeight: 1.5, margin: 0 }}>Transform any article into Bionic fixation text with customized dyslexia-friendly overlays.</p>
+            <div className="kids-step-card step-3">
+              <div className="step-num-bubble">STEP 03</div>
+              <h3>📖 Read Magic Stories</h3>
+              <p>Transform any school book or story into easy-to-read Bionic magic text!</p>
             </div>
-            <div style={{ background: '#ffffff', padding: '1.5rem', borderRadius: '18px', border: '1px solid var(--lf-border)', boxShadow: 'var(--lf-shadow-sm)', position: 'relative' }}>
-              <span style={{ fontSize: '0.7rem', fontWeight: 900, color: '#e11d48', background: 'rgba(225,29,72,0.08)', padding: '4px 10px', borderRadius: '12px' }}>STEP 04</span>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: '0.85rem 0 0.4rem 0', color: 'var(--lf-text-primary)' }}>📈 Growth Analytics</h3>
-              <p style={{ fontSize: '0.85rem', color: 'var(--lf-text-muted)', lineHeight: 1.5, margin: 0 }}>Track longitudinal accuracy, speed trends, and milestone badges on your clinical dashboard.</p>
+            <div className="kids-step-card step-4">
+              <div className="step-num-bubble">STEP 04</div>
+              <h3>🏆 Collect Stars & Badges</h3>
+              <p>Track daily streaks, earn star trophies, and celebrate every reading milestone!</p>
             </div>
           </div>
         </section>
 
-        {/* Interactive Saccadic Simulator Section */}
-        <section className="features-grid sandbox-section" style={{ paddingTop: '2rem', paddingBottom: '3rem' }}>
-          <div className="home-screening-banner-card" style={{
-            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.06) 0%, rgba(13, 148, 136, 0.06) 100%)',
-            border: '1px solid var(--lf-border)',
-            borderRadius: '24px',
-            padding: '3.5rem 2rem',
-            textAlign: 'center',
-            boxShadow: 'var(--lf-shadow-lg)',
-            maxWidth: '920px',
-            margin: '0 auto'
-          }}>
-            <span className="section-badge" style={{ marginBottom: '1rem', display: 'inline-block' }}>👁️ Dedicated Interactive Tool</span>
-            <h2 className="section-title" style={{ fontSize: '2.2rem', marginBottom: '1rem' }}>
-              Ocular Saccadic Tracking Simulator
+        {/* Live Interactive Sandboxes Section */}
+        <section className="features-grid kids-sandbox-container">
+          <div className="features-header">
+            <span className="section-badge kids-badge-pill">✨ Interactive Magic Reader Sandbox</span>
+            <h2 className="section-title kids-section-title">Experience the Magic Story Reader Live!</h2>
+            <p className="section-subtitle">Test out our bionic reading cues and dyslexia-friendly font below!</p>
+          </div>
+
+          <BionicReaderSandbox />
+        </section>
+
+        {/* Interactive Sound Sampler Section */}
+        <section className="features-grid kids-sound-container">
+          <div className="features-header">
+            <span className="section-badge kids-badge-pill">🔊 Sound Magic Sampler</span>
+            <h2 className="section-title kids-section-title">Tap to Hear Sound Blasts!</h2>
+            <p className="section-subtitle">Listen to key phoneme sounds and practice your listening powers!</p>
+          </div>
+
+          <PhonemeAudioSampler />
+        </section>
+
+        {/* Ocular Tracking Simulator Section */}
+        <section className="features-grid sandbox-section">
+          <div className="home-screening-banner-card kids-simulator-banner">
+            <span className="section-badge kids-badge-pill" style={{ marginBottom: '1rem' }}>👁️ Eye Tracking Game</span>
+            <h2 className="section-title kids-banner-title">
+              Ocular Saccadic Eye Tracking Game 👁️✨
             </h2>
-            <p className="section-subtitle" style={{ maxWidth: '640px', margin: '0 auto 2rem auto', fontSize: '1rem', lineHeight: 1.6 }}>
-              Test the motor visual-coordination exercises used in dyslexia recovery protocols. Customize tracking patterns, target speeds, and focus graphics in real-time.
+            <p className="section-subtitle kids-banner-sub">
+              Train your visual tracking skills with interactive bouncing target exercises designed for smoother line-by-line reading!
             </p>
 
-            <Link to="/simulator" className="btn-gradient" style={{ padding: '0.95rem 2.5rem', fontSize: '1.05rem', borderRadius: '14px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <Link to="/simulator" className="btn-gradient kids-btn-primary" style={{ padding: '0.95rem 2.5rem', fontSize: '1.05rem', borderRadius: '18px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
               Launch Full Saccadic Simulator 👁️ →
             </Link>
           </div>
         </section>
 
+        {/* Symptoms Quiz Screening Section */}
         <section className="quiz-section">
-          <div className="home-screening-banner-card" style={{
-            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.06) 0%, rgba(13, 148, 136, 0.06) 100%)',
-            border: '1px solid var(--lf-border)',
-            borderRadius: '24px',
-            padding: '3.5rem 2rem',
-            textAlign: 'center',
-            boxShadow: 'var(--lf-shadow-lg)',
-            maxWidth: '920px',
-            margin: '0 auto',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
+          <div className="home-screening-banner-card kids-quiz-banner">
             <div style={{ position: 'relative', zIndex: 2 }}>
-              <span className="section-badge" style={{ marginBottom: '1rem', display: 'inline-block' }}>📋 Quick Clinical Assessment</span>
-              <h2 className="section-title" style={{ fontSize: '2.2rem', marginBottom: '1rem' }}>
-                Dyslexia Symptoms Screening
+              <span className="section-badge kids-badge-pill" style={{ marginBottom: '1rem' }}>📋 Quick 3-Minute Quiz</span>
+              <h2 className="section-title kids-banner-title">
+                Ready for Your Reading Superpower Quiz? 📋✨
               </h2>
-              <p className="section-subtitle" style={{ maxWidth: '640px', margin: '0 auto 2rem auto', fontSize: '1rem', lineHeight: 1.6 }}>
-                Answer 10 basic developmental questions to evaluate key reading and phonological indicators in under 3 minutes, and receive immediate personalized recommendations.
+              <p className="section-subtitle kids-banner-sub">
+                Answer 10 fun, non-invasive developmental questions to find your personalized therapy games and reading recommendations!
               </p>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.25rem', marginBottom: '2.5rem', textAlign: 'left' }}>
-                <div style={{ background: '#ffffff', padding: '1.25rem', borderRadius: '16px', border: '1px solid var(--lf-border)', boxShadow: 'var(--lf-shadow-sm)' }}>
-                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>⏱️</div>
-                  <strong style={{ display: 'block', fontSize: '0.95rem', color: 'var(--lf-text-primary)', marginBottom: '4px' }}>3-Minute Test</strong>
-                  <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--lf-text-muted)', lineHeight: 1.4 }}>Quick and non-invasive screening designed for parents and educators.</p>
+              <div className="kids-quiz-perks-grid">
+                <div className="kids-perk-card">
+                  <div className="perk-emoji">⏱️</div>
+                  <strong>3-Minute Test</strong>
+                  <p>Quick & easy screening for kids, parents, and teachers.</p>
                 </div>
-                <div style={{ background: '#ffffff', padding: '1.25rem', borderRadius: '16px', border: '1px solid var(--lf-border)', boxShadow: 'var(--lf-shadow-sm)' }}>
-                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🔄</div>
-                  <strong style={{ display: 'block', fontSize: '0.95rem', color: 'var(--lf-text-primary)', marginBottom: '4px' }}>Dynamic Questions</strong>
-                  <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--lf-text-muted)', lineHeight: 1.4 }}>Questions refresh automatically on every run for reliable results.</p>
+                <div className="kids-perk-card">
+                  <div className="perk-emoji">🔄</div>
+                  <strong>Fun & Friendly</strong>
+                  <p>Encouraging questions that adapt to your child's pace.</p>
                 </div>
-                <div style={{ background: '#ffffff', padding: '1.25rem', borderRadius: '16px', border: '1px solid var(--lf-border)', boxShadow: 'var(--lf-shadow-sm)' }}>
-                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>📊</div>
-                  <strong style={{ display: 'block', fontSize: '0.95rem', color: 'var(--lf-text-primary)', marginBottom: '4px' }}>Instant Report</strong>
-                  <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--lf-text-muted)', lineHeight: 1.4 }}>Get immediate clinical insights and next steps after completing.</p>
+                <div className="kids-perk-card">
+                  <div className="perk-emoji">📊</div>
+                  <strong>Instant Insights</strong>
+                  <p>Get immediate personalized game recommendations!</p>
                 </div>
               </div>
 
-              <Link to="/quiz" className="btn-gradient" style={{ padding: '0.95rem 2.5rem', fontSize: '1.05rem', borderRadius: '14px', textDecoration: 'none' }}>
-                Start Symptoms Screening 📋 →
+              <Link to="/quiz" className="btn-gradient kids-btn-primary" style={{ padding: '0.95rem 2.5rem', fontSize: '1.05rem', borderRadius: '18px', textDecoration: 'none' }}>
+                Start Symptoms Quiz 📋 →
               </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Parents & Educators Trust Section */}
+        <section className="features-grid kids-parents-trust-section">
+          <div className="features-header">
+            <span className="section-badge kids-badge-pill">👨‍👩‍👧‍👦 Parent & Educator Hub</span>
+            <h2 className="section-title kids-section-title">Designed for Kids, Trusted by Adults</h2>
+            <p className="section-subtitle">We combine evidence-based phonics research with engaging game mechanics to build lasting reading confidence.</p>
+          </div>
+
+          <div className="kids-trust-cards-grid">
+            <div className="kids-trust-card">
+              <div className="trust-card-icon">🧪</div>
+              <h3>Orton-Gillingham Science</h3>
+              <p>Multi-sensory auditory, visual, and kinesthetic drills designed by dyslexia reading specialists.</p>
+            </div>
+
+            <div className="kids-trust-card">
+              <div className="trust-card-icon">🔒</div>
+              <h3>100% Safe & Ad-Free</h3>
+              <p>Zero advertisements, strict data privacy, and a focused environment designed for zero stress.</p>
+            </div>
+
+            <div className="kids-trust-card">
+              <div className="trust-card-icon">📈</div>
+              <h3>Parent Growth Reports</h3>
+              <p>Track real longitudinal reading speed, phoneme accuracy trends, and milestone achievements.</p>
             </div>
           </div>
         </section>
       </main>
 
-      <footer className="home-footer">
+      {/* Footer */}
+      <footer className="home-footer kids-footer">
         <div className="footer-inner">
           <div className="footer-brand">
-            <div className="nav-logo-icon">L</div>
-            <span>LexiFlow</span>
+            <div className="nav-logo-icon kids-logo-rainbow">🌈</div>
+            <span style={{ fontWeight: 900, fontSize: '1.2rem', color: '#2f3542' }}>LexiFlow Kids</span>
           </div>
-          <p>© 2026 LexiFlow Clinical. Designed for educational accessibility.</p>
+          <p>© 2026 LexiFlow Kids • Making Reading a Magical Adventure for Everyone! 🚀</p>
           <div className="footer-links">
             <a href="#">Privacy Policy</a>
             <a href="#">Terms of Service</a>

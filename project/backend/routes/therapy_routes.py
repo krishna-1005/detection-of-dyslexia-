@@ -2,7 +2,16 @@ import uuid
 from flask import Blueprint, request, jsonify, g
 from middleware.auth import require_auth, get_user_record, save_user_database
 
+from model.llm_agent import generate_ai_phoneme_missions
+
 therapy_bp = Blueprint('therapy', __name__)
+
+@therapy_bp.route("/api/therapy/ai-phoneme-mission", methods=["GET", "POST"])
+def get_ai_phoneme_mission():
+    data = request.get_json() if request.is_json else {}
+    focus = data.get("phoneme") or request.args.get("phoneme")
+    result = generate_ai_phoneme_missions(focus_phoneme=focus)
+    return jsonify(result)
 
 @therapy_bp.route("/api/therapy/progress", methods=["GET", "POST"])
 @require_auth

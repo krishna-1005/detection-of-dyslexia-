@@ -255,22 +255,24 @@ const Dashboard = () => {
   const currentRec = getModuleRecommendation();
 
   return (
-    <div className="page-container">
+    <div className="page-container kids-page-bg" style={{ minHeight: '100vh', background: 'radial-gradient(circle at 10% 20%, rgba(255, 242, 210, 0.5) 0%, rgba(224, 247, 250, 0.5) 50%, rgba(243, 229, 245, 0.5) 100%)' }}>
       <Navbar user={currentUser} showDropdown={showDropdown} setShowDropdown={setShowDropdown} />
 
       <div className="dashboard-layout" style={{ display: 'flex' }}>
         <Sidebar />
 
         <main className="main-content" style={{ flex: 1, padding: '2rem 2.5rem' }}>
-          <header className="dash-header">
+          <header className="dash-header" style={{ borderLeft: 'none', marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <span className="medical-label">Personal Clinical Analytics</span>
-              <h1 className="dash-title">Dyslexia & Therapy Dashboard</h1>
+              <span className="title-kids-badge" style={{ fontSize: '0.85rem', padding: '4px 12px', marginBottom: '0.4rem', display: 'inline-block' }}>🎈 Kids DysTherapy Arcade</span>
+              <h1 className="dash-title" style={{ fontSize: '2.2rem', fontWeight: 900, color: '#2f3542', margin: 0, fontFamily: 'var(--kids-font-display, "Fredoka", sans-serif)' }}>
+                🚀 Kid Dashboard & Therapy Quest
+              </h1>
             </div>
             <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <button className="medical-btn-secondary" onClick={() => setShowReportModal(true)}>📥 Progress Report</button>
-              <button className="medical-btn-primary" onClick={() => navigate(`/therapy/${lastPlayedModule || 'phoneme'}`)}>
-                ▶ Continue Last Therapy ({moduleDefinitions.find(m => m.id === lastPlayedModule)?.name || 'Phoneme'})
+              <button className="kids-login-btn" style={{ fontSize: '0.9rem', padding: '0.55rem 1.2rem' }} onClick={() => setShowReportModal(true)}>📥 Progress Report</button>
+              <button className="kids-logout-btn" style={{ background: 'linear-gradient(135deg, #ff4757, #ff6b81)', border: 'none', color: '#fff', boxShadow: '0 5px 0 #d63031', fontSize: '0.9rem', padding: '0.55rem 1.3rem' }} onClick={() => navigate(`/therapy/${lastPlayedModule || 'phoneme'}`)}>
+                ▶ Play {moduleDefinitions.find(m => m.id === lastPlayedModule)?.name || 'Phoneme'} 🚀
               </button>
             </div>
           </header>

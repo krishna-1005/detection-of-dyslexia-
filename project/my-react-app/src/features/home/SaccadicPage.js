@@ -172,25 +172,25 @@ const VisualSaccadicSandbox = () => {
 
 const SaccadicPage = () => {
   return (
-    <div className="page-container" style={{ minHeight: '100vh', background: 'var(--lf-bg-primary, #f8fafc)', display: 'flex', flexDirection: 'column' }}>
+    <div className="page-container kids-page-bg" style={{ minHeight: '100vh', background: 'radial-gradient(circle at 10% 20%, rgba(255, 242, 210, 0.5) 0%, rgba(224, 247, 250, 0.5) 50%, rgba(243, 229, 245, 0.5) 100%)', display: 'flex', flexDirection: 'column' }}>
       <Navbar />
 
       <main style={{ flex: 1, padding: '2.5rem 1.5rem', maxWidth: '1100px', margin: '0 auto', width: '100%' }}>
         <div style={{ marginBottom: '1.5rem' }}>
-          <Link to="/" style={{ textDecoration: 'none', color: 'var(--lf-primary, #2563eb)', fontWeight: 700, fontSize: '0.88rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            ← Back to Home
+          <Link to="/" className="kids-btn-secondary" style={{ padding: '8px 18px', fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            ← Back to Home 🏠
           </Link>
         </div>
 
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-          <span className="badge badge-info" style={{ textTransform: 'uppercase', letterSpacing: '0.05em', padding: '6px 14px', borderRadius: '20px', fontWeight: 800, fontSize: '0.75rem', marginBottom: '0.75rem', display: 'inline-block' }}>
-            👁️ INTERACTIVE SIMULATOR
+          <span className="title-kids-badge" style={{ fontSize: '0.85rem', padding: '4px 14px', marginBottom: '0.75rem', display: 'inline-block' }}>
+            👁️ INTERACTIVE SIMULATOR 🎈
           </span>
-          <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: 'var(--lf-text-primary, #0f172a)', margin: '0.25rem 0 0.5rem 0', letterSpacing: '-0.025em' }}>
-            Ocular Saccadic Tracking Simulator
+          <h1 style={{ fontSize: '2.4rem', fontWeight: 900, color: '#2f3542', margin: '0.25rem 0 0.5rem 0', fontFamily: 'var(--kids-font-display, "Fredoka", sans-serif)' }}>
+            🎯 Ocular Saccadic Eye Tracking Simulator
           </h1>
-          <p style={{ color: 'var(--lf-text-muted, #64748b)', fontSize: '1rem', maxWidth: '640px', margin: '0 auto', lineHeight: 1.6 }}>
-            Test the motor visual-coordination exercises used in dyslexia recovery protocols. Follow the tracking marker to experience it live.
+          <p style={{ color: '#57606f', fontSize: '1rem', maxWidth: '640px', margin: '0 auto', lineHeight: 1.6, fontWeight: 600 }}>
+            Test the motor visual-coordination exercises used in dyslexia recovery protocols. Follow the tracking marker to experience it live!
           </p>
         </div>
 

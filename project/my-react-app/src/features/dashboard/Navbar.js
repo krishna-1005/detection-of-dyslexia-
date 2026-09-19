@@ -52,8 +52,8 @@ const Navbar = ({ user: propUser, showDropdown, setShowDropdown }) => {
         </button>
 
         <Link to="/" className="nav-brand" onClick={() => setMobileMenuOpen(false)}>
-          <div className="nav-logo-icon">L</div>
-          <h2>LexiFlow <span className="nav-brand-tag">Clinical</span></h2>
+          <div className="nav-logo-icon kids-logo-rainbow">🌈</div>
+          <h2>LexiFlow <span className="nav-brand-tag title-kids-badge">Kids 🎈</span></h2>
         </Link>
       </div>
       

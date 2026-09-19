@@ -1,0 +1,240 @@
+/* ═══════════════════════════════════════════════════════════════
+   LEXIFLOW CARTOON CHARACTER SYSTEM — DESIGN & ANIMATIONS
+   Original space adventure character styles & micro-interactions
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+  --char-sparky-blue: #38bdf8;
+  --char-sparky-gold: #fbbf24;
+  --char-bloop-blue: #60a5fa;
+  --char-bloop-purple: #c084fc;
+  --char-echo-cyan: #22d3ee;
+  --char-zip-orange: #fb923c;
+  --char-zip-coral: #f43f5e;
+}
+
+/* ── Container Scoping ── */
+.character-wrapper {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  user-select: none;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.character-wrapper:hover {
+  transform: translateY(-3px) scale(1.03);
+}
+
+/* ── Animations ── */
+
+/* Sparky Breathing, Floating & Thumbs Up */
+@keyframes sparky-idle {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(1deg); }
+}
+
+@keyframes sparky-celebrate {
+  0%, 100% { transform: translateY(0) scale(1); }
+  25% { transform: translateY(-18px) scale(1.1) rotate(-5deg); }
+  50% { transform: translateY(-24px) scale(1.12) rotate(5deg); }
+  75% { transform: translateY(-10px) scale(1.05) rotate(-2deg); }
+}
+
+@keyframes sparky-thumbs-up {
+  0% { transform: scale(1) rotate(0deg); }
+  30% { transform: scale(1.15) translateY(-8px) rotate(-6deg); }
+  60% { transform: scale(1.08) translateY(-4px) rotate(4deg); }
+  100% { transform: scale(1) translateY(0) rotate(0deg); }
+}
+
+@keyframes sparky-listening {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.05) rotate(-3deg); }
+}
+
+/* Bloop Antenna Wiggle, Head Shake & Bounce */
+@keyframes bloop-idle {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  50% { transform: translateY(-4px) scale(1.03, 0.97); }
+}
+
+@keyframes bloop-antenna {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-12deg); }
+  75% { transform: rotate(12deg); }
+}
+
+@keyframes bloop-head-shake {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  20% { transform: translateX(-8px) rotate(-10deg); }
+  40% { transform: translateX(8px) rotate(10deg); }
+  60% { transform: translateX(-6px) rotate(-6deg); }
+  80% { transform: translateX(6px) rotate(6deg); }
+}
+
+@keyframes bloop-confused {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(-8deg) scale(0.98); }
+  75% { transform: rotate(8deg) scale(1.02); }
+}
+
+@keyframes bloop-silly {
+  0%, 100% { transform: scale(1) translateY(0); }
+  30% { transform: scale(1.15, 0.85) translateY(-8px); }
+  60% { transform: scale(0.88, 1.12) translateY(-14px); }
+}
+
+/* Echo Floating, Wing Flap & Travelling Soundwaves */
+@keyframes echo-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(-2deg); }
+}
+
+@keyframes echo-wing-left {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(-25deg); }
+}
+
+@keyframes echo-wing-right {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(25deg); }
+}
+
+@keyframes echo-wave-pulse {
+  0% { transform: scale(0.6); opacity: 1; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+@keyframes echo-sound-travel {
+  0% { transform: translate(0, 0) scale(0.6); opacity: 1; }
+  50% { transform: translate(120px, 40px) scale(1.2); opacity: 0.9; }
+  100% { transform: translate(250px, 80px) scale(0.4); opacity: 0; }
+}
+
+/* Zip Running & Excited Jump */
+@keyframes zip-idle {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(2deg); }
+}
+
+@keyframes zip-run {
+  0% { transform: translateY(0) rotate(-4deg); }
+  25% { transform: translateY(-6px) rotate(4deg); }
+  50% { transform: translateY(0) rotate(-4deg); }
+  75% { transform: translateY(-6px) rotate(4deg); }
+  100% { transform: translateY(0) rotate(-4deg); }
+}
+
+@keyframes zip-celebrate {
+  0%, 100% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.2) translateY(-16px) rotate(360deg); }
+}
+
+/* Sound Sprite Orbit & Pop Spawn */
+@keyframes sprite-pop-spawn {
+  0% { transform: scale(0) rotate(-30deg); opacity: 0; }
+  60% { transform: scale(1.3) rotate(10deg); opacity: 1; }
+  80% { transform: scale(0.9) rotate(-5deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes sprite-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-6px) scale(1.08); }
+}
+
+@keyframes sprite-glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 6px currentColor); opacity: 0.85; }
+  50% { filter: drop-shadow(0 0 16px currentColor); opacity: 1; }
+}
+
+/* Eye Blinking */
+@keyframes eye-blink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+
+/* ── Applied State Classes ── */
+.char-sparky.idle { animation: sparky-idle 3.5s ease-in-out infinite; }
+.char-sparky.celebrating { animation: sparky-celebrate 0.8s ease-in-out infinite; }
+.char-sparky.thumbsUp { animation: sparky-thumbs-up 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.char-sparky.listening { animation: sparky-listening 1.8s ease-in-out infinite; }
+
+.char-bloop.idle { animation: bloop-idle 3s ease-in-out infinite; }
+.char-bloop.confused { animation: bloop-confused 1.2s ease-in-out infinite; }
+.char-bloop.headShake { animation: bloop-head-shake 0.7s ease-in-out; }
+.char-bloop.silly { animation: bloop-silly 0.9s ease-in-out infinite; }
+
+.char-echo.idle { animation: echo-float 3.8s ease-in-out infinite; }
+.char-echo.repeating { animation: echo-float 1.5s ease-in-out infinite; }
+.char-echo-wing-l { animation: echo-wing-left 1.2s ease-in-out infinite; transform-origin: top right; }
+.char-echo-wing-r { animation: echo-wing-right 1.2s ease-in-out infinite; transform-origin: top left; }
+
+.char-zip.idle { animation: zip-idle 2.5s ease-in-out infinite; }
+.char-zip.running { animation: zip-run 0.35s linear infinite; }
+.char-zip.celebrating { animation: zip-celebrate 0.9s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+.char-bloop-antenna-svg { animation: bloop-antenna 2s ease-in-out infinite; transform-origin: bottom center; }
+.char-eye-blink { animation: eye-blink 4s infinite; transform-origin: center; }
+
+/* ── Character Speech & Expression Bubbles ── */
+.char-speech-bubble {
+  position: absolute;
+  bottom: 100%;
+  margin-bottom: 8px;
+  background: rgba(15, 23, 42, 0.94);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(8px);
+  padding: 8px 14px;
+  border-radius: 16px;
+  color: #ffffff;
+  font-family: 'Fredoka', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  z-index: 10;
+  animation: bubble-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.char-speech-bubble::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: rgba(15, 23, 42, 0.94) transparent transparent transparent;
+}
+
+@keyframes bubble-pop {
+  0% { transform: scale(0.6) translateY(10px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* ── Sound Wave Emission Ring ── */
+.echo-sound-wave-ring {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--char-echo-cyan);
+  box-shadow: 0 0 12px var(--char-echo-cyan);
+  animation: echo-wave-pulse 1.2s ease-out infinite;
+  pointer-events: none;
+}
+
+/* ── Accessibility Reduced Motion Support ── */
+@media (prefers-reduced-motion: reduce) {
+  .char-sparky.idle, .char-sparky.celebrating, .char-sparky.thumbsUp,
+  .char-bloop.idle, .char-bloop.confused, .char-bloop.headShake,
+  .char-echo.idle, .char-echo.repeating, .char-zip.idle, .char-zip.running,
+  .char-bloop-antenna-svg, .char-eye-blink, .echo-sound-wave-ring {
+    animation: none !important;
+    transform: none !important;
+  }
+}

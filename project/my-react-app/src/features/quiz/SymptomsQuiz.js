@@ -1,486 +1,472 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useAuth } from '../auth/AuthContext';
+import { saveTherapyProgress } from '../therapy/ExerciseSystem';
 import './SymptomsQuiz.css';
 
 // ─────────────────────────────────────────────────────────────────
-// QUESTION BANK — each question is tagged with the exercise domains
-// it signals, enabling fine-grained exercise prioritization.
+// SUBTYPE DEFINITIONS & MAPPINGS
 // ─────────────────────────────────────────────────────────────────
-const masterQuestionsPool = [
-  { id: 1,  text: "Has difficulty reading unfamiliar words and often guesses at them.",         domains: ['phoneme', 'auditory'] },
-  { id: 2,  text: "Pauses, repeats or makes frequent mistakes when reading aloud.",              domains: ['visual', 'phoneme'] },
-  { id: 3,  text: "Mispronounces (or used to) only certain words (e.g., says 'amunul' for animal).", domains: ['phoneme', 'auditory'] },
-  { id: 4,  text: "Struggles to remember the names of letters or their associated sounds.",     domains: ['phoneme', 'naming'] },
-  { id: 5,  text: "Mixes up letters that look similar (e.g., b/d, p/q, n/u).",                 domains: ['visual', 'phoneme'] },
-  { id: 6,  text: "Finds it difficult to learn nursery rhymes or play rhyming games.",          domains: ['phoneme', 'auditory'] },
-  { id: 7,  text: "Takes a long time to finish reading or writing tasks compared to peers.",    domains: ['visual', 'naming'] },
-  { id: 8,  text: "Avoids reading activities or expresses frustration when asked to read.",     domains: ['visual', 'phoneme'] },
-  { id: 9,  text: "Has trouble following multi-step directions given verbally.",                domains: ['auditory', 'naming'] },
-  { id: 10, text: "Displays excellent verbal ability but struggles to translate ideas to paper.", domains: ['morphology', 'phoneme'] },
-  { id: 11, text: "Reverses numbers or letters when writing (e.g., writing 15 as 51).",         domains: ['visual', 'phoneme'] },
-  { id: 12, text: "Struggles to organize written thoughts in a logical sequence.",              domains: ['morphology', 'naming'] },
-  { id: 13, text: "Has difficulty remembering sequences like days of the week or months.",      domains: ['naming', 'auditory'] },
-  { id: 14, text: "Finds spelling inconsistent, spelling the same word differently in one text.", domains: ['phoneme', 'morphology'] },
-  { id: 15, text: "Complains that letters look blurred or move around on the page.",            domains: ['visual'] },
-  { id: 16, text: "Has trouble distinguishing left from right quickly.",                        domains: ['visual', 'naming'] },
-  { id: 17, text: "Struggles to tell time on an analog clock.",                                 domains: ['naming', 'visual'] },
-  { id: 18, text: "Shows high intelligence and curiosity but unexpectedly low reading score.",  domains: ['phoneme', 'morphology'] },
-  { id: 19, text: "Has difficulty summarizing a story after reading it independently.",         domains: ['morphology', 'auditory'] },
-  { id: 20, text: "Tires quickly or gets headache/eye strain while reading continuous text.",   domains: ['visual'] },
-];
-
-// ─────────────────────────────────────────────────────────────────
-// EXERCISE CATALOGUE — metadata for each therapy type
-// ─────────────────────────────────────────────────────────────────
-const EXERCISES = {
-  phoneme: {
-    id: 'phoneme',
+export const SUBTYPES = {
+  dysphonetic: {
+    id: 'dysphonetic',
+    name: 'Dysphonetic Dyslexia',
+    label: 'Phonological Decoding Subtype',
     icon: '🧩',
-    title: 'Phoneme Matching',
-    subtitle: 'Sound-letter decoding drills',
     color: '#2563eb',
     bg: 'rgba(37,99,235,0.08)',
-    border: 'rgba(37,99,235,0.25)',
-    path: '/therapy/phoneme',
-    description: 'Trains phonological awareness — the ability to break words into individual sounds. Critical for spelling and decoding.',
-    targetSymptoms: ['Letter confusion', 'Mispronunciation', 'Rhyming difficulty', 'Inconsistent spelling'],
+    exerciseId: 'phoneme',
+    exerciseTitle: 'Sound-Blast Cannon',
+    exercisePath: '/therapy/phoneme?mode=advanced',
+    description: 'Difficulty breaking words into individual phonetic sounds (grapheme-to-phoneme conversion).'
+  },
+  dyseidetic: {
+    id: 'dyseidetic',
+    name: 'Dyseidetic Dyslexia',
+    label: 'Surface / Orthographic Subtype',
+    icon: '🧬',
+    color: '#d97706',
+    bg: 'rgba(217,119,6,0.08)',
+    exerciseId: 'morphology',
+    exerciseTitle: 'Morph-Bot Builder',
+    exercisePath: '/therapy/morphology?mode=advanced',
+    description: 'Struggles with visual word memory and sight-word recognition of irregular spellings.'
+  },
+  ran: {
+    id: 'ran',
+    name: 'Rapid Naming (RAN) Deficit',
+    label: 'Cognitive Processing Speed Subtype',
+    icon: '⚡',
+    color: '#e11d48',
+    bg: 'rgba(225,29,72,0.08)',
+    exerciseId: 'naming',
+    exerciseTitle: 'Speed-Dash Runner',
+    exercisePath: '/therapy/naming?mode=advanced',
+    description: 'Delayed retrieval speed for visual symbols, letters, digits, and familiar object names.'
   },
   visual: {
     id: 'visual',
+    name: 'Visual-Perceptual Dyslexia',
+    label: 'Ocular-Motor Tracking Subtype',
     icon: '👁️',
-    title: 'Visual Tracking',
-    subtitle: 'Ocular saccadic exercises',
     color: '#0d9488',
     bg: 'rgba(13,148,136,0.08)',
-    border: 'rgba(13,148,136,0.25)',
-    path: '/therapy/visual',
-    description: 'Trains eye-muscle coordination to prevent letter reversal, line skipping, and visual fatigue during reading.',
-    targetSymptoms: ['Letter reversal', 'Eye strain', 'Line skipping', 'Left/right confusion'],
+    exerciseId: 'visual',
+    exerciseTitle: 'Gaze-Laser Mission',
+    exercisePath: '/therapy/visual?mode=advanced',
+    description: 'Eye muscle coordination challenges causing letter inversions, line skipping, and visual fatigue.'
   },
   auditory: {
     id: 'auditory',
+    name: 'Auditory Processing Deficit',
+    label: 'Acoustic Signal Modulation Subtype',
     icon: '🎧',
-    title: 'Auditory Processing',
-    subtitle: 'Sound discrimination training',
     color: '#7c3aed',
     bg: 'rgba(124,58,237,0.08)',
-    border: 'rgba(124,58,237,0.25)',
-    path: '/therapy/auditory',
-    description: 'Sharpens the brain\'s ability to distinguish fast-changing sounds — vital for spoken instruction comprehension.',
-    targetSymptoms: ['Following verbal directions', 'Sound discrimination', 'Auditory memory'],
-  },
-  morphology: {
-    id: 'morphology',
-    icon: '🧬',
-    title: 'Morphology Builder',
-    subtitle: 'Word structure & comprehension',
-    color: '#d97706',
-    bg: 'rgba(217,119,6,0.08)',
-    border: 'rgba(217,119,6,0.25)',
-    path: '/therapy/morphology',
-    description: 'Teaches roots, prefixes and suffixes so complex words can be decoded by their internal structure.',
-    targetSymptoms: ['Writing organization', 'Comprehension gaps', 'Vocabulary building'],
-  },
-  naming: {
-    id: 'naming',
-    icon: '⚡',
-    title: 'Rapid Naming (RAN)',
-    subtitle: 'Processing speed exercises',
-    color: '#e11d48',
-    bg: 'rgba(225,29,72,0.08)',
-    border: 'rgba(225,29,72,0.25)',
-    path: '/therapy/naming',
-    description: 'Boosts the speed of retrieving words, letters and numbers from memory — a key predictor of reading fluency.',
-    targetSymptoms: ['Slow task completion', 'Sequence memory', 'Clock reading difficulty'],
-  },
-};
-
-// ─────────────────────────────────────────────────────────────────
-// ADAPTIVE ENGINE — localStorage-backed scoring that learns over
-// time. Each time a user flags a domain, that domain accumulates
-// weight. The engine blends the per-session score with the running
-// aggregate so recommendations improve with usage.
-// ─────────────────────────────────────────────────────────────────
-const STORAGE_KEY = 'lexiflow_domain_weights';
-
-function loadDomainWeights() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-  } catch {
-    return {};
+    exerciseId: 'auditory',
+    exerciseTitle: 'Acoustic Shield',
+    exercisePath: '/therapy/auditory?mode=advanced',
+    description: 'Difficulty isolating target speech signals in ambient noise or matching subtle sound frequencies.'
   }
-}
-
-function saveDomainWeights(weights) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(weights));
-}
-
-function computeRecommendations(questions, answers) {
-  // 1. Tally domain scores from this session
-  const sessionScores = { phoneme: 0, visual: 0, auditory: 0, morphology: 0, naming: 0 };
-  questions.forEach(q => {
-    if (answers[q.id] === 'yes') {
-      q.domains.forEach(d => { sessionScores[d] = (sessionScores[d] || 0) + 1; });
-    }
-  });
-
-  // 2. Load historical aggregate weights
-  const historical = loadDomainWeights();
-
-  // 3. Merge: session (70%) + historical aggregate (30%)
-  const HISTORY_WEIGHT = 0.3;
-  const SESSION_WEIGHT = 0.7;
-  const merged = {};
-  const allDomains = Object.keys(EXERCISES);
-  allDomains.forEach(d => {
-    const s = sessionScores[d] || 0;
-    const h = historical[d] || 0;
-    merged[d] = SESSION_WEIGHT * s + HISTORY_WEIGHT * h;
-  });
-
-  // 4. Update aggregate weights persistently (+= session scores)
-  const updated = { ...historical };
-  allDomains.forEach(d => {
-    updated[d] = (updated[d] || 0) + (sessionScores[d] || 0);
-  });
-  saveDomainWeights(updated);
-
-  // 5. Rank exercises by merged score, descending
-  const ranked = allDomains
-    .map(d => ({ domain: d, score: merged[d] }))
-    .sort((a, b) => b.score - a.score);
-
-  return { ranked, sessionScores };
-}
-
-function getRandomQuestions(count = 10) {
-  const shuffled = [...masterQuestionsPool].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
-}
-
-// ─────────────────────────────────────────────────────────────────
-// RISK GAUGE COMPONENT
-// ─────────────────────────────────────────────────────────────────
-const RiskGauge = ({ score, total }) => {
-  const pct = Math.round((score / total) * 100);
-  const angle = -90 + (pct / 100) * 180; // -90 to +90 degrees
-  const color = pct >= 60 ? '#e11d48' : pct >= 30 ? '#d97706' : '#10b981';
-  const label = pct >= 60 ? 'High' : pct >= 30 ? 'Moderate' : 'Low';
-
-  return (
-    <div className="risk-gauge-wrap">
-      <svg viewBox="0 0 200 110" className="risk-gauge-svg">
-        {/* Background arc */}
-        <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#e2e8f0" strokeWidth="16" strokeLinecap="round" />
-        {/* Low zone */}
-        <path d="M 20 100 A 80 80 0 0 1 70 31" fill="none" stroke="#10b981" strokeWidth="16" strokeLinecap="butt" opacity="0.3" />
-        {/* Moderate zone */}
-        <path d="M 70 31 A 80 80 0 0 1 130 31" fill="none" stroke="#d97706" strokeWidth="16" strokeLinecap="butt" opacity="0.3" />
-        {/* High zone */}
-        <path d="M 130 31 A 80 80 0 0 1 180 100" fill="none" stroke="#e11d48" strokeWidth="16" strokeLinecap="butt" opacity="0.3" />
-        {/* Needle */}
-        <line
-          x1="100" y1="100"
-          x2={100 + 65 * Math.cos((angle * Math.PI) / 180)}
-          y2={100 + 65 * Math.sin((angle * Math.PI) / 180)}
-          stroke={color} strokeWidth="3" strokeLinecap="round"
-          style={{ transition: 'all 1s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
-        />
-        <circle cx="100" cy="100" r="6" fill={color} />
-        {/* Score text */}
-        <text x="100" y="88" textAnchor="middle" fontSize="18" fontWeight="900" fill={color}>{pct}%</text>
-        <text x="100" y="108" textAnchor="middle" fontSize="10" fontWeight="700" fill="#64748b">{label} Risk</text>
-      </svg>
-      <div className="gauge-labels">
-        <span style={{ color: '#10b981' }}>Low</span>
-        <span style={{ color: '#d97706' }}>Moderate</span>
-        <span style={{ color: '#e11d48' }}>High</span>
-      </div>
-    </div>
-  );
 };
 
 // ─────────────────────────────────────────────────────────────────
-// EXERCISE CARD COMPONENT
+// 10 DIAGNOSTIC QUESTIONS BANK (2 per Subtype)
 // ─────────────────────────────────────────────────────────────────
-const ExerciseCard = ({ exercise, rank, score, isTop }) => {
-  const ex = EXERCISES[exercise.domain];
-  if (!ex) return null;
-  const hasSignal = score > 0;
+const DIAGNOSTIC_QUESTIONS = [
+  // ── DYSPHONETIC (Phonological) ──
+  {
+    id: 'q1',
+    subtype: 'dysphonetic',
+    title: 'Q1: Phoneme Isolation Test',
+    instruction: 'Identify which of the following words contains the ending phoneme sound "/ck/" as in "Duck"?',
+    type: 'choice',
+    options: ['Clock', 'Pen', 'Ring', 'Duck'],
+    correct: ['Clock', 'Duck'], // Either contains /ck/
+    explanation: 'Both "Clock" and "Duck" contain the hard /ck/ phonetic sound.'
+  },
+  {
+    id: 'q2',
+    subtype: 'dysphonetic',
+    title: 'Q2: Acoustic Decoding Test',
+    instruction: 'Select the non-word spelling that accurately matches the spoken sound "/ch-op/":',
+    type: 'choice',
+    options: ['Chop', 'Kop', 'Tzop', 'Qop'],
+    correct: ['Chop'],
+    explanation: 'The digraph "Ch" corresponds to the /ch/ sound in acoustic decoding.'
+  },
 
-  return (
-    <div className={`ex-card ${isTop ? 'ex-card--top' : ''}`} style={{ borderColor: isTop ? ex.color : undefined }}>
-      {isTop && <div className="ex-card-ribbon" style={{ background: ex.color }}>START HERE</div>}
-      <div className="ex-card-header">
-        <div className="ex-icon-wrap" style={{ background: ex.bg, color: ex.color }}>
-          {ex.icon}
-        </div>
-        <div className="ex-card-meta">
-          <div className="ex-card-rank" style={{ color: ex.color }}>
-            {isTop ? '🥇 Priority #1' : `Priority #${rank}`}
-          </div>
-          <div className="ex-card-title">{ex.title}</div>
-          <div className="ex-card-subtitle">{ex.subtitle}</div>
-        </div>
-        <div className="ex-signal-bar-wrap">
-          <div className="ex-signal-label">Signal</div>
-          <div className="ex-signal-bar">
-            <div
-              className="ex-signal-fill"
-              style={{
-                width: `${Math.min(100, score * 33)}%`,
-                background: ex.color
-              }}
-            />
-          </div>
-          <div className="ex-signal-val" style={{ color: ex.color }}>
-            {!hasSignal ? 'None' : score <= 1 ? 'Mild' : score <= 2 ? 'Moderate' : 'Strong'}
-          </div>
-        </div>
-      </div>
-      <p className="ex-card-desc">{ex.description}</p>
-      <div className="ex-symptoms-wrap">
-        {ex.targetSymptoms.map(s => (
-          <span key={s} className="ex-symptom-chip" style={{ background: ex.bg, color: ex.color, borderColor: ex.border }}>{s}</span>
-        ))}
-      </div>
-      {hasSignal ? (
-        <Link to={ex.path} className="ex-start-btn" style={{ background: ex.color }}>
-          Start {ex.title} →
-        </Link>
-      ) : (
-        <Link to={ex.path} className="ex-start-btn ex-start-btn--ghost" style={{ borderColor: ex.color, color: ex.color }}>
-          Explore {ex.title}
-        </Link>
-      )}
-    </div>
-  );
-};
+  // ── DYSEIDETIC (Surface / Orthographic) ──
+  {
+    id: 'q3',
+    subtype: 'dyseidetic',
+    title: 'Q3: Sight Word Recognition (Flash Test)',
+    instruction: 'A sight word will flash for 800ms. Select the word that was displayed!',
+    type: 'flash',
+    flashWord: 'Yacht',
+    options: ['Yacht', 'Yachting', 'Yatch', 'Yat'],
+    correct: ['Yacht'],
+    explanation: 'Irregular words like "Yacht" require orthographic visual memory.'
+  },
+  {
+    id: 'q4',
+    subtype: 'dyseidetic',
+    title: 'Q4: Orthographic Pattern Match',
+    instruction: 'Choose the correct visual spelling for the target word:',
+    type: 'choice',
+    options: ['Friend', 'Frend', 'Freind', 'Phriend'],
+    correct: ['Friend'],
+    explanation: '"Friend" follows the irregular "i before e" visual orthographic rule.'
+  },
+
+  // ── RAPID NAMING (RAN) ──
+  {
+    id: 'q5',
+    subtype: 'ran',
+    title: 'Q5: Symbol Retrieval Speed',
+    instruction: 'Name the displayed symbols aloud as fast as possible. Click "Start Timer", then "Done" when named!',
+    type: 'latency',
+    symbols: ['A', '7', 'B', '3'],
+    targetMaxMs: 2500,
+    explanation: 'Rapid symbol retrieval measures phonological retrieval speed.'
+  },
+  {
+    id: 'q6',
+    subtype: 'ran',
+    title: 'Q6: Object Naming Latency',
+    instruction: 'Identify and name these 4 visual icons in order as fast as possible:',
+    type: 'latency',
+    symbols: ['🍎', '🐶', '⭐', '🚗'],
+    targetMaxMs: 2200,
+    explanation: 'Object naming speed predicts continuous reading fluency.'
+  },
+
+  // ── VISUAL-PERCEPTUAL (Ocular-Motor) ──
+  {
+    id: 'q7',
+    subtype: 'visual',
+    title: 'Q7: Spatial Orientation & Letter Inversion',
+    instruction: 'Which pair of letters contains a flipped or reversed letter anomaly?',
+    type: 'choice',
+    options: ['b — d', 'p — q', 'b — b', 'n — u'],
+    correct: ['b — d'],
+    explanation: '"b" and "d" are horizontal mirror inversions frequently confused in ocular tracking.'
+  },
+  {
+    id: 'q8',
+    subtype: 'visual',
+    title: 'Q8: Line Tracking Anomaly Detection',
+    instruction: 'Read the text below and click where the sentence skipped a line incorrectly:',
+    type: 'linetrack',
+    textLine1: 'The brave little dog jumped over the tall wooden fence.',
+    textLine2: 'and ran straight into the muddy garden puddle happily.',
+    options: ['Line 1 (dog jumped)', 'Line 2 (ran straight)', 'Line Skip Anomaly at "and ran"'],
+    correct: ['Line Skip Anomaly at "and ran"'],
+    explanation: 'Line tracking tests evaluate ocular saccadic movements across line breaks.'
+  },
+
+  // ── AUDITORY PROCESSING ──
+  {
+    id: 'q9',
+    subtype: 'auditory',
+    title: 'Q9: Noise Discrimination Test',
+    instruction: 'Listen to the audio sound under ambient background noise (-10dB SNR) and select the word spoken:',
+    type: 'auditory_noise',
+    audioText: 'Sun',
+    options: ['Sun', 'Moon', 'Star', 'Cloud'],
+    correct: ['Sun'],
+    explanation: 'Background noise discrimination tests auditory signal isolation.'
+  },
+  {
+    id: 'q10',
+    subtype: 'auditory',
+    title: 'Q10: Auditory Frequency Match',
+    instruction: 'Listen to Tone 1 and Tone 2. Do the two target phoneme frequencies match?',
+    type: 'auditory_match',
+    tone1: 'B',
+    tone2: 'B',
+    options: ['Yes, Tones Match', 'No, Tones Differ'],
+    correct: ['Yes, Tones Match'],
+    explanation: 'Pitch discrimination tests rapid temporal processing in the auditory cortex.'
+  }
+];
 
 // ─────────────────────────────────────────────────────────────────
-// DOMAIN BREAKDOWN BAR CHART
+// MAIN DIAGNOSTIC QUIZ COMPONENT
 // ─────────────────────────────────────────────────────────────────
-const DomainBreakdown = ({ sessionScores }) => {
-  const max = Math.max(...Object.values(sessionScores), 1);
-  return (
-    <div className="domain-breakdown">
-      <div className="breakdown-title">Symptom Domain Breakdown</div>
-      {Object.entries(EXERCISES).map(([key, ex]) => {
-        const val = sessionScores[key] || 0;
-        const pct = Math.round((val / max) * 100);
-        return (
-          <div key={key} className="breakdown-row">
-            <div className="breakdown-label">
-              <span>{ex.icon}</span>
-              <span>{ex.title}</span>
-            </div>
-            <div className="breakdown-bar-bg">
-              <div
-                className="breakdown-bar-fill"
-                style={{ width: `${pct}%`, background: ex.color }}
-              />
-            </div>
-            <div className="breakdown-val" style={{ color: ex.color }}>{val}</div>
-          </div>
-        );
-      })}
-    </div>
-  );
-};
+const SymptomsQuiz = ({ onQuizComplete }) => {
+  const { currentUser } = useAuth();
 
-// ─────────────────────────────────────────────────────────────────
-// MAIN QUIZ COMPONENT
-// ─────────────────────────────────────────────────────────────────
-const SymptomsQuiz = () => {
-  const [questions, setQuestions] = useState(() => getRandomQuestions(10));
+  const [currentIdx, setCurrentIdx] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [result, setResult] = useState(null);
+  const [latencies, setLatencies] = useState({});
+  const [flashVisible, setFlashVisible] = useState(false);
+  const [flashStarted, setFlashStarted] = useState(false);
+  const [timerStart, setTimerStart] = useState(null);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [diagnosticResult, setDiagnosticResult] = useState(null);
 
-  const handleAnswer = (id, val) => {
-    setAnswers(prev => ({ ...prev, [id]: val }));
+  const currentQ = DIAGNOSTIC_QUESTIONS[currentIdx];
+  const progress = Math.round(((currentIdx + 1) / DIAGNOSTIC_QUESTIONS.length) * 100);
+
+  // ── Handle Flash Word Test ──
+  const startFlashTest = () => {
+    setFlashStarted(true);
+    setFlashVisible(true);
+    setTimeout(() => {
+      setFlashVisible(false);
+    }, 800);
   };
 
-  const answeredCount = Object.keys(answers).length;
-  const progress = Math.round((answeredCount / questions.length) * 100);
+  // ── Handle Latency Timer Test ──
+  const startLatencyTimer = () => {
+    setTimerStart(performance.now());
+  };
 
-  const calculateResult = () => {
-    if (answeredCount < questions.length) {
-      alert(`Please answer all ${questions.length} questions. (${answeredCount} answered so far)`);
-      return;
+  const stopLatencyTimer = () => {
+    if (!timerStart) return;
+    const elapsed = Math.round(performance.now() - timerStart);
+    setLatencies(prev => ({ ...prev, [currentQ.id]: elapsed }));
+    const isPassed = elapsed <= currentQ.targetMaxMs;
+    handleAnswer(currentQ.id, isPassed ? currentQ.symbols.join(' ') : 'slow', isPassed);
+    setTimerStart(null);
+  };
+
+  // ── Handle Answer Selection ──
+  const handleAnswer = (qId, selectedVal, isCorrectVal = null) => {
+    const q = DIAGNOSTIC_QUESTIONS.find(item => item.id === qId);
+    const isCorrect = isCorrectVal !== null
+      ? isCorrectVal
+      : q.correct.includes(selectedVal);
+
+    setAnswers(prev => ({
+      ...prev,
+      [qId]: { selectedVal, isCorrect, subtype: q.subtype }
+    }));
+  };
+
+  const nextQuestion = () => {
+    if (currentIdx < DIAGNOSTIC_QUESTIONS.length - 1) {
+      setCurrentIdx(currentIdx + 1);
+      setFlashStarted(false);
+      setFlashVisible(false);
+      setTimerStart(null);
+    } else {
+      finishDiagnostic();
+    }
+  };
+
+  // ── Play Speech Utterance ──
+  const playAudioUtterance = (text) => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const ut = new SpeechSynthesisUtterance(text);
+      ut.rate = 0.85;
+      window.speechSynthesis.speak(ut);
+    }
+  };
+
+  // ── Finish & Compute Subtype Diagnostics ──
+  const finishDiagnostic = async () => {
+    // 1. Calculate scores per subtype (2 questions each = max 2 points)
+    const subtypeScoresRaw = {
+      dysphonetic: 0,
+      dyseidetic: 0,
+      ran: 0,
+      visual: 0,
+      auditory: 0
+    };
+
+    Object.values(answers).forEach(ans => {
+      if (ans.isCorrect && subtypeScoresRaw[ans.subtype] !== undefined) {
+        subtypeScoresRaw[ans.subtype] += 1;
+      }
+    });
+
+    // Convert raw (0-2) to percentage (0-100%)
+    const scores = {
+      dysphonetic: Math.round((subtypeScoresRaw.dysphonetic / 2) * 100),
+      dyseidetic: Math.round((subtypeScoresRaw.dyseidetic / 2) * 100),
+      ran: Math.round((subtypeScoresRaw.ran / 2) * 100),
+      visual: Math.round((subtypeScoresRaw.visual / 2) * 100),
+      auditory: Math.round((subtypeScoresRaw.auditory / 2) * 100)
+    };
+
+    // Find primary subtype (lowest score = highest deficit)
+    let minScore = 101;
+    let primarySubtypeKey = 'dysphonetic';
+    Object.entries(scores).forEach(([key, scoreVal]) => {
+      if (scoreVal < minScore) {
+        minScore = scoreVal;
+        primarySubtypeKey = key;
+      }
+    });
+
+    const primarySubtypeObj = SUBTYPES[primarySubtypeKey];
+    const totalCorrect = Object.values(answers).filter(a => a.isCorrect).length;
+    const overallAccuracy = Math.round((totalCorrect / DIAGNOSTIC_QUESTIONS.length) * 100);
+    const overallScore = totalCorrect * 100;
+
+    const report = {
+      id: Date.now(),
+      date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      timestamp: Date.now(),
+      overallAccuracy,
+      overallScore,
+      scores,
+      primarySubtype: primarySubtypeKey,
+      primarySubtypeDetails: primarySubtypeObj,
+      answers
+    };
+
+    // Save to lexiflow_diagnostic_reports
+    try {
+      const existingReports = JSON.parse(localStorage.getItem('lexiflow_diagnostic_reports') || '[]');
+      localStorage.setItem('lexiflow_diagnostic_reports', JSON.stringify([report, ...existingReports]));
+    } catch (e) {
+      console.warn('LocalStorage save report error:', e);
     }
 
-    const yesCount = Object.values(answers).filter(a => a === 'yes').length;
-    const { ranked, sessionScores } = computeRecommendations(questions, answers);
-
-    const scorePercent = Math.round((yesCount / questions.length) * 100);
-    const riskLevel = scorePercent >= 60 ? 'High' : scorePercent >= 30 ? 'Moderate' : 'Low';
-    const category = `${riskLevel} Indicators`;
-
-    // Save to lexiflow_history
-    const now = new Date();
-    const newEntry = {
-      id: Date.now(),
-      date: now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      isoDate: now.toISOString(),
-      type: 'Symptoms Screening Quiz',
-      score: scorePercent,
-      riskLevel,
-      status: 'Completed',
-      details: { score: yesCount, total: questions.length, category, ranked }
-    };
-    const hist = JSON.parse(localStorage.getItem('lexiflow_history') || '[]');
-    localStorage.setItem('lexiflow_history', JSON.stringify([newEntry, ...hist]));
-
-    setResult({ yesCount, total: questions.length, scorePercent, riskLevel, ranked, sessionScores });
-  };
-
-  const resetQuiz = () => {
-    setQuestions(getRandomQuestions(10));
-    setAnswers({});
-    setResult(null);
-  };
-
-  // ── RESULT SCREEN ──────────────────────────────────────────────
-  if (result) {
-    const topExercise = result.ranked[0];
-    const otherExercises = result.ranked.slice(1);
-
-    return (
-      <div className="quiz-report-root">
-        {/* Header */}
-        <div className="report-header-band">
-          <div className="report-header-left">
-            <span className="report-badge">📋 Screening Complete</span>
-            <h2 className="report-main-title">Your Personalised Report</h2>
-            <p className="report-subtitle">
-              Based on your {result.total} responses, our adaptive engine has analysed your symptom profile
-              and ranked the most effective therapy exercises for you.
-            </p>
-          </div>
-          <RiskGauge score={result.yesCount} total={result.total} />
-        </div>
-
-        {/* Adaptive learning notice */}
-        <div className="adaptive-notice">
-          <span className="adaptive-icon">🧠</span>
-          <div>
-            <strong>Adaptive Intelligence Active</strong>
-            <span>
-              This report learns from every screening session. Your recommendations will become more
-              precise the more you use the app.
-            </span>
-          </div>
-        </div>
-
-        {/* Stats row */}
-        <div className="report-stats-row">
-          <div className="report-stat">
-            <div className="report-stat-val" style={{ color: '#2563eb' }}>{result.yesCount}/{result.total}</div>
-            <div className="report-stat-lbl">Indicators flagged</div>
-          </div>
-          <div className="report-stat">
-            <div className="report-stat-val" style={{ color: result.riskLevel === 'High' ? '#e11d48' : result.riskLevel === 'Moderate' ? '#d97706' : '#10b981' }}>
-              {result.riskLevel}
-            </div>
-            <div className="report-stat-lbl">Risk level</div>
-          </div>
-          <div className="report-stat">
-            <div className="report-stat-val" style={{ color: '#7c3aed' }}>
-              {result.ranked.filter(r => result.sessionScores[r.domain] > 0).length}
-            </div>
-            <div className="report-stat-lbl">Domains affected</div>
-          </div>
-          <div className="report-stat">
-            <div className="report-stat-val" style={{ color: '#0d9488' }}>5</div>
-            <div className="report-stat-lbl">Exercises available</div>
-          </div>
-        </div>
-
-        {/* Primary exercise recommendation */}
-        <div className="section-label">🥇 Recommended — Start Here</div>
-        <ExerciseCard exercise={topExercise} rank={1} score={result.sessionScores[topExercise.domain] || 0} isTop />
-
-        {/* Domain breakdown */}
-        <DomainBreakdown sessionScores={result.sessionScores} />
-
-        {/* Other exercises */}
-        <div className="section-label">📚 Full Exercise Roadmap</div>
-        <div className="ex-grid">
-          {otherExercises.map((ex, i) => (
-            <ExerciseCard
-              key={ex.domain}
-              exercise={ex}
-              rank={i + 2}
-              score={result.sessionScores[ex.domain] || 0}
-              isTop={false}
-            />
-          ))}
-        </div>
-
-        {/* Actions */}
-        <div className="report-actions">
-          <button className="report-btn-retake" onClick={resetQuiz}>🔄 Retake Screening</button>
-          <Link to="/signup" className="report-btn-account">Create Free Account →</Link>
-        </div>
-      </div>
+    // Wire into saveTherapyProgress
+    await saveTherapyProgress(
+      currentUser,
+      primarySubtypeObj.exerciseId,
+      overallScore,
+      overallAccuracy,
+      'Diagnostic Quiz'
     );
+
+    setDiagnosticResult(report);
+    setIsCompleted(true);
+
+    if (onQuizComplete) {
+      onQuizComplete(report);
+    }
+  };
+
+  if (isCompleted && diagnosticResult) {
+    return null; // Handled by QuizPage results view if present
   }
 
-  // ── QUIZ SCREEN ────────────────────────────────────────────────
+  const isCurrentAnswered = !!answers[currentQ.id];
+
   return (
-    <div className="quiz-list-container">
-      <div className="quiz-header-bar">
-        <h2>Dyslexia Symptoms Quiz</h2>
-        <span className="page-counter">{answeredCount} / {questions.length} answered</span>
-      </div>
-
-      {/* Progress bar */}
-      <div className="quiz-progress-wrap">
-        <div className="quiz-progress-bar">
-          <div className="quiz-progress-fill" style={{ width: `${progress}%` }} />
+    <div className="diag-quiz-container">
+      {/* Header bar & Progress */}
+      <div className="diag-quiz-header">
+        <div className="diag-header-top">
+          <span className="badge badge-info">
+            {SUBTYPES[currentQ.subtype].icon} {SUBTYPES[currentQ.subtype].name}
+          </span>
+          <span className="diag-counter">
+            Question {currentIdx + 1} of {DIAGNOSTIC_QUESTIONS.length}
+          </span>
+        </div>
+        <div className="diag-progress-track">
+          <div className="diag-progress-fill" style={{ width: `${progress}%` }} />
         </div>
       </div>
 
-      <div className="quiz-body-content">
-        <p className="instruction-text">Select whether each statement applies to you or your child.</p>
+      {/* Question Card */}
+      <div className="diag-card">
+        <h3 className="diag-card-title">{currentQ.title}</h3>
+        <p className="diag-card-instruction">{currentQ.instruction}</p>
 
-        <div className="questions-stack">
-          {questions.map((q, idx) => (
-            <div key={q.id} className="quiz-row">
-              <p className="row-text">
-                <span className="q-num">{idx + 1}.</span> {q.text}
-              </p>
-              <div className="row-options">
-                <button
-                  className={`row-btn ${answers[q.id] === 'yes' ? 'selected-yes' : ''}`}
-                  onClick={() => handleAnswer(q.id, 'yes')}
-                >
-                  ✓ Yes
-                </button>
-                <button
-                  className={`row-btn ${answers[q.id] === 'no' ? 'selected-no' : ''}`}
-                  onClick={() => handleAnswer(q.id, 'no')}
-                >
-                  ✗ No
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="quiz-footer">
-          <div className="quiz-completion-hint">
-            {answeredCount < questions.length
-              ? `${questions.length - answeredCount} question${questions.length - answeredCount !== 1 ? 's' : ''} remaining`
-              : '✅ All answered — ready to generate your report!'}
+        {/* ── QUESTION TYPE: Flash Word ── */}
+        {currentQ.type === 'flash' && (
+          <div className="diag-interactive-box">
+            {!flashStarted ? (
+              <button className="diag-btn-hero" onClick={startFlashTest}>
+                ⚡ Start 800ms Flash Test
+              </button>
+            ) : flashVisible ? (
+              <div className="flash-word-display">{currentQ.flashWord}</div>
+            ) : (
+              <div className="flash-word-hidden">🔒 Word Hidden — Select What You Saw:</div>
+            )}
           </div>
-          <button
-            className={`medical-btn-primary finish-btn ${answeredCount < questions.length ? 'btn-disabled-look' : ''}`}
-            onClick={calculateResult}
-          >
-            Generate My Report →
-          </button>
-        </div>
+        )}
+
+        {/* ── QUESTION TYPE: Latency Speed Test ── */}
+        {currentQ.type === 'latency' && (
+          <div className="diag-interactive-box">
+            <div className="diag-symbols-row">
+              {currentQ.symbols.map((sym, i) => (
+                <span key={i} className="diag-symbol-chip">{sym}</span>
+              ))}
+            </div>
+            <div style={{ marginTop: '1rem' }}>
+              {!timerStart && !latencies[currentQ.id] && (
+                <button className="diag-btn-hero" onClick={startLatencyTimer}>
+                  ⏱️ Start Naming Timer
+                </button>
+              )}
+              {timerStart && (
+                <button className="diag-btn-hero" style={{ background: '#e11d48' }} onClick={stopLatencyTimer}>
+                  ⏹️ Done Naming — Stop Timer
+                </button>
+              )}
+              {latencies[currentQ.id] && (
+                <div className="diag-latency-result">
+                  ⚡ Response Latency: <strong>{latencies[currentQ.id]} ms</strong>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── QUESTION TYPE: Auditory Noise & Match ── */}
+        {(currentQ.type === 'auditory_noise' || currentQ.type === 'auditory_match') && (
+          <div className="diag-interactive-box">
+            <button
+              className="diag-btn-hero"
+              onClick={() => playAudioUtterance(currentQ.audioText || `${currentQ.tone1} sound ${currentQ.tone2}`)}
+            >
+              🔊 Play Audio Target {-10 ? '(-10dB Noise)' : ''}
+            </button>
+          </div>
+        )}
+
+        {/* ── OPTIONS GRID ── */}
+        {((currentQ.type !== 'flash' || (flashStarted && !flashVisible)) && currentQ.type !== 'latency') && (
+          <div className="diag-options-grid">
+            {currentQ.options.map((opt) => {
+              const isSelected = answers[currentQ.id]?.selectedVal === opt;
+              const isAns = answers[currentQ.id];
+              const isCorrectOpt = isSelected && isAns?.isCorrect;
+              const isIncorrectOpt = isSelected && !isAns?.isCorrect;
+
+              return (
+                <button
+                  key={opt}
+                  className={`diag-opt-btn ${isSelected ? 'selected' : ''} ${isCorrectOpt ? 'correct' : ''} ${isIncorrectOpt ? 'incorrect' : ''}`}
+                  onClick={() => handleAnswer(currentQ.id, opt)}
+                >
+                  <span>{opt}</span>
+                  {isCorrectOpt && <span>✅</span>}
+                  {isIncorrectOpt && <span>❌</span>}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Explanation hint */}
+        {isCurrentAnswered && (
+          <div className="diag-explanation">
+            💡 {currentQ.explanation}
+          </div>
+        )}
+      </div>
+
+      {/* Footer Navigation */}
+      <div className="diag-footer">
+        <button
+          className={`diag-btn-next ${!isCurrentAnswered ? 'disabled' : ''}`}
+          disabled={!isCurrentAnswered}
+          onClick={nextQuestion}
+        >
+          {currentIdx < DIAGNOSTIC_QUESTIONS.length - 1 ? 'Next Question →' : 'Generate Diagnostic Report 🚀'}
+        </button>
       </div>
     </div>
   );
