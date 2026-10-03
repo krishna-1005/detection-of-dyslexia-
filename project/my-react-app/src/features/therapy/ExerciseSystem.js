@@ -8,10 +8,11 @@ import MarioPhonemeJumper from './MarioPhonemeJumper';
 import MorphologySnakeGame from './MorphologySnakeGame';
 import BalloonPopRAN from './BalloonPopRAN';
 import MirrorMatchHighway from './MirrorMatchHighway';
+import AuditoryProcessingSuite from './AuditoryProcessingSuite';
 import { useAuth } from '../auth/AuthContext';
 import { fetchWithAuth } from '../../services/api';
 
-export const saveTherapyProgress = async (currentUser, type, score, accuracy, timeTaken = "N/A") => {
+export const saveTherapyProgress = async (currentUser, type, score, accuracy, timeTaken = "N/A", mode = "assessment") => {
   const uid = currentUser?.uid;
   const now = new Date();
   const dateStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -21,6 +22,7 @@ export const saveTherapyProgress = async (currentUser, type, score, accuracy, ti
     score,
     accuracy,
     timeTaken,
+    mode,
     date: dateStr,
     timestamp: now.getTime()
   };
@@ -28,10 +30,10 @@ export const saveTherapyProgress = async (currentUser, type, score, accuracy, ti
   const moduleNames = {
     phoneme: 'Phoneme Matching',
     morphology: 'Morphology Builder',
-    naming: 'Rapid Naming (RAN)',
+    naming: 'Visual Attention Speed',
     visual: 'Visual Tracking',
     auditory: 'Auditory Processing',
-    video: 'Live Video Session'
+    video: 'Live Voice Practice'
   };
 
   const modName = moduleNames[type] || type;
@@ -44,17 +46,22 @@ export const saveTherapyProgress = async (currentUser, type, score, accuracy, ti
     score: accuracy,
     riskLevel: accuracy >= 70 ? "Low" : accuracy >= 40 ? "Moderate" : "High",
     status: "Completed",
+    mode,
     details: sessionEntry
   };
 
   // 1. Save synchronously to localStorage first to guarantee instant UI updates
+  // Only assessment-mode sessions feed the main dashboard history/risk metrics;
+  // practice-mode sessions are tracked separately for personal stats only.
   try {
-    const uidHistKey = uid ? `lexiflow_history_${uid}` : "lexiflow_history";
-    const uidHist = JSON.parse(localStorage.getItem(uidHistKey) || "[]");
-    localStorage.setItem(uidHistKey, JSON.stringify([historyItem, ...uidHist]));
+    if (mode === 'assessment') {
+      const uidHistKey = uid ? `lexiflow_history_${uid}` : "lexiflow_history";
+      const uidHist = JSON.parse(localStorage.getItem(uidHistKey) || "[]");
+      localStorage.setItem(uidHistKey, JSON.stringify([historyItem, ...uidHist]));
 
-    const globalHist = JSON.parse(localStorage.getItem("lexiflow_history") || "[]");
-    localStorage.setItem("lexiflow_history", JSON.stringify([historyItem, ...globalHist]));
+      const globalHist = JSON.parse(localStorage.getItem("lexiflow_history") || "[]");
+      localStorage.setItem("lexiflow_history", JSON.stringify([historyItem, ...globalHist]));
+    }
 
     const historyKey = uid ? `lexiflow_exercise_history_${uid}` : 'lexiflow_exercise_history';
     const lastKey = uid ? `lexiflow_last_therapy_${uid}` : 'lexiflow_last_therapy';
@@ -285,12 +292,22 @@ const phonemePairsPool = [
   { phoneme: 'BL', words: ['Blue', 'Block', 'Blow', 'Blade'], options: ['Blue', 'Rain', 'Block', 'Door'] },
   { phoneme: 'CL', words: ['Clock', 'Clap', 'Cloud', 'Clean'], options: ['Cloud', 'Hand', 'Clap', 'Rock'] },
   { phoneme: 'PR', words: ['Prize', 'Print', 'Prince', 'Press'], options: ['Prize', 'Wall', 'Prince', 'Desk'] },
-  { phoneme: 'SL', words: ['Slide', 'Sleep', 'Slow', 'Slip'], options: ['Slide', 'Fish', 'Sleep', 'Bell'] }
+  { phoneme: 'SL', words: ['Slide', 'Sleep', 'Slow', 'Slip'], options: ['Slide', 'Fish', 'Sleep', 'Bell'] },
+  { phoneme: 'BR', words: ['Bread', 'Brave', 'Brick', 'Brush'], options: ['Bread', 'Desk', 'Brick', 'Star'] },
+  { phoneme: 'CR', words: ['Crown', 'Crab', 'Cry', 'Cross'], options: ['Crab', 'Tree', 'Crown', 'Moon'] },
+  { phoneme: 'FR', words: ['Frog', 'Frame', 'Free', 'Fruit'], options: ['Frog', 'Book', 'Fruit', 'Lamp'] },
+  { phoneme: 'GR', words: ['Green', 'Grape', 'Grass', 'Grow'], options: ['Grape', 'Door', 'Green', 'Boat'] },
+  { phoneme: 'PL', words: ['Plant', 'Plate', 'Play', 'Plum'], options: ['Plate', 'Shoe', 'Plant', 'Wall'] },
+  { phoneme: 'SK', words: ['Sky', 'Skate', 'Skin', 'Skirt'], options: ['Skate', 'Fish', 'Sky', 'Bell'] },
+  { phoneme: 'SM', words: ['Smile', 'Small', 'Smoke', 'Smart'], options: ['Smile', 'Ring', 'Small', 'Duck'] },
+  { phoneme: 'SN', words: ['Snow', 'Snake', 'Snail', 'Snack'], options: ['Snow', 'Cake', 'Snail', 'Hill'] },
+  { phoneme: 'SP', words: ['Spoon', 'Space', 'Spot', 'Spider'], options: ['Spoon', 'Hand', 'Spider', 'Rock'] },
+  { phoneme: 'SW', words: ['Swim', 'Sweet', 'Swing', 'Swan'], options: ['Swing', 'Pen', 'Swim', 'Door'] }
 ];
 
 const PhonemeMatching = ({ onComplete }) => {
   const generateNewPairs = () => {
-    const sampled = getRandomItems(phonemePairsPool, 3);
+    const sampled = getRandomItems(phonemePairsPool, 6);
     return sampled.map(p => ({
       ...p,
       options: shuffleArray(p.options)
@@ -400,12 +417,22 @@ const auditoryTasksPool = [
   { target: 'L', options: ['Lemon', 'Orange', 'Grape', 'Peach'], correct: 'Lemon' },
   { target: 'N', options: ['Nest', 'Tree', 'Leaf', 'Branch'], correct: 'Nest' },
   { target: 'W', options: ['Water', 'Fire', 'Air', 'Earth'], correct: 'Water' },
-  { target: 'H', options: ['House', 'Road', 'Path', 'Bridge'], correct: 'House' }
+  { target: 'H', options: ['House', 'Road', 'Path', 'Bridge'], correct: 'House' },
+  { target: 'J', options: ['Jug', 'Cap', 'Hat', 'Pen'], correct: 'Jug' },
+  { target: 'Z', options: ['Zebra', 'Horse', 'Lion', 'Bear'], correct: 'Zebra' },
+  { target: 'CH', options: ['Chair', 'Desk', 'Table', 'Bench'], correct: 'Chair' },
+  { target: 'SH', options: ['Shark', 'Fish', 'Whale', 'Dolphin'], correct: 'Shark' },
+  { target: 'TH', options: ['Thumb', 'Hand', 'Foot', 'Finger'], correct: 'Thumb' },
+  { target: 'BL', options: ['Blast', 'Rocket', 'Star', 'Moon'], correct: 'Blast' },
+  { target: 'CL', options: ['Clock', 'Watch', 'Bell', 'Ring'], correct: 'Clock' },
+  { target: 'FL', options: ['Flower', 'Tree', 'Plant', 'Leaf'], correct: 'Flower' },
+  { target: 'ST', options: ['Star', 'Sun', 'Moon', 'Sky'], correct: 'Star' },
+  { target: 'TR', options: ['Train', 'Bus', 'Car', 'Bike'], correct: 'Train' }
 ];
 
 const AuditoryProcessing = ({ onComplete }) => {
   const generateNewTasks = () => {
-    const sampled = getRandomItems(auditoryTasksPool, 3);
+    const sampled = getRandomItems(auditoryTasksPool, 6);
     return sampled.map(t => ({
       ...t,
       options: shuffleArray(t.options)
@@ -504,12 +531,22 @@ const morphologyTasksPool = [
   { root: 'Direct', options: ['Director', 'Direction', 'Indirect'], instruction: 'Select the word that means "not direct".', correct: 'Indirect' },
   { root: 'Sign', options: ['Signature', 'Signal', 'Resign'], instruction: 'Select the word that means "a person\'s written name".', correct: 'Signature' },
   { root: 'Struct', options: ['Structure', 'Construct', 'Destruct'], instruction: 'Select the word that means "to build together".', correct: 'Construct' },
-  { root: 'Flex', options: ['Flexible', 'Reflex', 'Flexibility'], instruction: 'Select the word that means "capable of bending".', correct: 'Flexible' }
+  { root: 'Flex', options: ['Flexible', 'Reflex', 'Flexibility'], instruction: 'Select the word that means "capable of bending".', correct: 'Flexible' },
+  { root: 'Lock', options: ['Locked', 'Unlock', 'Locker'], instruction: 'Select the word that means "to open a lock".', correct: 'Unlock' },
+  { root: 'Help', options: ['Helper', 'Helpless', 'Helpful'], instruction: 'Select the word that means "full of help".', correct: 'Helpful' },
+  { root: 'Port', options: ['Export', 'Portable', 'Porter'], instruction: 'Select the word that means "able to be carried".', correct: 'Portable' },
+  { root: 'Script', options: ['Scribble', 'Transcript', 'Subscribe'], instruction: 'Select the word that means "a written copy or record".', correct: 'Transcript' },
+  { root: 'Tract', options: ['Tractor', 'Attract', 'Subtract'], instruction: 'Select the word that means "to draw toward oneself".', correct: 'Attract' },
+  { root: 'Bio', options: ['Biology', 'Biography', 'Autobiography'], instruction: 'Select the word that means "the study of living things".', correct: 'Biology' },
+  { root: 'Auto', options: ['Automatic', 'Autograph', 'Automobile'], instruction: 'Select the word that means "a person\'s self-written signature".', correct: 'Autograph' },
+  { root: 'Tele', options: ['Telescope', 'Television', 'Telegraph'], instruction: 'Select the word that means "an instrument for seeing distant objects".', correct: 'Telescope' },
+  { root: 'Dict', options: ['Predict', 'Dictator', 'Dictionary'], instruction: 'Select the word that means "to speak or say beforehand".', correct: 'Predict' },
+  { root: 'Vis', options: ['Visible', 'Vision', 'Invisible'], instruction: 'Select the word that means "not able to be seen".', correct: 'Invisible' }
 ];
 
 const MorphologyBuilder = ({ onComplete }) => {
   const generateNewTasks = () => {
-    const sampled = getRandomItems(morphologyTasksPool, 3);
+    const sampled = getRandomItems(morphologyTasksPool, 6);
     return sampled.map(t => ({
       ...t,
       options: shuffleArray(t.options)
@@ -758,6 +795,9 @@ const RapidNaming = ({ onComplete }) => {
 const ExerciseSystem = ({ type, onComplete }) => {
   const [exerciseStats, setExerciseStats] = useState(null);
   const [isAdvanced, setIsAdvanced] = useState(false);
+  const [sessionMode, setSessionMode] = useState(() => {
+    return localStorage.getItem('lexiflow_therapy_mode') || 'assessment';
+  });
   const { currentUser } = useAuth();
 
   const [showFullAnalytics, setShowFullAnalytics] = useState(false);
@@ -828,7 +868,7 @@ const ExerciseSystem = ({ type, onComplete }) => {
               <p>• <strong>Frequency:</strong> {exerciseStats?.sessions || 1} session(s)</p>
               <p>• <strong>Last Played:</strong> {exerciseStats?.lastPlayed || 'Just now'}</p>
               <p>• <strong>Progress Trend:</strong> {exerciseStats?.trend === 'Improving' ? '📈 Improving' : exerciseStats?.trend === 'Needs Practice' ? '💡 Needs Practice' : '➡️ Stable'}</p>
-              <p>• <strong>Focus Area:</strong> {type === 'phoneme' ? 'Phonological Decoding' : type === 'visual' ? 'Saccadic Eye Movement' : 'Linguistic Retrieval'}</p>
+              <p>• <strong>Focus Area:</strong> {type === 'phoneme' ? 'Phonological Decoding' : type === 'visual' ? 'Visual Tracking' : 'Linguistic Retrieval'}</p>
             </div>
             
             <div className="velocity-bar-container">
@@ -882,12 +922,33 @@ const ExerciseSystem = ({ type, onComplete }) => {
               >
                 {showFullAnalytics ? 'Hide Analytics ▲' : 'View Full Analytics ▾'}
               </button>
+              {/* Priority 7: Assessment vs Practice Mode Toggle */}
+              <button
+                onClick={() => {
+                  const next = sessionMode === 'assessment' ? 'practice' : 'assessment';
+                  setSessionMode(next);
+                  localStorage.setItem('lexiflow_therapy_mode', next);
+                }}
+                style={{
+                  background: sessionMode === 'assessment' ? 'rgba(20, 184, 166, 0.15)' : 'rgba(251, 191, 36, 0.15)',
+                  color: sessionMode === 'assessment' ? '#14b8a6' : '#f59e0b',
+                  border: `1px solid ${sessionMode === 'assessment' ? 'rgba(20, 184, 166, 0.3)' : 'rgba(251, 191, 36, 0.3)'}`,
+                  borderRadius: '50px',
+                  padding: '4px 14px',
+                  fontSize: '0.75rem',
+                  fontWeight: 800,
+                  cursor: 'pointer'
+                }}
+                title={sessionMode === 'assessment' ? 'Results feed the dashboard' : 'Practice only — results do NOT feed the dashboard'}
+              >
+                {sessionMode === 'assessment' ? '📊 Assessment Mode' : '🎮 Practice Mode'}
+              </button>
             </div>
           </div>
 
           {type === 'visual' && <MirrorMatchHighway onComplete={onComplete} />}
           {type === 'phoneme' && <MarioPhonemeJumper onComplete={onComplete} />}
-          {type === 'auditory' && <AuditoryProcessing onComplete={onComplete} advanced={isAdvanced} />}
+          {type === 'auditory' && <AuditoryProcessingSuite onComplete={onComplete} />}
           {type === 'morphology' && <MorphoSnake onComplete={onComplete} />}
           {type === 'naming' && <BalloonPopRAN onComplete={onComplete} />}
           {type === 'video' && <VideoPractice onComplete={onComplete} />}

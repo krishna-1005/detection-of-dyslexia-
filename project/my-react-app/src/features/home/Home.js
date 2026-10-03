@@ -373,7 +373,7 @@ const Home = () => {
           <h2 className="kids-brand-title">LexiFlow <span className="title-kids-badge">Kids 🎈</span></h2>
         </Link>
         <div className="nav-links">
-          <Link to="/simulator" className="nav-item kids-nav-item">👁️ Tracking Simulator</Link>
+          <Link to="/simulator" className="nav-item kids-nav-item">🎯 Tracking Practice</Link>
           <Link to="/therapy/phoneme" className="nav-item kids-nav-item">🎮 Therapy Games</Link>
           <Link to="/quiz" className="nav-item kids-nav-item">📋 Quick Quiz</Link>
           {currentUser ? (
@@ -516,16 +516,16 @@ const Home = () => {
         {/* Ocular Tracking Simulator Section */}
         <section className="features-grid sandbox-section">
           <div className="home-screening-banner-card kids-simulator-banner">
-            <span className="section-badge kids-badge-pill" style={{ marginBottom: '1rem' }}>👁️ Eye Tracking Game</span>
+            <span className="section-badge kids-badge-pill" style={{ marginBottom: '1rem' }}>🎯 Visual Tracking Practice</span>
             <h2 className="section-title kids-banner-title">
-              Ocular Saccadic Eye Tracking Game 👁️✨
+              Visual Tracking Practice Games 🎯✨
             </h2>
             <p className="section-subtitle kids-banner-sub">
-              Train your visual tracking skills with interactive bouncing target exercises designed for smoother line-by-line reading!
+              Train your visual discrimination and letter-reversal skills with Letter Twins Hunt & Word Jumble Ninja!
             </p>
 
-            <Link to="/simulator" className="btn-gradient kids-btn-primary" style={{ padding: '0.95rem 2.5rem', fontSize: '1.05rem', borderRadius: '18px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-              Launch Full Saccadic Simulator 👁️ →
+            <Link to="/therapy/visual" className="btn-gradient kids-btn-primary" style={{ padding: '0.95rem 2.5rem', fontSize: '1.05rem', borderRadius: '18px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              Launch Visual Tracking Practice 🎯 →
             </Link>
           </div>
         </section>

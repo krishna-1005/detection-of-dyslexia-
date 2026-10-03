@@ -15,6 +15,7 @@ import {
 import "./Dashboard.css";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
+import ScreeningDisclaimer from "./ScreeningDisclaimer";
 import { useAuth } from "../auth/AuthContext";
 import { fetchWithAuth } from "../../services/api";
 
@@ -74,10 +75,10 @@ const Dashboard = () => {
   const moduleDefinitions = [
     { id: 'phoneme', name: 'Phoneme Matching', icon: '🧩', desc: 'Sound-letter association' },
     { id: 'morphology', name: 'Morphology Builder', icon: '🧬', desc: 'Word structure training' },
-    { id: 'naming', name: "Rapid Naming (RAN)", icon: '⚡', desc: 'Speed recognition drills' },
-    { id: 'visual', name: 'Visual Tracking', icon: '📖', desc: 'Eye movement exercises' },
+    { id: 'naming', name: 'Visual Attention Speed', icon: '⚡', desc: 'Processing speed drills' },
+    { id: 'visual', name: 'Visual Tracking Practice', icon: '📖', desc: 'Reversal & migration drills' },
     { id: 'auditory', name: 'Auditory Processing', icon: '🎧', desc: 'Sound discrimination' },
-    { id: 'video', name: 'Live Video Session', icon: '📹', desc: 'Interactive practice' }
+    { id: 'video', name: 'Live Voice Practice', icon: '🎤', desc: 'Oral reading practice' }
   ];
 
   useEffect(() => {
@@ -226,11 +227,11 @@ const Dashboard = () => {
   // Dynamic Interpretation
   const getInterpretation = (score, risk) => {
     if (score > 60 || risk === "High") {
-      return "Your latest screening indicates a High probability of dyslexia. We strongly recommend engaging in daily visual tracking, phoneme matching, and structured morphological therapy drills.";
+      return "Your latest screening shows a High level of risk indicators. We recommend engaging in daily visual tracking, phoneme matching, and structured morphological therapy activities to support reading development.";
     } else if (score > 35 || risk === "Moderate") {
-      return "Your latest screening indicates a Moderate probability of dyslexia. Continue practicing the recommended reading and therapy exercises and monitor your progress through future assessments.";
+      return "Your latest screening shows a Moderate level of risk indicators. Continue practicing the recommended reading and therapy exercises and monitor progress through future screenings.";
     }
-    return "Your latest screening indicates a Low probability of dyslexia. Your phonetic decoding and reading speed show excellent baseline stability.";
+    return "Your latest screening shows a Low level of risk indicators. Phonetic decoding and reading speed show excellent baseline stability. Keep up the great work!";
   };
 
   const getModuleStatus = (modId) => {
@@ -358,8 +359,8 @@ const Dashboard = () => {
                     <div className="metric-icon" style={{ background: 'rgba(20, 184, 166, 0.15)', color: '#14b8a6' }}>🎯</div>
                   </div>
                   <div>
-                    <div className="metric-card-val">{latestScore}%</div>
-                    <div className="metric-card-label">Latest Risk Index</div>
+                    <div className="metric-card-val">{latestRiskLevel}</div>
+                    <div className="metric-card-label">Latest Screening Level</div>
                   </div>
                 </div>
 
@@ -400,8 +401,8 @@ const Dashboard = () => {
                 <div className="dash-chart-card" style={{ margin: 0 }}>
                   <div className="chart-header">
                     <div>
-                      <span className="medical-label">Diagnostic Trend</span>
-                      <h3 className="chart-title">Dyslexia Probability (%) Over Time</h3>
+                      <span className="medical-label">Screening Trend</span>
+                      <h3 className="chart-title">Screening Indicator (%) Over Time</h3>
                     </div>
                   </div>
                   <div style={{ width: '100%', height: 220 }}>
@@ -412,7 +413,7 @@ const Dashboard = () => {
                         <YAxis domain={[0, 100]} stroke="var(--lf-text-muted)" fontSize={11} tickLine={false} unit="%" />
                         <Tooltip 
                           contentStyle={{ background: '#181428', borderColor: 'var(--lf-border)', borderRadius: '10px', color: '#fff' }} 
-                          formatter={(val) => [`${val}% Risk`, 'Probability']}
+                          formatter={(val) => [`${val}% Indicator`, 'Screening Score']}
                         />
                         <Line type="monotone" dataKey="score" stroke="#818cf8" strokeWidth={3} dot={{ r: 4, fill: '#818cf8' }} />
                       </LineChart>
@@ -452,19 +453,22 @@ const Dashboard = () => {
               {/* 5. Highlighted Summary + 7. Personalized Recommendation Banner */}
               <div className="highlight-summary-card">
                 <div className="summary-score-badge">
-                  <div className="score-val" style={{ color: latestScore > 60 ? '#f43f5e' : latestScore > 35 ? '#f59e0b' : '#14b8a6' }}>
-                    {latestScore}%
+                  <div className="score-val" style={{ color: latestScore > 60 ? '#f43f5e' : latestScore > 35 ? '#f59e0b' : '#14b8a6', fontSize: '1.6rem' }}>
+                    {latestRiskLevel}
                   </div>
-                  <div className="score-lbl">Diagnostic Risk</div>
+                  <div className="score-lbl">Screening Level</div>
                   <span className={`dash-risk-badge ${latestRiskLevel.toLowerCase()}`} style={{ marginTop: '0.5rem' }}>
-                    {latestRiskLevel.toUpperCase()} RISK
+                    {latestRiskLevel.toUpperCase()} INDICATORS
                   </span>
                 </div>
                 <div className="summary-details">
-                  <h3>Latest Clinical Interpretation</h3>
+                  <h3>Screening Summary</h3>
                   <p style={{ marginBottom: '0.75rem' }}>{getInterpretation(latestScore, latestRiskLevel)}</p>
                   <div style={{ background: 'rgba(20, 184, 166, 0.1)', padding: '0.6rem 1rem', borderRadius: '8px', border: '1px solid rgba(20, 184, 166, 0.2)', fontSize: '0.82rem' }}>
                     💡 <strong style={{ color: '#14b8a6' }}>Targeted Recommendation:</strong> {currentRec.name} — <em>{currentRec.reason}</em>
+                  </div>
+                  <div style={{ marginTop: '0.75rem' }}>
+                    <ScreeningDisclaimer compact />
                   </div>
                 </div>
               </div>
@@ -562,11 +566,11 @@ const Dashboard = () => {
                                   </span>
                                 </td>
                                 <td style={{ fontWeight: 800 }}>
-                                  {isTherapy ? `${scoreVal}% Acc` : `${scoreVal}% Risk`}
+                                  {isTherapy ? `${scoreVal}% Acc` : rLevel}
                                 </td>
                                 <td>
                                   <span className={`dash-risk-badge ${badgeClass}`}>
-                                    {isTherapy ? (rLevel === "Low" ? "HIGH ACCURACY" : rLevel === "Moderate" ? "STABLE" : "NEEDS DRILL") : `${rLevel.toUpperCase()} RISK`}
+                                    {isTherapy ? (rLevel === "Low" ? "HIGH ACCURACY" : rLevel === "Moderate" ? "STABLE" : "NEEDS DRILL") : `${rLevel.toUpperCase()} INDICATORS`}
                                   </span>
                                 </td>
                                 <td>
@@ -819,10 +823,10 @@ const Dashboard = () => {
                         letterSpacing: '0.05em',
                         textTransform: 'uppercase'
                       }}>
-                        🔬 DIAGNOSTIC SCREENING BREAKDOWN
+                        🔬 SCREENING BREAKDOWN
                       </span>
                       <span className={`dash-risk-badge ${(selectedTest.riskLevel || 'Low').toLowerCase()}`} style={{ fontSize: '0.78rem', padding: '6px 14px', fontWeight: 800 }}>
-                        {(selectedTest.riskLevel || 'Low').toUpperCase()} RISK
+                        {(selectedTest.riskLevel || 'Low').toUpperCase()} INDICATORS
                       </span>
                     </div>
 
@@ -959,7 +963,7 @@ const Dashboard = () => {
                 
                 <div style={{ borderBottom: '2px solid var(--lf-border)', paddingBottom: '1rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <h2 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, color: 'var(--lf-indigo-light)' }}>LexiFlow Clinical Progress Report</h2>
+                    <h2 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, color: 'var(--lf-indigo-light)' }}>LexiFlow Screening Progress Report</h2>
                     <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.85rem', color: 'var(--lf-text-muted)' }}>Generated on {new Date().toLocaleDateString()}</p>
                   </div>
                   <div style={{ textAlign: 'right' }}>
@@ -968,13 +972,15 @@ const Dashboard = () => {
                   </div>
                 </div>
 
+                <ScreeningDisclaimer />
+
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                   <div>
-                    <h4 style={{ color: 'var(--lf-text-primary)', borderBottom: '1px solid var(--lf-border)', paddingBottom: '0.4rem', marginBottom: '0.75rem' }}>1. Patient Information & Summary</h4>
+                    <h4 style={{ color: 'var(--lf-text-primary)', borderBottom: '1px solid var(--lf-border)', paddingBottom: '0.4rem', marginBottom: '0.75rem' }}>1. User Information & Summary</h4>
                     <p style={{ fontSize: '0.85rem', lineHeight: 1.6, color: 'var(--lf-text-secondary)' }}>
                       <strong>Email:</strong> {profile.email}<br />
-                      <strong>Total Diagnostic Screenings:</strong> {totalTests}<br />
-                      <strong>Latest Risk Level:</strong> {latestRiskLevel.toUpperCase()} ({latestScore}% Risk Index)<br />
+                      <strong>Total Screenings Completed:</strong> {totalTests}<br />
+                      <strong>Latest Screening Level:</strong> {latestRiskLevel.toUpperCase()} Indicators<br />
                       <strong>Average Therapy Accuracy:</strong> {avgTherapyAccuracy}% across {totalTherapySessions} sessions.
                     </p>
                   </div>
@@ -1008,7 +1014,7 @@ const Dashboard = () => {
                   </div>
 
                   <div>
-                    <h4 style={{ color: 'var(--lf-text-primary)', borderBottom: '1px solid var(--lf-border)', paddingBottom: '0.4rem', marginBottom: '0.75rem' }}>3. Clinical Recommendations</h4>
+                    <h4 style={{ color: 'var(--lf-text-primary)', borderBottom: '1px solid var(--lf-border)', paddingBottom: '0.4rem', marginBottom: '0.75rem' }}>3. Practice Recommendations</h4>
                     <p style={{ fontSize: '0.85rem', lineHeight: 1.6, color: 'var(--lf-text-secondary)' }}>
                       • <strong>Recommended Module:</strong> {currentRec.name} ({currentRec.reason})<br />
                       • Maintain regular therapy sessions (at least 3x per week).<br />

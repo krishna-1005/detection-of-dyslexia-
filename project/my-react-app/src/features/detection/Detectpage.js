@@ -7,6 +7,7 @@ import Sidebar from "../dashboard/Sidebar";
 import FocusRuler from "../reader/FocusRuler";
 import ReportGenerator from "../analytics/ReportGenerator";
 import ResultDisplay from "./ResultDisplay";
+import ScreeningDisclaimer from "../dashboard/ScreeningDisclaimer";
 import { useAuth } from "../auth/AuthContext";
 import { fetchWithAuth } from "../../services/api";
 
@@ -124,13 +125,16 @@ const DetectPage = () => {
 
         <main className="main-content" style={{ flex: 1, padding: '2.5rem' }}>
           <header className="medical-header" style={{ marginBottom: '2rem' }}>
-            <span className="title-kids-badge" style={{ fontSize: '0.85rem', padding: '4px 12px', marginBottom: '0.4rem', display: 'inline-block' }}>✨ AI Diagnostic Quest</span>
+            <span className="title-kids-badge" style={{ fontSize: '0.85rem', padding: '4px 12px', marginBottom: '0.4rem', display: 'inline-block' }}>✨ Spelling Pattern Quest</span>
             <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#2f3542', margin: 0, fontFamily: 'var(--kids-font-display, "Fredoka", sans-serif)' }}>
-              🔬 AI Reading & Dyslexia Screener 🎈
+              📝 Written Spelling Pattern Analyzer 🎈
             </h1>
             <p style={{ color: '#57606f', fontSize: '0.95rem', marginTop: '0.4rem', fontWeight: 600 }}>
-              Input linguistic text samples or upload document files (.pdf, .docx, .txt) for instant AI dyslexia screening & visual focus analysis!
+              Input writing samples or upload document files (.pdf, .docx, .txt) for AI-powered spelling pattern analysis & visual focus tools!
             </p>
+            <div style={{ marginTop: '0.75rem' }}>
+              <ScreeningDisclaimer compact />
+            </div>
           </header>
 
           <section className="medical-card" style={{ marginBottom: '2rem' }}>
@@ -147,7 +151,7 @@ const DetectPage = () => {
 
             <textarea 
               className={`analysis-input ${colorOverlay !== "none" ? `overlay-${colorOverlay}` : ""} ${isOvercrowdingSimActive ? "overcrowding-active" : ""}`} 
-              placeholder="Paste patient reading/writing sample text here for instant diagnostic analysis..." 
+              placeholder="Paste a writing sample here for spelling pattern analysis..." 
               value={text} 
               onChange={(e) => setText(e.target.value)}
               style={{ 
@@ -172,7 +176,7 @@ const DetectPage = () => {
               </div>
 
               <button className="btn-gradient" onClick={handleAnalyze} disabled={loading || text.length < 3}>
-                {loading ? "⚙️ PROCESSING DIAGNOSTIC..." : "🧬 RUN DIAGNOSTIC ENGINE"}
+                {loading ? "⚙️ ANALYZING PATTERNS..." : "📝 RUN SPELLING ANALYSIS"}
               </button>
             </div>
           </section>
@@ -192,7 +196,7 @@ const DetectPage = () => {
                         <small style={{ fontSize: '0.75rem', color: 'var(--lf-text-muted)' }}>{h.type}</small>
                       </div>
                       <span className={`badge ${h.score > 60 ? 'badge-high' : h.score > 35 ? 'badge-mod' : 'badge-low'}`}>
-                        {h.score}% RISK ({h.riskLevel})
+                        {h.score > 60 ? 'High' : h.score > 35 ? 'Moderate' : 'Low'} Indicators ({h.riskLevel})
                       </span>
                     </div>
                   ))}

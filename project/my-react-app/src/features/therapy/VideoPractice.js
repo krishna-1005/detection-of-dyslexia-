@@ -70,20 +70,18 @@ const VideoPractice = ({ onComplete }) => {
   const [sessionTime, setSessionTime] = useState(0);
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
   const [transcript, setTranscript] = useState('');
-  const [feedback, setFeedback] = useState({ text: 'Click "Activate Camera & Start Voice Practice" to begin', type: 'neutral' });
+  const [feedback, setFeedback] = useState({ text: 'Click "Activate Microphone & Start Voice Practice" to begin', type: 'neutral' });
   const [isFinished, setIsFinished] = useState(false);
   const [sentenceReports, setSentenceReports] = useState({});
   const [isMicListening, setIsMicListening] = useState(false);
   const [micVolume, setMicVolume] = useState(0);
   const [isAssessing, setIsAssessing] = useState(false); // true while waiting on the Azure pronunciation call
 
-  const videoRef = useRef(null);
-  const recognitionRef = useRef(null);
   const audioCtxRef = useRef(null);
   const analyserRef = useRef(null);
 
-  // --- Real-audio recording (for Azure Pronunciation Assessment) ---
-  const streamRef = useRef(null);        // latest camera/mic MediaStream, kept in sync with `stream` state
+  const recognitionRef = useRef(null);
+  const streamRef = useRef(null);        // latest mic MediaStream, kept in sync with `stream` state
   const mediaRecorderRef = useRef(null); // MediaRecorder capturing the current sentence attempt
   const audioChunksRef = useRef([]);     // accumulated audio chunks for the in-progress recording
 
@@ -484,11 +482,6 @@ const VideoPractice = ({ onComplete }) => {
     return () => clearInterval(timer);
   }, [isRecording, isFinished]);
 
-  useEffect(() => {
-    if (stream && videoRef.current) {
-      videoRef.current.srcObject = stream;
-    }
-  }, [stream]);
 
   const startCamera = async () => {
     // Trigger speech recognition synchronously within user click event for Chrome activation
@@ -501,18 +494,12 @@ const VideoPractice = ({ onComplete }) => {
     }
 
     try {
-      let mediaStream = null;
-      try {
-        mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      } catch (camErr) {
-        console.warn("Webcam unavailable, falling back to audio mic stream:", camErr);
-        mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      }
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
       setStream(mediaStream);
       setIsRecording(true);
       if (mediaStream) {
         startAudioVisualizer(mediaStream);
-        startNewRecorder(mediaStream); // begin capturing real audio for Azure pronunciation scoring
+        startNewRecorder(mediaStream); // begin capturing real audio for pronunciation scoring
       }
     } catch (err) {
       setIsRecording(true);
@@ -620,7 +607,7 @@ const VideoPractice = ({ onComplete }) => {
       {!isFinished ? (
         <>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h3>Live Practice & Oral Reading Diagnostic</h3>
+            <h3>Live Practice & Oral Reading Session</h3>
             {isRecording && (
               <div className="recording-indicator">
                 <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: isMicListening ? '#14b8a6' : '#f43f5e', marginRight: '4px' }}></span>
@@ -634,25 +621,37 @@ const VideoPractice = ({ onComplete }) => {
           </p>
 
           <div className="live-practice-grid">
-            {/* Webcam Feed & Mic Meter */}
+            {/* Mic Feed & Audio Meter */}
             <div className="webcam-container">
               {!stream && !isRecording ? (
                 <div className="camera-setup">
-                  <span style={{ fontSize: '3.5rem' }}>📹</span>
+                  <span style={{ fontSize: '3.5rem' }}>🎤</span>
                   <button className="btn-run" onClick={startCamera} style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #0d9488 100%)', padding: '0.85rem 1.75rem', fontSize: '0.95rem', borderRadius: '10px' }}>
-                    🎥 Activate Camera & Start Voice Practice
+                    🎤 Activate Microphone & Start Voice Practice
                   </button>
                 </div>
               ) : (
                 <>
-                  {stream ? (
-                    <video ref={videoRef} autoPlay muted playsInline className="webcam-feed" />
-                  ) : (
-                    <div className="camera-setup" style={{ background: 'rgba(15, 23, 42, 0.95)', color: '#ffffff' }}>
-                      <span style={{ fontSize: '3.5rem' }}>🎤</span>
-                      <p style={{ margin: 0, fontWeight: 700 }}>Voice Practice Active (Audio Only)</p>
+                  <div className="camera-setup" style={{ background: 'linear-gradient(145deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 24, 56, 0.95) 100%)', color: '#ffffff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
+                    <span style={{ fontSize: '3rem' }}>🎤</span>
+                    <p style={{ margin: 0, fontWeight: 700, fontSize: '0.95rem' }}>Voice Practice Active</p>
+                    {/* Audio Waveform Visualizer Bars */}
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: '50px', padding: '0 1rem' }}>
+                      {Array.from({ length: 16 }).map((_, i) => {
+                        const barHeight = Math.max(4, (micVolume / 100) * (20 + Math.sin(Date.now() * 0.01 + i * 0.8) * 15 + Math.random() * 8));
+                        return (
+                          <div key={i} style={{
+                            width: '5px',
+                            height: `${barHeight}px`,
+                            background: micVolume > 30 ? '#14b8a6' : '#818cf8',
+                            borderRadius: '2px',
+                            transition: 'height 0.1s ease'
+                          }} />
+                        );
+                      })}
                     </div>
-                  )}
+                    <small style={{ color: '#94a3b8', fontWeight: 600, fontSize: '0.75rem' }}>Speak clearly into your microphone</small>
+                  </div>
                   <div className="live-transcript-overlay">
                     {/* Live Mic Decibel Meter */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(15, 23, 42, 0.85)', padding: '4px 10px', borderRadius: '8px', width: 'fit-content', border: '1px solid rgba(255,255,255,0.1)' }}>
@@ -916,7 +915,7 @@ const VideoPractice = ({ onComplete }) => {
           <div className="live-controls">
             {!stream && !isRecording ? (
               <button className="btn-primary" onClick={startCamera} style={{ padding: '0.75rem 1.75rem', fontWeight: 700 }}>
-                🎥 Activate Camera & Start Voice Practice
+                🎤 Activate Microphone & Start Voice Practice
               </button>
             ) : (
               <button 

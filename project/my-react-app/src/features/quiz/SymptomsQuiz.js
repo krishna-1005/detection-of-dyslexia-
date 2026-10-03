@@ -3,6 +3,17 @@ import { useAuth } from '../auth/AuthContext';
 import { saveTherapyProgress } from '../therapy/ExerciseSystem';
 import './SymptomsQuiz.css';
 
+// Helper: speaks a word/phrase aloud using the Web Speech API
+// so children who cannot decode text options can still hear them.
+const playAudioUtterance = (text) => {
+  try {
+    window.speechSynthesis.cancel();
+    const ut = new SpeechSynthesisUtterance(text);
+    ut.rate = 0.9;
+    window.speechSynthesis.speak(ut);
+  } catch (e) {}
+};
+
 // ─────────────────────────────────────────────────────────────────
 // SUBTYPE DEFINITIONS & MAPPINGS
 // ─────────────────────────────────────────────────────────────────
@@ -80,9 +91,9 @@ const DIAGNOSTIC_QUESTIONS = [
     title: 'Q1: Phoneme Isolation Test',
     instruction: 'Identify which of the following words contains the ending phoneme sound "/ck/" as in "Duck"?',
     type: 'choice',
-    options: ['Clock', 'Pen', 'Ring', 'Duck'],
-    correct: ['Clock', 'Duck'], // Either contains /ck/
-    explanation: 'Both "Clock" and "Duck" contain the hard /ck/ phonetic sound.'
+    options: ['Clock', 'Pen', 'Ring', 'Stick'],
+    correct: ['Clock', 'Stick'], // Both contain /ck/
+    explanation: 'Both "Clock" and "Stick" contain the hard /ck/ phonetic sound.'
   },
   {
     id: 'q2',
@@ -441,7 +452,19 @@ const SymptomsQuiz = ({ onQuizComplete }) => {
                   className={`diag-opt-btn ${isSelected ? 'selected' : ''} ${isCorrectOpt ? 'correct' : ''} ${isIncorrectOpt ? 'incorrect' : ''}`}
                   onClick={() => handleAnswer(currentQ.id, opt)}
                 >
-                  <span>{opt}</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>{opt}</span>
+                    {/* Audio helper button so weak readers can hear each option without decoding text */}
+                    <span
+                      role="button"
+                      aria-label={`Hear ${opt}`}
+                      onClick={(e) => { e.stopPropagation(); playAudioUtterance(opt); }}
+                      style={{ cursor: 'pointer', fontSize: '0.9rem', opacity: 0.7, flexShrink: 0 }}
+                      title={`Hear "${opt}"`}
+                    >
+                      🔊
+                    </span>
+                  </span>
                   {isCorrectOpt && <span>✅</span>}
                   {isIncorrectOpt && <span>❌</span>}
                 </button>

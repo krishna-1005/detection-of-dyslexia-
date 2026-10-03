@@ -638,7 +638,7 @@ const BalloonPopRAN = ({ onComplete }) => {
       <div className="bpr-container">
         <div className="bpr-start-card">
           <div className="bpr-start-icon">🎈 🌤️ ❤️</div>
-          <h1 className="bpr-start-title">BALLOON POP: ENDLESS SURVIVAL</h1>
+          <h1 className="bpr-start-title">BALLOON POP: VISUAL ATTENTION CHALLENGE</h1>
           <p className="bpr-start-desc">
             Balloons fly upward across the sky! Tap target balloons or speak item names into your mic!
             <br /><br />
@@ -674,7 +674,7 @@ const BalloonPopRAN = ({ onComplete }) => {
           </div>
 
           <h2 className="bpr-complete-title">
-            {starCount === 3 ? '⚡ ENDLESS SURVIVAL CHAMPION!' : '🎈 SURVIVAL RUN COMPLETE!'}
+            {starCount === 3 ? '⚡ VISUAL ATTENTION CHAMPION!' : '🎈 CHALLENGE COMPLETE!'}
           </h2>
 
           <p className="bpr-complete-sub">
@@ -711,7 +711,7 @@ const BalloonPopRAN = ({ onComplete }) => {
       {/* Arcade HUD Header with Lives, Streak & Level */}
       <header className="bpr-hud">
         <div className="bpr-hud-title">
-          <span>🎈</span> BALLOON POP SURVIVAL
+          <span>🎈</span> BALLOON POP CHALLENGE
         </div>
 
         <div className="bpr-hud-stats">

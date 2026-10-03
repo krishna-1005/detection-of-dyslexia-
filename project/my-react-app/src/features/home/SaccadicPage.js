@@ -66,7 +66,7 @@ const VisualSaccadicSandbox = () => {
     <div className="sandbox-panel">
       <div className="sandbox-controls">
         <div className="sandbox-section-title">Therapy Simulator Toggles</div>
-        <p className="sandbox-helper">LexiFlow uses ocular saccadic exercises to train tracking coordination. Test different tracking patterns below.</p>
+        <p className="sandbox-helper">LexiFlow uses saccadic exercises to train tracking coordination. Test different tracking patterns below.</p>
         
         <div className="sandbox-group">
           <div className="sandbox-title-label">Tracking Pattern</div>
@@ -143,7 +143,7 @@ const VisualSaccadicSandbox = () => {
       </div>
 
       <div className="sandbox-workspace">
-        <div className="sandbox-section-title">Ocular Saccadic Sandbox</div>
+        <div className="sandbox-section-title">Visual Tracking Sandbox</div>
         <div className="saccadic-viewport">
           <div className="saccadic-grid-line line-h"></div>
           <div className="saccadic-grid-line line-v"></div>
@@ -184,10 +184,10 @@ const SaccadicPage = () => {
 
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <span className="title-kids-badge" style={{ fontSize: '0.85rem', padding: '4px 14px', marginBottom: '0.75rem', display: 'inline-block' }}>
-            👁️ INTERACTIVE SIMULATOR 🎈
+            🎯 VISUAL TRACKING PRACTICE 🎈
           </span>
           <h1 style={{ fontSize: '2.4rem', fontWeight: 900, color: '#2f3542', margin: '0.25rem 0 0.5rem 0', fontFamily: 'var(--kids-font-display, "Fredoka", sans-serif)' }}>
-            🎯 Ocular Saccadic Eye Tracking Simulator
+            🎯 Visual Tracking Practice Simulator
           </h1>
           <p style={{ color: '#57606f', fontSize: '1rem', maxWidth: '640px', margin: '0 auto', lineHeight: 1.6, fontWeight: 600 }}>
             Test the motor visual-coordination exercises used in dyslexia recovery protocols. Follow the tracking marker to experience it live!

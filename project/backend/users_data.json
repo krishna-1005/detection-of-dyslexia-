@@ -13,6 +13,666 @@
       },
       "history": [
         {
+          "id": 1790883257867,
+          "date": "10/2/2026 01:04 AM",
+          "isoDate": "2026-10-01T19:34:17.867Z",
+          "type": "Therapy: Auditory Processing",
+          "score": 33,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "auditory",
+            "score": 200,
+            "accuracy": 33,
+            "timeTaken": "N/A",
+            "mode": "assessment",
+            "date": "10/2/2026 01:04 AM",
+            "timestamp": 1790883257867
+          },
+          "timestamp": "5b0dd77e"
+        },
+        {
+          "id": 1790882344151,
+          "date": "10/2/2026 12:49 AM",
+          "isoDate": "2026-10-01T19:19:04.151Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 39,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 3770,
+            "accuracy": 39,
+            "timeTaken": "9 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:49 AM",
+            "timestamp": 1790882344151
+          },
+          "timestamp": "1193c082"
+        },
+        {
+          "id": 1790882344149,
+          "date": "10/2/2026 12:49 AM",
+          "isoDate": "2026-10-01T19:19:04.149Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 39,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 3770,
+            "accuracy": 39,
+            "timeTaken": "9 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:49 AM",
+            "timestamp": 1790882344149
+          },
+          "timestamp": "1d479e9b"
+        },
+        {
+          "id": 1790882308813,
+          "date": "10/2/2026 12:48 AM",
+          "isoDate": "2026-10-01T19:18:28.813Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 35,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 2900,
+            "accuracy": 35,
+            "timeTaken": "8 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:48 AM",
+            "timestamp": 1790882308813
+          },
+          "timestamp": "bf0ddbd8"
+        },
+        {
+          "id": 1790882308810,
+          "date": "10/2/2026 12:48 AM",
+          "isoDate": "2026-10-01T19:18:28.810Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 35,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 2900,
+            "accuracy": 35,
+            "timeTaken": "8 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:48 AM",
+            "timestamp": 1790882308810
+          },
+          "timestamp": "d978a1fb"
+        },
+        {
+          "id": 1790882297531,
+          "date": "10/2/2026 12:48 AM",
+          "isoDate": "2026-10-01T19:18:17.531Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 29,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 2150,
+            "accuracy": 29,
+            "timeTaken": "7 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:48 AM",
+            "timestamp": 1790882297531
+          },
+          "timestamp": "ef027dae"
+        },
+        {
+          "id": 1790882297529,
+          "date": "10/2/2026 12:48 AM",
+          "isoDate": "2026-10-01T19:18:17.529Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 29,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 2150,
+            "accuracy": 29,
+            "timeTaken": "7 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:48 AM",
+            "timestamp": 1790882297529
+          },
+          "timestamp": "74f8ca25"
+        },
+        {
+          "id": 1790882289053,
+          "date": "10/2/2026 12:48 AM",
+          "isoDate": "2026-10-01T19:18:09.053Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 21,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 1400,
+            "accuracy": 21,
+            "timeTaken": "6 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:48 AM",
+            "timestamp": 1790882289053
+          },
+          "timestamp": "41f957e4"
+        },
+        {
+          "id": 1790882289048,
+          "date": "10/2/2026 12:48 AM",
+          "isoDate": "2026-10-01T19:18:09.048Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 21,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 1400,
+            "accuracy": 21,
+            "timeTaken": "6 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:48 AM",
+            "timestamp": 1790882289048
+          },
+          "timestamp": "f586a843"
+        },
+        {
+          "id": 1790882278511,
+          "date": "10/2/2026 12:47 AM",
+          "isoDate": "2026-10-01T19:17:58.510Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 10,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 650,
+            "accuracy": 10,
+            "timeTaken": "5 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:47 AM",
+            "timestamp": 1790882278510
+          },
+          "timestamp": "40f919f5"
+        },
+        {
+          "id": 1790882278509,
+          "date": "10/2/2026 12:47 AM",
+          "isoDate": "2026-10-01T19:17:58.509Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 10,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 650,
+            "accuracy": 10,
+            "timeTaken": "5 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:47 AM",
+            "timestamp": 1790882278509
+          },
+          "timestamp": "e643c478"
+        },
+        {
+          "id": 1790882278492,
+          "date": "10/2/2026 12:47 AM",
+          "isoDate": "2026-10-01T19:17:58.491Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 13,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 650,
+            "accuracy": 13,
+            "timeTaken": "4 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:47 AM",
+            "timestamp": 1790882278491
+          },
+          "timestamp": "5183e412"
+        },
+        {
+          "id": 1790882278508,
+          "date": "10/2/2026 12:47 AM",
+          "isoDate": "2026-10-01T19:17:58.508Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 13,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 650,
+            "accuracy": 13,
+            "timeTaken": "4 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:47 AM",
+            "timestamp": 1790882278508
+          },
+          "timestamp": "ce0bb9e5"
+        },
+        {
+          "id": 1790881900499,
+          "date": "10/2/2026 12:41 AM",
+          "isoDate": "2026-10-01T19:11:40.499Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 17,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 650,
+            "accuracy": 17,
+            "timeTaken": "3 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:41 AM",
+            "timestamp": 1790881900499
+          },
+          "timestamp": "0d213f74"
+        },
+        {
+          "id": 1790881900497,
+          "date": "10/2/2026 12:41 AM",
+          "isoDate": "2026-10-01T19:11:40.497Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 17,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 650,
+            "accuracy": 17,
+            "timeTaken": "3 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:41 AM",
+            "timestamp": 1790881900497
+          },
+          "timestamp": "2c95ccc3"
+        },
+        {
+          "id": 1790881900496,
+          "date": "10/2/2026 12:41 AM",
+          "isoDate": "2026-10-01T19:11:40.496Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 25,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 650,
+            "accuracy": 25,
+            "timeTaken": "2 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:41 AM",
+            "timestamp": 1790881900496
+          },
+          "timestamp": "b76e076d"
+        },
+        {
+          "id": 1790881900489,
+          "date": "10/2/2026 12:41 AM",
+          "isoDate": "2026-10-01T19:11:40.489Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 25,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 650,
+            "accuracy": 25,
+            "timeTaken": "2 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:41 AM",
+            "timestamp": 1790881900489
+          },
+          "timestamp": "26094de5"
+        },
+        {
+          "id": 1790881845837,
+          "date": "10/2/2026 12:40 AM",
+          "isoDate": "2026-10-01T19:10:45.837Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 50,
+          "riskLevel": "Moderate",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 650,
+            "accuracy": 50,
+            "timeTaken": "1 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:40 AM",
+            "timestamp": 1790881845837
+          },
+          "timestamp": "c9fb8a67"
+        },
+        {
+          "id": 1790881845835,
+          "date": "10/2/2026 12:40 AM",
+          "isoDate": "2026-10-01T19:10:45.835Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 50,
+          "riskLevel": "Moderate",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 650,
+            "accuracy": 50,
+            "timeTaken": "1 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:40 AM",
+            "timestamp": 1790881845835
+          },
+          "timestamp": "ad8100d0"
+        },
+        {
+          "id": 1790881425766,
+          "date": "10/2/2026 12:33 AM",
+          "isoDate": "2026-10-01T19:03:45.766Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 11,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 750,
+            "accuracy": 11,
+            "timeTaken": "7 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:33 AM",
+            "timestamp": 1790881425766
+          },
+          "timestamp": "8059ff93"
+        },
+        {
+          "id": 1790881425764,
+          "date": "10/2/2026 12:33 AM",
+          "isoDate": "2026-10-01T19:03:45.764Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 11,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 750,
+            "accuracy": 11,
+            "timeTaken": "7 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:33 AM",
+            "timestamp": 1790881425764
+          },
+          "timestamp": "30b6cdad"
+        },
+        {
+          "id": 1790880123520,
+          "date": "10/2/2026 12:12 AM",
+          "isoDate": "2026-10-01T18:42:03.520Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 0,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 0,
+            "accuracy": 0,
+            "timeTaken": "6 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:12 AM",
+            "timestamp": 1790880123520
+          },
+          "timestamp": "cfdfa51c"
+        },
+        {
+          "id": 1790880123518,
+          "date": "10/2/2026 12:12 AM",
+          "isoDate": "2026-10-01T18:42:03.518Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 0,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 0,
+            "accuracy": 0,
+            "timeTaken": "6 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:12 AM",
+            "timestamp": 1790880123518
+          },
+          "timestamp": "5dbe6001"
+        },
+        {
+          "id": 1790880123517,
+          "date": "10/2/2026 12:12 AM",
+          "isoDate": "2026-10-01T18:42:03.517Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 0,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 0,
+            "accuracy": 0,
+            "timeTaken": "5 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:12 AM",
+            "timestamp": 1790880123517
+          },
+          "timestamp": "3b709574"
+        },
+        {
+          "id": 1790880123491,
+          "date": "10/2/2026 12:12 AM",
+          "isoDate": "2026-10-01T18:42:03.491Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 0,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 0,
+            "accuracy": 0,
+            "timeTaken": "5 Rounds",
+            "mode": "assessment",
+            "date": "10/2/2026 12:12 AM",
+            "timestamp": 1790880123491
+          },
+          "timestamp": "68e203a6"
+        },
+        {
+          "id": 1790878751490,
+          "date": "10/1/2026 11:49 PM",
+          "isoDate": "2026-10-01T18:19:11.490Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 0,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 0,
+            "accuracy": 0,
+            "timeTaken": "4 Rounds",
+            "mode": "assessment",
+            "date": "10/1/2026 11:49 PM",
+            "timestamp": 1790878751490
+          },
+          "timestamp": "734ffec8"
+        },
+        {
+          "id": 1790878751488,
+          "date": "10/1/2026 11:49 PM",
+          "isoDate": "2026-10-01T18:19:11.488Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 0,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 0,
+            "accuracy": 0,
+            "timeTaken": "4 Rounds",
+            "mode": "assessment",
+            "date": "10/1/2026 11:49 PM",
+            "timestamp": 1790878751488
+          },
+          "timestamp": "9d0de21d"
+        },
+        {
+          "id": 1790878751488,
+          "date": "10/1/2026 11:49 PM",
+          "isoDate": "2026-10-01T18:19:11.487Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 0,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 0,
+            "accuracy": 0,
+            "timeTaken": "3 Rounds",
+            "mode": "assessment",
+            "date": "10/1/2026 11:49 PM",
+            "timestamp": 1790878751487
+          },
+          "timestamp": "e6acc853"
+        },
+        {
+          "id": 1790878751479,
+          "date": "10/1/2026 11:49 PM",
+          "isoDate": "2026-10-01T18:19:11.479Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 0,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 0,
+            "accuracy": 0,
+            "timeTaken": "3 Rounds",
+            "mode": "assessment",
+            "date": "10/1/2026 11:49 PM",
+            "timestamp": 1790878751479
+          },
+          "timestamp": "01bce931"
+        },
+        {
+          "id": 1790878582527,
+          "date": "10/1/2026 11:46 PM",
+          "isoDate": "2026-10-01T18:16:22.527Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 0,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 0,
+            "accuracy": 0,
+            "timeTaken": "2 Rounds",
+            "mode": "assessment",
+            "date": "10/1/2026 11:46 PM",
+            "timestamp": 1790878582527
+          },
+          "timestamp": "9d1eca9f"
+        },
+        {
+          "id": 1790878582525,
+          "date": "10/1/2026 11:46 PM",
+          "isoDate": "2026-10-01T18:16:22.525Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 0,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 0,
+            "accuracy": 0,
+            "timeTaken": "2 Rounds",
+            "mode": "assessment",
+            "date": "10/1/2026 11:46 PM",
+            "timestamp": 1790878582525
+          },
+          "timestamp": "aa6d1afc"
+        },
+        {
+          "id": 1790878582524,
+          "date": "10/1/2026 11:46 PM",
+          "isoDate": "2026-10-01T18:16:22.524Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 0,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 0,
+            "accuracy": 0,
+            "timeTaken": "1 Rounds",
+            "mode": "assessment",
+            "date": "10/1/2026 11:46 PM",
+            "timestamp": 1790878582524
+          },
+          "timestamp": "4b912290"
+        },
+        {
+          "id": 1790878582500,
+          "date": "10/1/2026 11:46 PM",
+          "isoDate": "2026-10-01T18:16:22.481Z",
+          "type": "Therapy: Visual Tracking",
+          "score": 0,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "visual",
+            "score": 0,
+            "accuracy": 0,
+            "timeTaken": "1 Rounds",
+            "mode": "assessment",
+            "date": "10/1/2026 11:46 PM",
+            "timestamp": 1790878582481
+          },
+          "timestamp": "a8e97f73"
+        },
+        {
           "id": 1789824865303,
           "date": "9/19/2026 07:04 PM",
           "isoDate": "2026-09-19T13:34:25.294Z",
@@ -1870,6 +2530,303 @@
       "reading_progress": {},
       "therapy_sessions": [
         {
+          "id": "5f262dfb-d12d-4d2e-ab0c-3914ed7e6f6d",
+          "type": "auditory",
+          "score": 200,
+          "accuracy": 33,
+          "date": "10/2/2026 01:04 AM",
+          "timeTaken": "N/A",
+          "status": "Completed"
+        },
+        {
+          "id": "a056d18e-1b42-4706-8acc-4db45fd3cf2a",
+          "type": "visual",
+          "score": 3770,
+          "accuracy": 39,
+          "date": "10/2/2026 12:49 AM",
+          "timeTaken": "9 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "8cad1e90-8e9f-4bbd-92d9-986b980e6ec3",
+          "type": "visual",
+          "score": 3770,
+          "accuracy": 39,
+          "date": "10/2/2026 12:49 AM",
+          "timeTaken": "9 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "c2eb71bc-d80b-487a-9fbb-e078b624fc16",
+          "type": "visual",
+          "score": 2900,
+          "accuracy": 35,
+          "date": "10/2/2026 12:48 AM",
+          "timeTaken": "8 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "035bb86a-8bc6-4043-a13a-0b22e625543e",
+          "type": "visual",
+          "score": 2900,
+          "accuracy": 35,
+          "date": "10/2/2026 12:48 AM",
+          "timeTaken": "8 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "1e9a53f4-a969-4549-abc1-a8ece62dcef8",
+          "type": "visual",
+          "score": 2150,
+          "accuracy": 29,
+          "date": "10/2/2026 12:48 AM",
+          "timeTaken": "7 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "d475a9ec-59b6-4877-80c3-0a660ee77f29",
+          "type": "visual",
+          "score": 2150,
+          "accuracy": 29,
+          "date": "10/2/2026 12:48 AM",
+          "timeTaken": "7 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "f007cdcc-18b6-4119-9eb0-b6b8aa3dd8fc",
+          "type": "visual",
+          "score": 1400,
+          "accuracy": 21,
+          "date": "10/2/2026 12:48 AM",
+          "timeTaken": "6 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "5d1c2501-a7b2-43e3-941d-3e6f8056a0e9",
+          "type": "visual",
+          "score": 1400,
+          "accuracy": 21,
+          "date": "10/2/2026 12:48 AM",
+          "timeTaken": "6 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "92f675dc-5e78-4713-a4c1-bb93f835b78b",
+          "type": "visual",
+          "score": 650,
+          "accuracy": 10,
+          "date": "10/2/2026 12:47 AM",
+          "timeTaken": "5 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "5264562a-4507-4ffe-91cc-5e586de51aec",
+          "type": "visual",
+          "score": 650,
+          "accuracy": 10,
+          "date": "10/2/2026 12:47 AM",
+          "timeTaken": "5 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "bd7988ff-f87f-4847-8f57-21e96011a70a",
+          "type": "visual",
+          "score": 650,
+          "accuracy": 13,
+          "date": "10/2/2026 12:47 AM",
+          "timeTaken": "4 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "e90e2d2a-b91d-4d49-9208-34faffcb8b40",
+          "type": "visual",
+          "score": 650,
+          "accuracy": 13,
+          "date": "10/2/2026 12:47 AM",
+          "timeTaken": "4 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "2ae5d00e-f202-4a3a-8b86-5c2ba424f5d0",
+          "type": "visual",
+          "score": 650,
+          "accuracy": 17,
+          "date": "10/2/2026 12:41 AM",
+          "timeTaken": "3 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "bf5ff588-ae64-4e3b-82c8-34ac1a4f02fb",
+          "type": "visual",
+          "score": 650,
+          "accuracy": 17,
+          "date": "10/2/2026 12:41 AM",
+          "timeTaken": "3 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "5339e84f-ae33-4861-8457-d7787fdf4768",
+          "type": "visual",
+          "score": 650,
+          "accuracy": 25,
+          "date": "10/2/2026 12:41 AM",
+          "timeTaken": "2 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "f0b3cdc3-db07-42e0-bc08-b6f0552dc1e9",
+          "type": "visual",
+          "score": 650,
+          "accuracy": 25,
+          "date": "10/2/2026 12:41 AM",
+          "timeTaken": "2 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "3c7bbd05-9b3e-4a42-b51b-6fb19b3699ce",
+          "type": "visual",
+          "score": 650,
+          "accuracy": 50,
+          "date": "10/2/2026 12:40 AM",
+          "timeTaken": "1 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "e9241743-8874-4363-820c-e3b6bdace4f1",
+          "type": "visual",
+          "score": 650,
+          "accuracy": 50,
+          "date": "10/2/2026 12:40 AM",
+          "timeTaken": "1 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "2a900e9d-469e-44b4-b782-fcdffadc4720",
+          "type": "visual",
+          "score": 750,
+          "accuracy": 11,
+          "date": "10/2/2026 12:33 AM",
+          "timeTaken": "7 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "1e6aba01-ff3e-4c39-9cef-170a1ed174f5",
+          "type": "visual",
+          "score": 750,
+          "accuracy": 11,
+          "date": "10/2/2026 12:33 AM",
+          "timeTaken": "7 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "f83a4768-4bbd-4c6b-a89f-05d865623712",
+          "type": "visual",
+          "score": 0,
+          "accuracy": 0,
+          "date": "10/2/2026 12:12 AM",
+          "timeTaken": "6 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "c87b401b-47df-4175-a5fd-38063264d741",
+          "type": "visual",
+          "score": 0,
+          "accuracy": 0,
+          "date": "10/2/2026 12:12 AM",
+          "timeTaken": "6 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "f349c8ea-68fa-4214-8bfd-68fcb06dcfc0",
+          "type": "visual",
+          "score": 0,
+          "accuracy": 0,
+          "date": "10/2/2026 12:12 AM",
+          "timeTaken": "5 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "9308ab1b-b920-4958-aa19-9c5f20291ee7",
+          "type": "visual",
+          "score": 0,
+          "accuracy": 0,
+          "date": "10/2/2026 12:12 AM",
+          "timeTaken": "5 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "2bf9b7be-2753-4279-ba21-63fd0d43b1b2",
+          "type": "visual",
+          "score": 0,
+          "accuracy": 0,
+          "date": "10/1/2026 11:49 PM",
+          "timeTaken": "4 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "ff95ab95-c830-43ac-9e18-50e004a8f357",
+          "type": "visual",
+          "score": 0,
+          "accuracy": 0,
+          "date": "10/1/2026 11:49 PM",
+          "timeTaken": "4 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "61785e5e-6f93-4ba2-88d7-77f7794b325d",
+          "type": "visual",
+          "score": 0,
+          "accuracy": 0,
+          "date": "10/1/2026 11:49 PM",
+          "timeTaken": "3 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "ed5d9889-fb36-4563-8720-4fead6520263",
+          "type": "visual",
+          "score": 0,
+          "accuracy": 0,
+          "date": "10/1/2026 11:49 PM",
+          "timeTaken": "3 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "7a8f01ff-9627-4b7b-ad75-e8bff9c86f20",
+          "type": "visual",
+          "score": 0,
+          "accuracy": 0,
+          "date": "10/1/2026 11:46 PM",
+          "timeTaken": "2 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "c49b39f2-7d4c-47db-ae6a-bddaf3d4215d",
+          "type": "visual",
+          "score": 0,
+          "accuracy": 0,
+          "date": "10/1/2026 11:46 PM",
+          "timeTaken": "2 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "8f5c84a7-f288-480c-b23e-053ad102e60c",
+          "type": "visual",
+          "score": 0,
+          "accuracy": 0,
+          "date": "10/1/2026 11:46 PM",
+          "timeTaken": "1 Rounds",
+          "status": "Completed"
+        },
+        {
+          "id": "27dae34c-0df2-4f56-bc6c-1d2300d53c2e",
+          "type": "visual",
+          "score": 0,
+          "accuracy": 0,
+          "date": "10/1/2026 11:46 PM",
+          "timeTaken": "1 Rounds",
+          "status": "Completed"
+        },
+        {
           "id": "5c4435fa-e820-4c5d-9c92-1b0c2be807e0",
           "type": "phoneme",
           "score": 180,
@@ -3003,21 +3960,21 @@
         },
         "auditory": {
           "type": "auditory",
-          "sessions": 2,
-          "accuracy": "75%",
+          "sessions": 3,
+          "accuracy": "33%",
           "pb": "300 pts",
           "pb_val": 300,
-          "lastPlayed": "8/17/2026 12:48 PM",
-          "trend": "Stable"
+          "lastPlayed": "10/2/2026 01:04 AM",
+          "trend": "Needs Practice"
         },
         "visual": {
           "type": "visual",
-          "sessions": 8,
-          "accuracy": "100%",
-          "pb": "1000 pts",
-          "pb_val": 1000,
-          "lastPlayed": "8/18/2026 03:25 PM",
-          "trend": "Improving"
+          "sessions": 40,
+          "accuracy": "39%",
+          "pb": "3770 pts",
+          "pb_val": 3770,
+          "lastPlayed": "10/2/2026 12:49 AM",
+          "trend": "Needs Practice"
         },
         "kids": {
           "type": "kids",
@@ -3029,7 +3986,7 @@
           "trend": "Improving"
         }
       },
-      "last_played_module": "phoneme"
+      "last_played_module": "auditory"
     }
   }
 }

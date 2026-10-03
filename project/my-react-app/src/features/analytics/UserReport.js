@@ -56,7 +56,7 @@ const UserReport = () => {
           color: '#fbbf24'
         },
         { 
-          name: 'Visual Tracking', 
+          name: 'Visual Tracking Practice', 
           sessions: exHistory.visual?.sessions || 0,
           score: exHistory.visual?.accuracy?.replace('%', '') || 0,
           trend: exHistory.visual?.trend || 'Stable',

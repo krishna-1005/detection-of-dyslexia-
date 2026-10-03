@@ -12,19 +12,19 @@ const therapyInfo = {
         instructions: "Listen to the target sound and identify which of the displayed words contains that specific sound. Practice daily for best results."
     },
     visual: {
-        science: "Visual tracking issues can cause 'line skipping' or the sensation of letters moving on a page. This is common in many types of dyslexia.",
-        benefits: ["Reduces reading fatigue", "Prevents skipping lines", "Improves eye-muscle coordination"],
-        instructions: "Follow the highlighted word with your eyes only. Do not move your head. Adjust the speed as you get more comfortable."
+        science: "Visual and attentional dyslexia indicators include letter reversal confusion (e.g., b vs d, p vs q) and visual word or letter migration (e.g., letters appearing to swap or hop between words). Targeted discrimination mini-games strengthen spatial letter orientation and visual attention without requiring reading fluency or sustained motor coordination.",
+        benefits: ["Fixes mirror letter reversal confusion (b vs d, p vs q)", "Reduces word & letter migration errors", "Builds visual attention & spatial decoding stability"],
+        instructions: "Play Letter Twins Hunt to spot mirror reversal pairs, and Word Jumble Ninja to catch letter and word order migrations!"
     },
     auditory: {
-        science: "Auditory processing in dyslexia often involves difficulty distinguishing between fast-changing sounds (like 'B' vs 'P').",
-        benefits: ["Sharpens sound discrimination", "Improves listening comprehension", "Strengthens auditory memory"],
-        instructions: "Listen carefully to the target sound and choose the word that starts with that sound. Focus on the very first sound you hear."
+        science: "Auditory processing in dyslexia often involves difficulty distinguishing between fast-changing acoustic transitions (e.g., initial sounds) and minimal-pair phonetic contrasts (e.g., ba vs pa, da vs ta). Combining Sound Shield (initial sound discrimination) with Copy Cat Echo (player-controlled same/different minimal-pair listening) provides dual, independent auditory diagnostic signals.",
+        benefits: ["Sharpens minimal-pair auditory discrimination (ba/pa, da/ta)", "Strengthens initial sound decoding", "Boosts rapid auditory processing speed"],
+        instructions: "Play Game 1 (Sound Shield) to match initial word sounds, or Game 2 (Copy Cat Echo) to tap two sounds independently and decide if they are the Same or Different!"
     },
     video: {
-        science: "Live interaction and facial cues help bridge the gap between auditory and visual learning, providing a holistic therapy environment.",
-        benefits: ["Real-time feedback", "Social-emotional support", "Multisensory engagement"],
-        instructions: "Wait for the clinician to initiate the session. Ensure your camera and microphone are active for the best experience."
+        science: "Live oral reading practice with speech recognition helps bridge the gap between visual decoding and spoken fluency, providing immediate feedback on pronunciation accuracy.",
+        benefits: ["Real-time pronunciation feedback", "Builds reading confidence", "Multisensory engagement"],
+        instructions: "Ensure your microphone is active. Read each displayed sentence aloud — the speech engine will track your words in real time and flag any mispronounced or skipped words."
     },
     morphology: {
         science: "Morphological awareness involves understanding the internal structure of words (roots, prefixes, suffixes).",
@@ -32,9 +32,9 @@ const therapyInfo = {
         instructions: "Look at the root word and choose the derivative that matches the meaning provided in the instruction."
     },
     naming: {
-        science: "Rapid Automated Naming (RAN) measures the speed at which a person can name common objects. It is a key predictor of reading fluency.",
-        benefits: ["Increases processing speed", "Improves retrieval of phonological codes", "Boosts overall reading fluency"],
-        instructions: "When you start the timer, name each object aloud as fast as possible. Stop the timer when you reach the end."
+        science: "Visual attention and processing speed tasks measure how quickly a child can identify and select a target from among distractors, which correlates with reading fluency.",
+        benefits: ["Increases visual processing speed", "Improves selective attention", "Boosts target recognition under time pressure"],
+        instructions: "Balloons will float across the sky. Tap or speak the name of the target balloon as fast as you can — avoid the decoys!"
     },
     kids: {
         science: "Multi-level gamified therapy uses animated letter physics, speech synthesis, and reward streaks to fix mirror letter reversals (b/d/p/q) and build phonological confidence in children.",
@@ -67,10 +67,10 @@ const TherapyPage = () => {
                             <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#2f3542', margin: '0.2rem 0 0 0', fontFamily: 'var(--kids-font-display, "Fredoka", sans-serif)' }}>
                                 {type === 'phoneme' && '🧩 Phoneme Matching Arcade'}
                                 {type === 'morphology' && '🧬 Morphology Builder Arcade'}
-                                {type === 'naming' && '⚡ Rapid Naming Safari'}
-                                {type === 'visual' && '📖 Visual Tracking Quest'}
-                                {type === 'auditory' && '🎧 Auditory Sound Shield'}
-                                {type === 'video' && '📹 Live Video Session'}
+                                {type === 'naming' && '⚡ Visual Attention Speed'}
+                                {type === 'visual' && '📖 Visual Tracking Practice'}
+                                {type === 'auditory' && '🎧 Auditory Processing Suite'}
+                                {type === 'video' && '🎤 Live Voice Practice'}
                                 {type === 'kids' && '🎈 Kids DysTherapy Arcade'}
                             </h1>
                         </div>

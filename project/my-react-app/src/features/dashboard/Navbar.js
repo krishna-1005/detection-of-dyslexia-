@@ -35,7 +35,7 @@ const Navbar = ({ user: propUser, showDropdown, setShowDropdown }) => {
     { path: '/therapy/phoneme', label: 'Phoneme Matching', icon: '🧩' },
     { path: '/therapy/morphology', label: 'Morphology Builder', icon: '🧬' },
     { path: '/therapy/naming', label: 'Rapid Naming', icon: '⚡' },
-    { path: '/therapy/visual', label: 'Visual Tracking', icon: '📖' },
+    { path: '/therapy/visual', label: 'Visual Tracking Practice', icon: '📖' },
     { path: '/therapy/auditory', label: 'Auditory Processing', icon: '🎧' },
     { path: '/therapy/video', label: 'Video Sessions', icon: '📹' },
   ];

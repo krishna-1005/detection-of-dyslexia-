@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../dashboard/Navbar';
 import SymptomsQuiz, { SUBTYPES } from './SymptomsQuiz';
+import ScreeningDisclaimer from '../dashboard/ScreeningDisclaimer';
 import './SymptomsQuiz.css';
 
 const QuizPage = () => {
@@ -55,14 +56,17 @@ const QuizPage = () => {
           <>
             <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
               <span className="title-kids-badge" style={{ fontSize: '0.85rem', padding: '4px 14px', marginBottom: '0.75rem', display: 'inline-block' }}>
-                ✨ CLINICAL SUBTYPE DIAGNOSIS 🎈
+                ✨ DEVELOPMENTAL SCREENING 🎈
               </span>
               <h1 style={{ fontSize: '2.4rem', fontWeight: 900, color: '#2f3542', margin: '0.25rem 0 0.5rem 0', fontFamily: 'var(--kids-font-display, "Fredoka", sans-serif)' }}>
                 📋 10-Question Subtype Screening Engine
               </h1>
               <p style={{ color: '#57606f', fontSize: '1rem', maxWidth: '620px', margin: '0 auto', lineHeight: 1.6, fontWeight: 600 }}>
-                Complete the 10 diagnostic challenges to pinpoint your primary dyslexia subtype and unlock your personalized AI therapy path!
+                Complete the 10 screening challenges to identify areas that may benefit from targeted practice, and unlock your personalized therapy path!
               </p>
+              <div style={{ maxWidth: '620px', margin: '1rem auto 0 auto' }}>
+                <ScreeningDisclaimer compact />
+              </div>
             </div>
 
             <SymptomsQuiz onQuizComplete={handleQuizComplete} />
@@ -71,11 +75,15 @@ const QuizPage = () => {
           /* ── CELEBRATION RESULTS & LAUNCHER SCREEN ── */
           <div className="quiz-report-root animate-fade-in">
             <div className="celebration-hero">
-              <div className="celebration-badge">🚀 ASSESSMENT PASSED</div>
-              <h1 className="celebration-title">Cadet Assessment Complete!</h1>
+              <div className="celebration-badge">🚀 SCREENING COMPLETE</div>
+              <h1 className="celebration-title">Cadet Screening Complete!</h1>
               <p className="celebration-subtitle">
-                Outstanding effort! Your baseline diagnostic report has been analyzed across all 5 medical dyslexia subtypes.
+                Outstanding effort! Your screening results have been analyzed across 5 skill areas to find the best therapy path for you.
               </p>
+            </div>
+
+            <div style={{ margin: '1rem 0' }}>
+              <ScreeningDisclaimer />
             </div>
 
             {/* Target Power-Up Highlight Banner */}
@@ -83,7 +91,7 @@ const QuizPage = () => {
               <div className="powerup-card" style={{ borderColor: primaryObj.color, background: primaryObj.bg }}>
                 <div className="powerup-icon" style={{ color: primaryObj.color }}>{primaryObj.icon}</div>
                 <div className="powerup-content">
-                  <div className="powerup-tag" style={{ color: primaryObj.color }}>YOUR BRAIN POWER-UP TARGET</div>
+                  <div className="powerup-tag" style={{ color: primaryObj.color }}>YOUR RECOMMENDED FOCUS AREA</div>
                   <h2 className="powerup-title" style={{ color: primaryObj.color }}>
                     Target Area: {primaryObj.name}
                   </h2>
@@ -97,7 +105,7 @@ const QuizPage = () => {
 
             {/* 5-Subtype Scores Breakdown Cards */}
             <div className="subtype-breakdown-section">
-              <h3 className="section-title">📊 Medical Subtype Breakdown</h3>
+              <h3 className="section-title">📊 Skill Area Breakdown</h3>
               <div className="subtype-grid">
                 {Object.entries(SUBTYPES).map(([key, sub]) => {
                   const scorePct = completedReport.scores[key] || 0;

@@ -9,9 +9,9 @@ const guides = {
     { title: '3. Therapy Suite', content: 'Launch any cognitive exercise (e.g. Visual Tracking, Phonemes) to build skills.' }
   ],
   '/detect': [
-    { title: '1. Ingest Text', content: 'Input text manually, or click "Upload Clinical Sample" to read a doc/pdf/docx.' },
-    { title: '2. Clinical Settings', content: 'Apply a clinical overlay, adjust letter spacing, or toggle Simulated Crowding/Focus Ruler.' },
-    { title: '3. Run Diagnostics', content: 'Click "Run Diagnostics" to assess dyslexia risk indicators and download clinical reports.' }
+    { title: '1. Ingest Text', content: 'Input text manually, or click "Upload Sample" to read a doc/pdf/docx.' },
+    { title: '2. Visual Focus Settings', content: 'Apply a color overlay, adjust letter spacing, or toggle Simulated Crowding/Focus Ruler.' },
+    { title: '3. Run Spelling Analysis', content: 'Click "Run Spelling Analysis" to detect spelling pattern indicators and download reports.' }
   ],
   '/reader': [
     { title: '1. Source Content', content: 'Paste any complex text into the input area to begin the transformation.' },
@@ -44,10 +44,10 @@ const Sidebar = () => {
   const therapyLinks = [
     { path: '/therapy/phoneme', label: 'Phoneme Matching', icon: '🧩' },
     { path: '/therapy/morphology', label: 'Morphology Builder', icon: '🧬' },
-    { path: '/therapy/naming', label: 'Rapid Naming', icon: '⚡' },
-    { path: '/therapy/visual', label: 'Visual Tracking', icon: '📖' },
+    { path: '/therapy/naming', label: 'Visual Attention Speed', icon: '⚡' },
+    { path: '/therapy/visual', label: 'Visual Tracking Practice', icon: '📖' },
     { path: '/therapy/auditory', label: 'Auditory Processing', icon: '🎧' },
-    { path: '/therapy/video', label: 'Video Sessions', icon: '📹' },
+    { path: '/therapy/video', label: 'Voice Practice', icon: '🎤' },
   ];
 
   // Guide Me Integration
