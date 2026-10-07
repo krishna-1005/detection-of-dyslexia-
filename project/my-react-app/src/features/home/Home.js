@@ -435,6 +435,25 @@ const Home = () => {
                 </Link>
               </div>
 
+              {/* ── UNIVERSAL SCREENING QUEST CTA ── */}
+              <div className="universal-screening-cta-card">
+                <div className="usc-glow-border" />
+                <div className="usc-inner">
+                  <div className="usc-icon-badge">🚀</div>
+                  <div className="usc-text-content">
+                    <Link to={currentUser ? "/assessment/universal" : "/signup"} className="usc-main-link">
+                      Start Universal Dyslexia Screening (All-in-One Quest)
+                    </Link>
+                    <div className="usc-subtitle-badges">
+                      <span className="usc-badge">⏱️ Continuous 8-Minute Adaptive Battery</span>
+                      <span className="usc-badge">🧬 Evaluates All 5 Dyslexia Subtypes</span>
+                      <span className="usc-badge">📊 Instant Clinical Profile</span>
+                    </div>
+                  </div>
+                  <Link to={currentUser ? "/assessment/universal" : "/signup"} className="usc-arrow-btn">→</Link>
+                </div>
+              </div>
+
               {/* Trust Indicators Row */}
               <div className="hero-trust-row-mockup">
                 <div className="trust-box-item">

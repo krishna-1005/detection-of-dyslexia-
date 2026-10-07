@@ -318,9 +318,15 @@ const MorphologySnakeGame = ({ onComplete }) => {
         window.dispatchEvent(new Event('therapy_progress_updated'));
       } catch (e) {}
 
-      saveTherapyProgress(currentUser, 'morphology', score, acc, `Snake Tier: ${tierKey}`);
-      playSFX('win');
-      setPhase('round_modal');
+      // ── DEFINED SESSION BENCHMARK (WIN CONDITION: 3 Waves / Tiers Completed) ──
+      const TARGET_WAVE_CAP = 3;
+      const currentTierNum = tierKey === 'easy' ? 1 : tierKey === 'medium' ? 2 : 3;
+
+      if (currentTierNum >= TARGET_WAVE_CAP) {
+        setPhase('complete');
+      } else {
+        setPhase('round_modal');
+      }
       return;
     }
 

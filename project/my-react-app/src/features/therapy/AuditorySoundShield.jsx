@@ -23,7 +23,7 @@ const AUDITORY_TARGET_POOL = [
   { target: 'TH', options: ['Thumb', 'Hand', 'Foot', 'Finger'], correct: 'Thumb' }
 ];
 
-export default function AuditorySoundShield({ onCompleteRound }) {
+export default function AuditorySoundShield({ onCompleteRound, onComplete, onAutoFinish, assessmentMode }) {
   const [tasks, setTasks] = useState([]);
   const [currentTaskIdx, setCurrentTaskIdx] = useState(0);
   const [score, setScore] = useState(0);
@@ -100,7 +100,15 @@ export default function AuditorySoundShield({ onCompleteRound }) {
       } else {
         setIsFinished(true);
         const accuracyPct = Math.round((newScore / tasks.length) * 100);
-        if (onCompleteRound) {
+        if (onAutoFinish) {
+          onAutoFinish({
+            accuracy: accuracyPct,
+            latencyMs: 320,
+            errorCount: tasks.length - newScore,
+            errorTypes: [],
+            score: newScore * 25
+          });
+        } else if (onCompleteRound) {
           onCompleteRound({
             game: 'Sound Shield',
             score: newScore,
@@ -109,6 +117,8 @@ export default function AuditorySoundShield({ onCompleteRound }) {
             stars: newStars,
             telemetry: updatedTelemetry
           });
+        } else if (onComplete) {
+          onComplete();
         }
       }
     }, 1500);

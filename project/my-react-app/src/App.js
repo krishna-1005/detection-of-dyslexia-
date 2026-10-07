@@ -12,6 +12,7 @@ import QuizPage from "./features/quiz/QuizPage";
 import SaccadicPage from "./features/home/SaccadicPage";
 import GuideMe from "./features/guideme/GuideMe";
 import ChatWidget from "./features/chat/ChatWidget";
+import UnifiedBatteryRunner from "./features/assessment/UnifiedBatteryRunner";
 import { AuthProvider } from "./features/auth/AuthContext";
 import ProtectedRoute from "./features/auth/ProtectedRoute";
 import "./App.css";
@@ -34,6 +35,7 @@ function App() {
             <Route path="/learn" element={<Navigate to="/dashboard" replace />} />
             <Route path="/reader" element={<ProtectedRoute><SmartReader /></ProtectedRoute>} />
             <Route path="/therapy/:type" element={<ProtectedRoute><TherapyPage /></ProtectedRoute>} />
+            <Route path="/assessment/universal" element={<ProtectedRoute><UnifiedBatteryRunner /></ProtectedRoute>} />
             <Route path="/analysis" element={<ProtectedRoute><UserReport /></ProtectedRoute>} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>

@@ -131,14 +131,20 @@ const randomPos = (exclude = []) => {
 };
 
 // ── COMPONENT ──
-const MorphoSnake = ({ onComplete }) => {
+const MorphoSnake = ({
+  onComplete,
+  assessmentMode = false,
+  targetCount = 2,
+  onAutoFinish
+}) => {
   const { currentUser } = useAuth();
   const gameWrapperRef = useRef(null);
   const canvasRef = useRef(null);
   const animRef = useRef(null);
   const gameRef = useRef(null);
+  const assessmentCompletedRef = useRef(false);
 
-  const [phase, setPhase] = useState('start'); // start | playing | complete
+  const [phase, setPhase] = useState(assessmentMode ? 'playing' : 'start'); // start | playing | complete
   const [isFullView, setIsFullView] = useState(false);
   const [difficulty, setDifficulty] = useState('easy');
   const [score, setScore] = useState(0);
@@ -214,6 +220,13 @@ const MorphoSnake = ({ onComplete }) => {
 
     speakText(`Morpheme Snake! Eat the parts to build: ${firstRecipe.word}. ${firstRecipe.hint}`);
   }, []);
+
+  // Auto-start in assessment mode
+  useEffect(() => {
+    if (assessmentMode && phase === 'playing' && !gameRef.current) {
+      initGame('easy');
+    }
+  }, [assessmentMode, phase, initGame]);
 
   // ── Spawn food pellets ──
   const spawnFoods = (recipe, snakeBody) => {
@@ -315,15 +328,35 @@ const MorphoSnake = ({ onComplete }) => {
       // Check if word is complete
       if (newEaten.length === currentRecipe.parts.length) {
         playSFX('complete');
-        setWordsBuilt(prev => prev + 1);
-        setScore(prev => prev + 200);
+        const nextWordsBuilt = wordsBuilt + 1;
+        const nextScore = score + 200;
+        setWordsBuilt(nextWordsBuilt);
+        setScore(nextScore);
         g.flashMsg = `✅ ${currentRecipe.word}!`;
         g.flashTimer = 60;
         speakText(`Great! You built ${currentRecipe.word}!`);
 
+        // Check assessment auto-finish
+        if (assessmentMode && (onAutoFinish || onComplete) && !assessmentCompletedRef.current && nextWordsBuilt >= targetCount) {
+          assessmentCompletedRef.current = true;
+          setTimeout(() => {
+            saveTherapyProgress(currentUser, 'morphology', nextScore, 100, `${nextWordsBuilt} words`);
+            if (onAutoFinish) {
+              onAutoFinish({ accuracy: 100, latencyMs: 0, errorCount: 0, errorTypes: [], score: nextScore });
+            } else if (onComplete) {
+              onComplete();
+            }
+          }, 800);
+          return;
+        }
+
         // Advance to next recipe after a short pause
         setTimeout(() => {
-          if (recipeQueue.length > 0) {
+          const TARGET_WAVE_CAP = 3;
+          const TARGET_CAPTURE_CAP = 10;
+          const maxWordsForSession = TARGET_WAVE_CAP * 5;
+
+          if (recipeQueue.length > 0 && nextWordsBuilt < TARGET_CAPTURE_CAP && nextWordsBuilt < maxWordsForSession) {
             const next = recipeQueue[0];
             setCurrentRecipe(next);
             setRecipeQueue(prev => prev.slice(1));
@@ -333,7 +366,7 @@ const MorphoSnake = ({ onComplete }) => {
             }
             speakText(`Next word: ${next.word}. ${next.hint}`);
           } else {
-            // Round complete
+            // Defined Session Benchmark (Win Condition) reached
             setPhase('complete');
           }
         }, 1200);
@@ -641,7 +674,11 @@ const MorphoSnake = ({ onComplete }) => {
               )}
               <button className="snake-btn-hq" onClick={async () => {
                 await saveTherapyProgress(currentUser, 'morphology', score, accuracy, `${wordsBuilt} words`);
-                onComplete();
+                if (onAutoFinish) {
+                  onAutoFinish({ accuracy, latencyMs: 0, errorCount: 0, errorTypes: [], score });
+                } else if (onComplete) {
+                  onComplete();
+                }
               }}>
                 MISSION HQ 🏠
               </button>

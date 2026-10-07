@@ -199,13 +199,13 @@ const PARALLAX_CLOUDS_MID = [
   { x: 700, y: 110, s: 1.4 }
 ];
 
-const MarioPhonemeJumper = ({ onComplete }) => {
+const MarioPhonemeJumper = ({ onComplete, assessmentMode = false, targetCount = 4, onAutoFinish }) => {
   const { currentUser } = useAuth();
   const gameWrapperRef = useRef(null);
   const canvasRef = useRef(null);
   const animRef = useRef(null);
 
-  const [phase, setPhase] = useState('start'); // start | playing | round_modal | complete | game_over
+  const [phase, setPhase] = useState(assessmentMode ? 'playing' : 'start'); // start | playing | round_modal | complete | game_over
   const [difficultyTier, setDifficultyTier] = useState('easy');
   const [targetIdx, setTargetIdx] = useState(0);
   const [score, setScore] = useState(0);
@@ -219,6 +219,11 @@ const MarioPhonemeJumper = ({ onComplete }) => {
   const [starPowerActive, setStarPowerActive] = useState(false);
   const [voiceModeActive, setVoiceModeActive] = useState(false);
   const [voiceListening, setVoiceListening] = useState(false);
+
+  // Assessment mode tracking
+  const assessmentStartRef = useRef(Date.now());
+  const assessmentErrorsRef = useRef(0);
+  const assessmentCompletedRef = useRef(false);
 
   const currentData = ROUND_DATA[difficultyTier] || ROUND_DATA.easy;
   const currentTarget = currentData.targets[targetIdx % currentData.targets.length];
@@ -524,12 +529,37 @@ const MarioPhonemeJumper = ({ onComplete }) => {
 
     saveTherapyProgress(currentUser, 'phoneme', score, 100, `Round: ${difficultyTier}`);
 
-    if (difficultyTier === 'hard') {
+    // ── ASSESSMENT MODE: Fire onAutoFinish with metrics ──
+    if (assessmentMode && onAutoFinish && !assessmentCompletedRef.current) {
+      assessmentCompletedRef.current = true;
+      const latency = Date.now() - assessmentStartRef.current;
+      onAutoFinish({
+        accuracy: 100,
+        latencyMs: latency,
+        errorCount: assessmentErrorsRef.current,
+        errorTypes: [],
+        score
+      });
+      return;
+    }
+
+    // ── DEFINED SESSION BENCHMARK (WIN CONDITION: 3 Waves / Worlds Completed) ──
+    const TARGET_WAVE_CAP = 3;
+    const currentWaveNum = difficultyTier === 'easy' ? 1 : difficultyTier === 'medium' ? 2 : 3;
+
+    if (currentWaveNum >= TARGET_WAVE_CAP) {
       setPhase('complete');
     } else {
       setPhase('round_modal');
     }
-  }, [currentUser, difficultyTier, score]);
+  }, [currentUser, difficultyTier, score, assessmentMode, onAutoFinish]);
+
+  // Auto-start game in assessment mode
+  useEffect(() => {
+    if (assessmentMode && phase === 'playing' && !gameRef.current.blocks.length) {
+      startRound('easy');
+    }
+  }, [assessmentMode, phase]);
 
   // Start Round
   const startRound = (key) => {

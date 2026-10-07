@@ -131,6 +131,10 @@
   border: 3.5px solid #2B1B12;
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
   display: block;
+  max-width: 100%;
+  max-height: calc(100vh - 270px);
+  object-fit: contain;
+  border-radius: 16px;
 }
 
 /* ── FOOTER & CONTROLS ── */

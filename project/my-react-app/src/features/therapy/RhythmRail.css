@@ -1,0 +1,427 @@
+/* RhythmRail.css - 2-Key Retro-Synth Rhythm Game for Auditory Discrimination */
+
+.rr-game-container {
+  width: 100%;
+  min-height: 560px;
+  height: 600px;
+  position: relative;
+  overflow: hidden;
+  background-color: #030712;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.25) 0%, transparent 70%),
+    radial-gradient(circle at 100% 100%, rgba(20, 184, 166, 0.18) 0%, transparent 60%),
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+  border-radius: 24px;
+  border: 2.5px solid rgba(168, 85, 247, 0.4);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(168, 85, 247, 0.2);
+  color: #f8fafc;
+  font-family: 'Lexend', 'Fredoka', system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.25rem;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+/* Header HUD Bar */
+.rr-hud-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 20;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.rr-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.rr-game-logo {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
+}
+
+.rr-hud-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.rr-stat-pill {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  padding: 0.45rem 1rem;
+  border-radius: 9999px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.rr-goals-btn {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.25) 0%, rgba(99, 102, 241, 0.25) 100%);
+  border: 1.5px solid rgba(168, 85, 247, 0.5);
+  color: #e9d5ff;
+  padding: 0.5rem 1.15rem;
+  border-radius: 9999px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+}
+
+.rr-goals-btn:hover {
+  background: rgba(168, 85, 247, 0.8);
+  color: #ffffff;
+  border-color: #c084fc;
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.6);
+}
+
+/* Target Phoneme Instruction Speech Banner */
+.rr-target-banner {
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.95) 0%, rgba(46, 16, 101, 0.95) 100%);
+  border: 2px solid rgba(192, 132, 252, 0.5);
+  border-radius: 18px;
+  padding: 0.65rem 1.25rem;
+  margin: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 20;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(192, 132, 252, 0.15);
+}
+
+.rr-target-info {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.rr-target-sound-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #c084fc 0%, #a855f7 100%);
+  color: #ffffff;
+  font-size: 1.4rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px rgba(192, 132, 252, 0.5);
+}
+
+.rr-target-prompt-text {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0;
+}
+
+.rr-audio-btn {
+  background: rgba(192, 132, 252, 0.2);
+  border: 1px solid rgba(192, 132, 252, 0.5);
+  color: #e9d5ff;
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-weight: 800;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s ease;
+}
+
+.rr-audio-btn:hover {
+  background: rgba(192, 132, 252, 0.4);
+  color: #ffffff;
+}
+
+/* 60FPS Canvas Viewport Container */
+.rr-canvas-area {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rr-canvas {
+  width: 100%;
+  height: 100%;
+  max-height: 380px;
+  border-radius: 18px;
+  display: block;
+  touch-action: none;
+}
+
+/* Laptop Home-Row & Touch Controls Footer */
+.rr-controls-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 20;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.rr-touch-btn {
+  flex: 1;
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  color: #f8fafc;
+  padding: 0.8rem 1.4rem;
+  border-radius: 18px;
+  font-weight: 900;
+  font-size: 1.05rem;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.rr-touch-btn.left-key {
+  border-color: #38bdf8;
+  color: #38bdf8;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+}
+
+.rr-touch-btn.left-key:active, .rr-touch-btn.left-key.active {
+  background: #0284c7;
+  color: #ffffff;
+  transform: scale(0.96);
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+}
+
+.rr-touch-btn.right-key {
+  border-color: #c084fc;
+  color: #c084fc;
+  box-shadow: 0 0 15px rgba(192, 132, 252, 0.25);
+}
+
+.rr-touch-btn.right-key:active, .rr-touch-btn.right-key.active {
+  background: #9333ea;
+  color: #ffffff;
+  transform: scale(0.96);
+  box-shadow: 0 0 25px rgba(192, 132, 252, 0.6);
+}
+
+.rr-key-bump {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+/* Celebratory Wave Clear Banner */
+.rr-wave-rest-banner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.95) 0%, rgba(124, 58, 237, 0.95) 100%);
+  border: 3px solid #e9d5ff;
+  border-radius: 24px;
+  padding: 1.5rem 2.5rem;
+  text-align: center;
+  color: #ffffff;
+  z-index: 50;
+  box-shadow: 0 0 50px rgba(168, 85, 247, 0.6), 0 20px 40px rgba(0, 0, 0, 0.8);
+  animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+  from { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+.rr-wave-rest-title {
+  font-size: 1.6rem;
+  font-weight: 900;
+  margin: 0 0 0.4rem 0;
+  font-family: 'Fredoka', sans-serif;
+}
+
+.rr-wave-rest-sub {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0;
+  opacity: 0.95;
+}
+
+/* 3X Combo Recovery Banner */
+.rr-combo-banner {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border: 2.5px solid #fef08a;
+  color: #ffffff;
+  padding: 0.75rem 1.75rem;
+  border-radius: 9999px;
+  font-weight: 900;
+  font-size: 1.1rem;
+  z-index: 45;
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.6);
+  animation: floatUp 0.8s ease-out forwards;
+}
+
+@keyframes floatUp {
+  0% { transform: translate(-50%, -30%) scale(0.8); opacity: 0; }
+  30% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+  100% { transform: translate(-50%, -70%) scale(1); opacity: 0; }
+}
+
+/* Slide-Over / Modal Clinical Goals Panel */
+.rr-goals-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 7, 18, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.rr-goals-drawer {
+  width: 100%;
+  max-width: 440px;
+  height: 100%;
+  background: linear-gradient(180deg, #0f172a 0%, #090d16 100%);
+  border-left: 2px solid rgba(168, 85, 247, 0.4);
+  box-shadow: -15px 0 40px rgba(0, 0, 0, 0.8);
+  padding: 2rem;
+  overflow-y: auto;
+  color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+}
+
+.rr-goals-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.rr-goals-drawer-close {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.rr-goals-card-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Therapy Summary Modal */
+.rr-summary-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.88);
+  backdrop-filter: blur(12px);
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.rr-summary-card {
+  background: linear-gradient(145deg, #2e1065 0%, #0f172a 100%);
+  border: 2px solid rgba(192, 132, 252, 0.5);
+  border-radius: 28px;
+  width: 100%;
+  max-width: 540px;
+  padding: 2.25rem;
+  text-align: center;
+  color: #ffffff;
+  box-shadow: 0 0 50px rgba(192, 132, 252, 0.25), 0 25px 50px -12px rgba(0, 0, 0, 0.9);
+}
+
+.rr-summary-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1.75rem 0;
+}
+
+.rr-summary-metric-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1rem 0.5rem;
+}
+
+.rr-summary-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.rr-btn-again {
+  flex: 1;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: none;
+  padding: 0.9rem;
+  border-radius: 16px;
+  font-weight: 900;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+}
+
+.rr-btn-done {
+  flex: 1;
+  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+  color: #ffffff;
+  border: none;
+  padding: 0.9rem;
+  border-radius: 16px;
+  font-weight: 900;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.35);
+}

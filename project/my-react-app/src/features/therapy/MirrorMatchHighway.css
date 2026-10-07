@@ -1,0 +1,389 @@
+/* MirrorMatchHighway.css - Retro-Synth Cosmic Arcade for Dyslexia Therapy */
+
+.mmh-game-container {
+  width: 100%;
+  min-height: 560px;
+  height: 600px;
+  position: relative;
+  overflow: hidden;
+  background-color: #030712;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.25) 0%, transparent 70%),
+    radial-gradient(circle at 100% 100%, rgba(20, 184, 166, 0.18) 0%, transparent 60%),
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+  border-radius: 24px;
+  border: 2.5px solid rgba(99, 102, 241, 0.4);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(99, 102, 241, 0.2);
+  color: #f8fafc;
+  font-family: 'Lexend', 'Fredoka', system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.25rem;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+/* Header HUD Bar */
+.mmh-hud-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 20;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.mmh-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mmh-game-logo {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-shadow: 0 0 12px rgba(99, 102, 241, 0.6);
+}
+
+.mmh-hud-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.mmh-stat-pill {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  padding: 0.45rem 1rem;
+  border-radius: 9999px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.mmh-goals-btn {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(139, 92, 246, 0.25) 100%);
+  border: 1.5px solid rgba(129, 140, 248, 0.5);
+  color: #c7d2fe;
+  padding: 0.5rem 1.15rem;
+  border-radius: 9999px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.25);
+}
+
+.mmh-goals-btn:hover {
+  background: rgba(99, 102, 241, 0.8);
+  color: #ffffff;
+  border-color: #818cf8;
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(99, 102, 241, 0.6);
+}
+
+/* Target Instruction Speech Banner */
+.mmh-target-banner {
+  background: linear-gradient(90deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 27, 75, 0.95) 100%);
+  border: 2px solid rgba(251, 191, 36, 0.5);
+  border-radius: 18px;
+  padding: 0.65rem 1.25rem;
+  margin: 0.5rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 20;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 15px rgba(251, 191, 36, 0.15);
+}
+
+.mmh-target-info {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.mmh-target-letter-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #0f172a;
+  font-size: 1.6rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+}
+
+.mmh-target-prompt-text {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0;
+}
+
+/* 60FPS Canvas Viewport Container */
+.mmh-canvas-area {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mmh-canvas {
+  width: 100%;
+  height: 100%;
+  max-height: 380px;
+  border-radius: 18px;
+  display: block;
+  touch-action: none;
+}
+
+/* Touch Control Pad */
+.mmh-controls-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 20;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.mmh-touch-btn {
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.18);
+  color: #f8fafc;
+  padding: 0.75rem 1.4rem;
+  border-radius: 16px;
+  font-weight: 900;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mmh-touch-btn:active {
+  transform: scale(0.95);
+  background: rgba(99, 102, 241, 0.4);
+  border-color: #818cf8;
+}
+
+.mmh-lock-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: 2px solid #34d399;
+  color: #ffffff;
+  padding: 0.75rem 2rem;
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+}
+
+.mmh-lock-btn:active {
+  background: #34d399;
+}
+
+/* Celebratory Eye Rest Wave Banner */
+.mmh-wave-rest-banner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.95) 0%, rgba(13, 148, 136, 0.95) 100%);
+  border: 3px solid #6ee7b7;
+  border-radius: 24px;
+  padding: 1.5rem 2.5rem;
+  text-align: center;
+  color: #ffffff;
+  z-index: 50;
+  box-shadow: 0 0 50px rgba(16, 185, 129, 0.6), 0 20px 40px rgba(0, 0, 0, 0.8);
+  animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+  from { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+.mmh-wave-rest-title {
+  font-size: 1.6rem;
+  font-weight: 900;
+  margin: 0 0 0.4rem 0;
+  font-family: 'Fredoka', sans-serif;
+}
+
+.mmh-wave-rest-sub {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0;
+  opacity: 0.95;
+}
+
+/* 3X Combo Recovery Banner */
+.mmh-combo-banner {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  border: 2.5px solid #fef08a;
+  color: #ffffff;
+  padding: 0.75rem 1.75rem;
+  border-radius: 9999px;
+  font-weight: 900;
+  font-size: 1.1rem;
+  z-index: 45;
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.6);
+  animation: floatUp 0.8s ease-out forwards;
+}
+
+@keyframes floatUp {
+  0% { transform: translate(-50%, -30%) scale(0.8); opacity: 0; }
+  30% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+  100% { transform: translate(-50%, -70%) scale(1); opacity: 0; }
+}
+
+/* Slide-Over / Modal Clinical Goals Panel */
+.mmh-goals-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 7, 18, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.mmh-goals-drawer {
+  width: 100%;
+  max-width: 440px;
+  height: 100%;
+  background: linear-gradient(180deg, #0f172a 0%, #090d16 100%);
+  border-left: 2px solid rgba(129, 140, 248, 0.4);
+  box-shadow: -15px 0 40px rgba(0, 0, 0, 0.8);
+  padding: 2rem;
+  overflow-y: auto;
+  color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+}
+
+.mmh-goals-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.mmh-goals-drawer-close {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.mmh-goals-card-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+/* Therapy Summary Modal */
+.mmh-summary-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.88);
+  backdrop-filter: blur(12px);
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.mmh-summary-card {
+  background: linear-gradient(145deg, #1e1b4b 0%, #0f172a 100%);
+  border: 2px solid rgba(245, 158, 11, 0.5);
+  border-radius: 28px;
+  width: 100%;
+  max-width: 540px;
+  padding: 2.25rem;
+  text-align: center;
+  color: #ffffff;
+  box-shadow: 0 0 50px rgba(245, 158, 11, 0.25), 0 25px 50px -12px rgba(0, 0, 0, 0.9);
+}
+
+.mmh-summary-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1.75rem 0;
+}
+
+.mmh-summary-metric-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 1rem 0.5rem;
+}
+
+.mmh-summary-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.mmh-btn-again {
+  flex: 1;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: none;
+  padding: 0.9rem;
+  border-radius: 16px;
+  font-weight: 900;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+}
+
+.mmh-btn-done {
+  flex: 1;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: #ffffff;
+  border: none;
+  padding: 0.9rem;
+  border-radius: 16px;
+  font-weight: 900;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+}

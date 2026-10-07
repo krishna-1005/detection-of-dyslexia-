@@ -1,0 +1,388 @@
+/* ── UNIFIED DIAGNOSTIC REPORT ── */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap');
+
+.udr-viewport {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(180deg, #020617 0%, #0f172a 100%);
+  z-index: 9999;
+  font-family: 'Outfit', 'Lexend', system-ui, sans-serif;
+  overflow: hidden;
+}
+
+.udr-scroll-area {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 1.5rem 2rem 3rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ── HEADER ── */
+.udr-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.udr-main-title {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 0 0 0.25rem;
+}
+
+.udr-subtitle {
+  font-size: 0.85rem;
+  color: #64748b;
+  font-weight: 700;
+  margin: 0;
+}
+
+.udr-header-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.udr-print-btn {
+  background: rgba(34, 211, 238, 0.12);
+  border: 1.5px solid rgba(34, 211, 238, 0.4);
+  color: #22d3ee;
+  padding: 0.5rem 1.25rem;
+  border-radius: 14px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.udr-print-btn:hover {
+  background: rgba(34, 211, 238, 0.25);
+  box-shadow: 0 0 16px rgba(34, 211, 238, 0.3);
+}
+
+/* ── CLASSIFICATION CARD ── */
+.udr-classification-card {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  background: rgba(30, 41, 59, 0.6);
+  border: 2px solid;
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.udr-class-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+.udr-class-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  margin: 0 0 0.2rem;
+}
+
+.udr-class-title {
+  font-size: 1.4rem;
+  font-weight: 900;
+  margin: 0 0 0.25rem;
+}
+
+.udr-class-desc {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin: 0;
+  font-weight: 600;
+}
+
+/* ── CONTENT GRID ── */
+.udr-content-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 860px) {
+  .udr-content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── RADAR CARD ── */
+.udr-radar-card {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1.5px solid #1e293b;
+  border-radius: 20px;
+  padding: 1.25rem;
+}
+
+.udr-card-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #e2e8f0;
+  margin: 0 0 0.75rem;
+}
+
+.udr-radar-svg {
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+  display: block;
+}
+
+.udr-radar-legend {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+  margin-top: 0.75rem;
+}
+
+.udr-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.udr-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* ── METRICS STACK ── */
+.udr-metrics-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.udr-metric-card {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1.5px solid #1e293b;
+  border-left: 4px solid;
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+}
+
+.udr-metric-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.udr-metric-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.udr-metric-name {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+.udr-metric-risk-label {
+  font-size: 0.72rem;
+  color: #64748b;
+  margin: 0;
+  font-weight: 700;
+}
+
+.udr-risk-badge {
+  margin-left: auto;
+  padding: 0.25rem 0.65rem;
+  border-radius: 50px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  border: 1.5px solid;
+  white-space: nowrap;
+}
+
+/* ── METRIC STATS ROW ── */
+.udr-metric-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.udr-metric-stat {
+  text-align: center;
+}
+
+.udr-stat-label {
+  display: block;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #475569;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.15rem;
+}
+
+.udr-stat-value {
+  font-size: 1rem;
+  font-weight: 900;
+  color: #cbd5e1;
+}
+
+/* ── PROGRESS BAR ── */
+.udr-progress-track {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(51, 65, 85, 0.6);
+  overflow: visible;
+}
+
+.udr-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1s ease-out;
+}
+
+.udr-progress-baseline {
+  position: absolute;
+  top: -4px;
+  width: 2px;
+  height: 14px;
+  background: #fbbf24;
+  border-radius: 1px;
+}
+
+/* ── ACTION BUTTONS ── */
+.udr-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.udr-action-btn {
+  padding: 0.85rem 2rem;
+  border-radius: 16px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.25s;
+  border: none;
+}
+
+.udr-action-btn.primary {
+  background: linear-gradient(135deg, #22d3ee, #0ea5e9);
+  color: #ffffff;
+  box-shadow: 0 4px 20px rgba(34, 211, 238, 0.3);
+}
+
+.udr-action-btn.primary:hover {
+  box-shadow: 0 6px 28px rgba(34, 211, 238, 0.5);
+  transform: translateY(-2px);
+}
+
+.udr-action-btn.secondary {
+  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  color: #ffffff;
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
+}
+
+.udr-action-btn.secondary:hover {
+  box-shadow: 0 6px 28px rgba(139, 92, 246, 0.5);
+  transform: translateY(-2px);
+}
+
+/* ── DISCLAIMER ── */
+.udr-disclaimer {
+  background: rgba(234, 179, 8, 0.08);
+  border: 1.5px solid rgba(234, 179, 8, 0.25);
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.udr-disclaimer p {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.udr-disclaimer strong {
+  color: #fbbf24;
+}
+
+/* ── PRINT STYLES ── */
+@media print {
+  .udr-viewport {
+    position: static;
+    height: auto;
+    background: #ffffff;
+  }
+
+  .udr-scroll-area {
+    overflow: visible;
+    padding: 1rem;
+  }
+
+  .udr-header-actions,
+  .udr-actions {
+    display: none;
+  }
+
+  .udr-main-title,
+  .udr-class-title,
+  .udr-card-title,
+  .udr-metric-name {
+    color: #1e293b !important;
+  }
+
+  .udr-subtitle,
+  .udr-class-desc,
+  .udr-class-label,
+  .udr-metric-risk-label,
+  .udr-stat-label {
+    color: #475569 !important;
+  }
+
+  .udr-stat-value {
+    color: #1e293b !important;
+  }
+
+  .udr-classification-card,
+  .udr-radar-card,
+  .udr-metric-card {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+  }
+
+  .udr-progress-track {
+    background: #e2e8f0;
+  }
+}

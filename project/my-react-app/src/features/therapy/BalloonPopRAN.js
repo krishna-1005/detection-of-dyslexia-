@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { saveTherapyProgress } from './ExerciseSystem';
-import { speakHumanText, VoiceSelectorChip } from './humanVoiceEngine';
+import { speakHumanText } from './humanVoiceEngine';
 import './BalloonPopRAN.css';
 
 // ── Web Audio Synthesizer SFX Engine ──
@@ -73,16 +73,19 @@ const TARGET_POOL = [
   { prompt: "Letter 'S' (Avoid '5')", text: 'S', matchWords: ['s', 'ess', 'letter s'], targetColor: '#4ade80', items: [{ text: 'S', color: '#4ade80', isTarget: true }, { text: '5', color: '#fbbf24', isTarget: false }, { text: 'Z', color: '#f87171', isTarget: false }, { text: '8', color: '#38bdf8', isTarget: false }] },
 ];
 
-const CANV_W = 820;
-const CANV_H = 450;
-
-const BalloonPopRAN = ({ onComplete }) => {
+const BalloonPopRAN = ({
+  onComplete,
+  assessmentMode = false,
+  targetCount: assessmentTargetCount = 6,
+  onAutoFinish,
+  onExit
+}) => {
   const { currentUser } = useAuth();
   const gameWrapperRef = useRef(null);
   const canvasRef = useRef(null);
   const animRef = useRef(null);
 
-  const [phase, setPhase] = useState('start'); // start | playing | gameover
+  const [phase, setPhase] = useState(assessmentMode ? 'playing' : 'start'); // start | playing | gameover
   const [lives, setLives] = useState(3);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -90,25 +93,29 @@ const BalloonPopRAN = ({ onComplete }) => {
   const [targetCount, setTargetCount] = useState(0);
   const [currentHurdle, setCurrentHurdle] = useState(TARGET_POOL[0]);
 
-  const [isFullView, setIsFullView] = useState(false);
-  const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [gateStartTime, setGateStartTime] = useState(0);
   const [latencies, setLatencies] = useState([]);
   const [lastLatencyMs, setLastLatencyMs] = useState(null);
-  const [sparkyMsg, setSparkyMsg] = useState('Tap target balloons or speak item names out loud! 🎈');
+
+  // Micro-interaction Screen Edge Flashes
+  const [successFlash, setSuccessFlash] = useState(false);
+  const [errorFlash, setErrorFlash] = useState(false);
+
+  // Assessment mode tracking
+  const assessmentCompletedRef = useRef(false);
 
   const gameRef = useRef({
     balloons: [],
     particles: [],
     burstRings: [],
     cloudsFar: [
-      { x: 30, y: 50, speed: 0.15, size: 35 },
-      { x: 380, y: 70, speed: 0.2, size: 45 },
-      { x: 680, y: 40, speed: 0.18, size: 40 }
+      { x: 30, y: 50, speed: 0.15, size: 40 },
+      { x: 420, y: 80, speed: 0.2, size: 50 },
+      { x: 780, y: 45, speed: 0.18, size: 45 }
     ],
     cloudsNear: [
-      { x: 120, y: 110, speed: 0.45, size: 55 },
-      { x: 520, y: 130, speed: 0.5, size: 65 }
+      { x: 140, y: 120, speed: 0.45, size: 60 },
+      { x: 620, y: 150, speed: 0.5, size: 70 }
     ],
     birds: [
       { x: 200, y: 90, speed: 0.6, yOffset: 0 },
@@ -117,21 +124,29 @@ const BalloonPopRAN = ({ onComplete }) => {
     popTexts: []
   });
 
-  const toggleFullView = () => {
-    if (!isFullView) {
-      if (gameWrapperRef.current?.requestFullscreen) gameWrapperRef.current.requestFullscreen().catch(() => {});
-      setIsFullView(true);
-    } else {
-      if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
-      setIsFullView(false);
-    }
-  };
-
+  // ── RESPONSIVE DYNAMIC CANVAS RESIZE HOOK ──
   useEffect(() => {
-    const handleFs = () => setIsFullView(Boolean(document.fullscreenElement));
-    document.addEventListener('fullscreenchange', handleFs);
-    return () => document.removeEventListener('fullscreenchange', handleFs);
-  }, []);
+    const handleResize = () => {
+      if (canvasRef.current && gameWrapperRef.current) {
+        const rect = gameWrapperRef.current.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          canvasRef.current.width = rect.width;
+          canvasRef.current.height = rect.height;
+        }
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    const t1 = setTimeout(handleResize, 100);
+    const t2 = setTimeout(handleResize, 300);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [phase]);
 
   // ── ENDLESS TARGET GENERATOR & SPAWN ──
   const spawnNextTarget = useCallback((currentLevel) => {
@@ -139,10 +154,13 @@ const BalloonPopRAN = ({ onComplete }) => {
     const randomHurdle = poolSlice[Math.floor(Math.random() * poolSlice.length)];
     setCurrentHurdle(randomHurdle);
 
-    // Shuffle items so target spawns in a different random lane every turn!
+    const canvW = canvasRef.current ? canvasRef.current.width : 1000;
+    const canvH = canvasRef.current ? canvasRef.current.height : 600;
+
+    // Shuffle items so target spawns in a different random lane every turn
     const shuffledItems = [...randomHurdle.items].sort(() => Math.random() - 0.5);
-    const laneWidth = CANV_W / shuffledItems.length;
-    const baseFloatSpeed = 1.1 + (currentLevel - 1) * 0.18;
+    const laneWidth = canvW / shuffledItems.length;
+    const baseFloatSpeed = 1.2 + (currentLevel - 1) * 0.18;
 
     const balloons = shuffledItems.map((item, i) => ({
       id: i,
@@ -151,63 +169,18 @@ const BalloonPopRAN = ({ onComplete }) => {
       color: item.color,
       isTarget: item.isTarget,
       isBonus: item.isBonus || false,
-      isWrong: false, // Track wrong popped state so balloon stays showing!
-      x: laneWidth * i + laneWidth / 2 + (Math.random() * 16 - 8),
-      y: CANV_H + 30 + (i * 35),
+      isWrong: false,
+      x: laneWidth * i + laneWidth / 2 + (Math.random() * 20 - 10),
+      y: canvH + 40 + (i * 40),
       baseX: laneWidth * i + laneWidth / 2,
-      vy: baseFloatSpeed + Math.random() * 0.3,
-      radius: item.text.length > 3 ? 38 : 32,
+      vy: baseFloatSpeed + Math.random() * 0.35,
+      radius: item.text.length > 3 ? 42 : 36,
       wobble: 0
     }));
 
     gameRef.current.balloons = balloons;
     setGateStartTime(Date.now());
   }, []);
-
-  // ── Web Speech API Recognition ──
-  const recognitionRef = useRef(null);
-  useEffect(() => {
-    const SpeechClass = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechClass) {
-      const rec = new SpeechClass();
-      rec.continuous = true;
-      rec.interimResults = true;
-      rec.lang = 'en-US';
-
-      rec.onresult = (event) => {
-        if (phase !== 'playing' || !currentHurdle) return;
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          const transcript = event.results[i][0].transcript.trim().toLowerCase();
-          if (currentHurdle.matchWords.some(w => transcript.includes(w))) {
-            handlePopTargetBalloon('vocal');
-            break;
-          }
-        }
-      };
-
-      rec.onerror = () => setIsVoiceActive(false);
-      rec.onend = () => { if (phase === 'playing' && isVoiceActive) try { rec.start(); } catch (e) {} };
-      recognitionRef.current = rec;
-    }
-  }, [currentHurdle, isVoiceActive, phase]);
-
-  const toggleSpeechRecognition = () => {
-    if (!recognitionRef.current) return;
-    if (!isVoiceActive) {
-      try {
-        recognitionRef.current.start();
-        setIsVoiceActive(true);
-        setSparkyMsg('🎙️ Mic Active! Speak balloon target names clearly!');
-        speakHumanText('Microphone active! Speak the balloon target out loud!');
-      } catch (e) {}
-    } else {
-      try {
-        recognitionRef.current.stop();
-        setIsVoiceActive(false);
-        setSparkyMsg('Voice recognition paused.');
-      } catch (e) {}
-    }
-  };
 
   // ── GAME OVER & ANALYTICS REPORT ──
   const handleGameOver = useCallback((finalScore, finalLatencies) => {
@@ -234,8 +207,8 @@ const BalloonPopRAN = ({ onComplete }) => {
     saveTherapyProgress(currentUser, 'naming', finalScore, 100, `Avg Latency: ${avgLatency}ms (Lvl ${level})`);
   }, [currentUser, level]);
 
-  // ── POP TARGET BALLOON (Combo Reward + Level Progression) ──
-  const handlePopTargetBalloon = useCallback((inputType = 'tactile') => {
+  // ── POP TARGET BALLOON (Confetti + XP Stardust + Screen Glow) ──
+  const handlePopTargetBalloon = useCallback(() => {
     const g = gameRef.current;
     const targetB = g.balloons.find(b => b.isTarget);
     if (!targetB) return;
@@ -246,19 +219,23 @@ const BalloonPopRAN = ({ onComplete }) => {
     setLatencies(updatedLatencies);
     playSFX('pop');
 
-    // Explosive Confetti Shards & Particles
+    // Trigger Screen Edge Success Glow
+    setSuccessFlash(true);
+    setTimeout(() => setSuccessFlash(false), 450);
+
+    // Instant Confetti Burst
     for (let i = 0; i < 28; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const spd = 2.5 + Math.random() * 5.5;
+      const spd = 3 + Math.random() * 6;
       g.particles.push({
         x: targetB.x,
         y: targetB.y,
         vx: Math.cos(angle) * spd,
         vy: Math.sin(angle) * spd,
         color: targetB.color,
-        size: 4 + Math.random() * 4,
+        size: 5 + Math.random() * 5,
         rot: Math.random() * Math.PI * 2,
-        vrot: (Math.random() - 0.5) * 0.3,
+        vrot: (Math.random() - 0.5) * 0.35,
         alpha: 1
       });
     }
@@ -268,7 +245,7 @@ const BalloonPopRAN = ({ onComplete }) => {
       x: targetB.x,
       y: targetB.y,
       radius: targetB.radius * 0.4,
-      maxRadius: targetB.radius * 2.2,
+      maxRadius: targetB.radius * 2.4,
       alpha: 1,
       color: targetB.color
     });
@@ -284,65 +261,95 @@ const BalloonPopRAN = ({ onComplete }) => {
     setTargetCount(newTargetCount);
     setLevel(newLevel);
 
-    // ── 3-COMBO LIFE REWARD (Reward +1 Life for every 3 consecutive correct pops!) ──
-    let comboMsg = '';
+    // Floating XP Stardust Text Pill
+    g.popTexts.push({
+      text: `+${xpEarned} XP • ${latency}ms!`,
+      x: targetB.x,
+      y: targetB.y,
+      alpha: 1
+    });
+
+    // ── DEFINED SESSION BENCHMARK (WIN CONDITION) ──
+    const TARGET_WAVE_CAP = 3;
+    const TARGET_CAPTURE_CAP = 10;
+
+    // ── ASSESSMENT MODE: Fire onAutoFinish when target count reached ──
+    if (assessmentMode && onAutoFinish && newTargetCount >= assessmentTargetCount && !assessmentCompletedRef.current) {
+      assessmentCompletedRef.current = true;
+      const validLatencies = [...latencies, latency];
+      const avgLat = validLatencies.length > 0
+        ? Math.round(validLatencies.reduce((a, b) => a + b, 0) / validLatencies.length)
+        : 360;
+      setTimeout(() => {
+        onAutoFinish({
+          accuracy: Math.round((newTargetCount / Math.max(1, newTargetCount)) * 100),
+          latencyMs: avgLat,
+          errorCount: 0,
+          errorTypes: [],
+          score: newScore
+        });
+      }, 300);
+      return;
+    }
+
+    // ── STANDARD ARCADE PLAY MODE: End session & show success summary modal when benchmark is reached ──
+    if (!assessmentMode && (newTargetCount >= TARGET_CAPTURE_CAP || newLevel > TARGET_WAVE_CAP)) {
+      setTimeout(() => {
+        handleGameOver(newScore, updatedLatencies);
+      }, 400);
+      return;
+    }
+
+    // 3-Combo Life Reward
     if (newStreak % 3 === 0) {
       playSFX('combo_reward');
       setLives(prevLives => Math.min(5, prevLives + 1));
-      g.popTexts.push({ text: '🔥 3-COMBO! +1 LIFE ❤️', x: targetB.x, y: targetB.y - 20, alpha: 1 });
-      comboMsg = ' 🔥 3-COMBO REWARD! +1 LIFE ❤️';
+      g.popTexts.push({ text: '🔥 3-COMBO! +1 LIFE ❤️', x: targetB.x, y: targetB.y - 24, alpha: 1 });
       speakHumanText(`Awesome combo! Plus one life!`);
     } else {
-      g.popTexts.push({ text: `+${xpEarned} XP!`, x: targetB.x, y: targetB.y, alpha: 1 });
       speakHumanText(`Great pop! ${currentHurdle.prompt}!`);
     }
-
-    let speedRating = '⚡ TURBO!';
-    if (latency < 600) speedRating = '⚡ TURBO SPEED (<600ms)!';
-    else if (latency < 1000) speedRating = '🔥 NITRO REFLEX!';
-    else speedRating = '👍 GREAT RECOGNITION!';
-
-    const inputTag = inputType === 'vocal' ? '🎙️ Voice' : '🎈 Tap';
-    setSparkyMsg(`POP! ${speedRating} (${latency}ms) [${inputTag}]${comboMsg}`);
 
     // Clear balloons and spawn next continuous target
     g.balloons = [];
     setTimeout(() => {
       spawnNextTarget(newLevel);
     }, 380);
-  }, [currentHurdle.prompt, gateStartTime, latencies, score, spawnNextTarget, streak, targetCount]);
+  }, [assessmentMode, assessmentTargetCount, currentHurdle.prompt, gateStartTime, handleGameOver, latencies, onAutoFinish, score, spawnNextTarget, streak, targetCount]);
 
-  // ── POP WRONG BALLOON (Keep Showing Balloon + Red X + Deduct 1 Life) ──
+  // ── POP WRONG BALLOON (Amber Screen Wobble + Deduct Life) ──
   const handlePopWrongBalloon = useCallback((wrongBalloon) => {
-    if (wrongBalloon.isWrong) return; // Prevent double clicking same wrong balloon
+    if (wrongBalloon.isWrong) return;
 
     const g = gameRef.current;
     playSFX('wrong_pop');
 
+    // Screen Edge Error Glow
+    setErrorFlash(true);
+    setTimeout(() => setErrorFlash(false), 450);
+
     // Red Shard Confetti Particles
     for (let i = 0; i < 24; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const spd = 2 + Math.random() * 5;
+      const spd = 2.5 + Math.random() * 5.5;
       g.particles.push({
         x: wrongBalloon.x,
         y: wrongBalloon.y,
         vx: Math.cos(angle) * spd,
         vy: Math.sin(angle) * spd,
         color: '#f87171',
-        size: 4 + Math.random() * 3,
+        size: 5 + Math.random() * 4,
         rot: Math.random() * Math.PI * 2,
         vrot: (Math.random() - 0.5) * 0.3,
         alpha: 1
       });
     }
 
-    // KEEP THE WRONG BALLOON VISIBLE! Mark it with isWrong = true and wobble physics
     wrongBalloon.isWrong = true;
     wrongBalloon.wobble = 25;
 
     g.popTexts.push({ text: 'WRONG! -1 LIFE 💔', x: wrongBalloon.x, y: wrongBalloon.y, alpha: 1 });
 
-    // Reset streak and deduct 1 Life using functional update
     setStreak(0);
     setLives(prevLives => {
       const nextLives = Math.max(0, prevLives - 1);
@@ -352,11 +359,10 @@ const BalloonPopRAN = ({ onComplete }) => {
       return nextLives;
     });
 
-    setSparkyMsg(`🤖 SPARKY: "Ouch! Popped [${wrongBalloon.text}]! -1 Life 💔 (Target is [${currentHurdle.prompt}])!"`);
-    speakHumanText(`Ouch! That's ${wrongBalloon.text}. Minus one life! Target is ${currentHurdle.prompt}`);
+    speakHumanText(`Ouch! That's ${wrongBalloon.text}. Target is ${currentHurdle.prompt}`);
   }, [currentHurdle.prompt, handleGameOver, latencies, score]);
 
-  // ── UNIFIED POINTER / TOUCH / CLICK HANDLER FOR MAXIMUM POPPING ACCURACY ──
+  // ── UNIFIED POINTER / TOUCH / CLICK HANDLER ──
   const handleCanvasPointerDown = (e) => {
     if (phase !== 'playing' || !canvasRef.current) return;
 
@@ -364,12 +370,13 @@ const BalloonPopRAN = ({ onComplete }) => {
     const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
     const clientY = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
 
-    const clickX = (clientX - rect.left) * (CANV_W / rect.width);
-    const clickY = (clientY - rect.top) * (CANV_H / rect.height);
+    const canvW = canvasRef.current.width;
+    const canvH = canvasRef.current.height;
+
+    const clickX = (clientX - rect.left) * (canvW / rect.width);
+    const clickY = (clientY - rect.top) * (canvH / rect.height);
 
     const g = gameRef.current;
-    
-    // Find closest balloon to click coordinate
     let clickedB = null;
     let minDist = Infinity;
 
@@ -381,25 +388,23 @@ const BalloonPopRAN = ({ onComplete }) => {
       }
     });
 
-    // Generous Hit Target (55px hit radius tolerance for 100% accurate clicks)
-    const hitTolerance = clickedB ? Math.max(55, clickedB.radius * 1.65) : 55;
+    const hitTolerance = clickedB ? Math.max(65, clickedB.radius * 1.8) : 65;
 
     if (clickedB && minDist <= hitTolerance) {
       if (clickedB.isTarget) {
-        handlePopTargetBalloon('tactile');
+        handlePopTargetBalloon();
       } else if (clickedB.isBonus) {
         playSFX('bonus');
         setScore(s => s + 50);
         g.popTexts.push({ text: 'BONUS +50 XP! ✨', x: clickedB.x, y: clickedB.y, alpha: 1 });
         g.balloons = g.balloons.filter(b => b.id !== clickedB.id);
       } else {
-        // Pop Wrong Balloon (Keep showing it on screen with Red X + Deduct 1 Life!)
         handlePopWrongBalloon(clickedB);
       }
     }
   };
 
-  // ── 60FPS PARALLAX SKY & DYNAMIC BALLOON PHYSICS LOOP ──
+  // ── 60FPS FULL-BLEED SKY CANVAS RENDER LOOP ──
   useEffect(() => {
     if (phase !== 'playing') {
       if (animRef.current) cancelAnimationFrame(animRef.current);
@@ -414,42 +419,45 @@ const BalloonPopRAN = ({ onComplete }) => {
       const g = gameRef.current;
       const timeSec = timestamp * 0.001;
 
-      // 1. Sky Gradient (#0284c7 -> #38bdf8 -> #7dd3fc -> #e0f2fe)
-      const skyGrad = ctx.createLinearGradient(0, 0, 0, CANV_H);
+      const canvW = canvas.width || 1000;
+      const canvH = canvas.height || 600;
+
+      // 1. Dynamic Parallax Sky Canvas Background
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, canvH);
       skyGrad.addColorStop(0, '#0284c7');
       skyGrad.addColorStop(0.35, '#38bdf8');
       skyGrad.addColorStop(0.7, '#7dd3fc');
       skyGrad.addColorStop(1, '#e0f2fe');
       ctx.fillStyle = skyGrad;
-      ctx.fillRect(0, 0, CANV_W, CANV_H);
+      ctx.fillRect(0, 0, canvW, canvH);
 
       // Layer 1: Distant Horizon Hills
-      ctx.fillStyle = 'rgba(2, 132, 199, 0.25)';
+      ctx.fillStyle = 'rgba(2, 132, 199, 0.22)';
       ctx.beginPath();
-      ctx.moveTo(0, CANV_H);
-      ctx.quadraticCurveTo(CANV_W * 0.25, CANV_H - 45, CANV_W * 0.5, CANV_H - 25);
-      ctx.quadraticCurveTo(CANV_W * 0.75, CANV_H - 10, CANV_W, CANV_H - 35);
-      ctx.lineTo(CANV_W, CANV_H);
+      ctx.moveTo(0, canvH);
+      ctx.quadraticCurveTo(canvW * 0.25, canvH - 60, canvW * 0.5, canvH - 35);
+      ctx.quadraticCurveTo(canvW * 0.75, canvH - 15, canvW, canvH - 45);
+      ctx.lineTo(canvW, canvH);
       ctx.closePath();
       ctx.fill();
 
-      // Layer 1.5: Birds Silhouette
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-      ctx.lineWidth = 1.5;
+      // Birds Silhouette
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+      ctx.lineWidth = 2;
       g.birds.forEach(b => {
-        b.x = (b.x + b.speed) % (CANV_W + 40);
-        const by = b.y + Math.sin(timeSec * 3 + b.yOffset) * 4;
+        b.x = (b.x + b.speed) % (canvW + 50);
+        const by = b.y + Math.sin(timeSec * 3 + b.yOffset) * 5;
         ctx.beginPath();
-        ctx.arc(b.x, by, 6, Math.PI * 1.1, Math.PI * 1.9);
-        ctx.arc(b.x + 10, by, 6, Math.PI * 1.1, Math.PI * 1.9);
+        ctx.arc(b.x, by, 7, Math.PI * 1.1, Math.PI * 1.9);
+        ctx.arc(b.x + 11, by, 7, Math.PI * 1.1, Math.PI * 1.9);
         ctx.stroke();
       });
 
       // Layer 2: Parallax Clouds
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.65)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
       g.cloudsFar.forEach(c => {
         c.x += c.speed;
-        if (c.x > CANV_W + 80) c.x = -80;
+        if (c.x > canvW + 90) c.x = -90;
         ctx.beginPath();
         ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
         ctx.arc(c.x + c.size * 0.5, c.y - c.size * 0.28, c.size * 0.65, 0, Math.PI * 2);
@@ -457,10 +465,10 @@ const BalloonPopRAN = ({ onComplete }) => {
         ctx.fill();
       });
 
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
       g.cloudsNear.forEach(c => {
         c.x += c.speed;
-        if (c.x > CANV_W + 100) c.x = -100;
+        if (c.x > canvW + 110) c.x = -110;
         ctx.beginPath();
         ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
         ctx.arc(c.x + c.size * 0.55, c.y - c.size * 0.32, c.size * 0.72, 0, Math.PI * 2);
@@ -468,48 +476,64 @@ const BalloonPopRAN = ({ onComplete }) => {
         ctx.fill();
       });
 
-      // 3. Render 3D Glossy Balloons with Flying Upward Physics & Idle Sway
+      // 3. Render 3D Glossy Balloons with Physics & Target Harmonic Shimmer
       g.balloons.forEach(b => {
         const floatSpeed = typeof b.vy === 'number' && isFinite(b.vy) ? b.vy : 1.3;
         b.y -= floatSpeed;
 
-        if (b.y < -60) {
-          b.y = CANV_H + 50;
-          b.baseX = Math.random() * (CANV_W - 140) + 70;
+        if (b.y < -70) {
+          b.y = canvH + 60;
+          b.baseX = Math.random() * (canvW - 160) + 80;
         }
 
         if (b.wobble > 0) b.wobble = Math.max(0, b.wobble - 0.8);
         const wobbleVal = Math.max(0, b.wobble || 0);
 
-        const safeBaseX = typeof b.baseX === 'number' && isFinite(b.baseX) ? b.baseX : (CANV_W / 2);
-        const safeY = typeof b.y === 'number' && isFinite(b.y) ? b.y : 210;
-        const safeRadius = typeof b.radius === 'number' && isFinite(b.radius) ? Math.max(5, b.radius) : 32;
+        const safeBaseX = typeof b.baseX === 'number' && isFinite(b.baseX) ? b.baseX : (canvW / 2);
+        const safeY = typeof b.y === 'number' && isFinite(b.y) ? b.y : 300;
+        const safeRadius = typeof b.radius === 'number' && isFinite(b.radius) ? Math.max(5, b.radius) : 36;
 
-        const idleSway = Math.sin(timeSec * 2.5 + (b.seed || 0)) * 14 + Math.sin(wobbleVal) * wobbleVal;
-
+        // Soft bobbing/floating physics with string sway
+        const idleSway = Math.sin(timeSec * 2.5 + (b.seed || 0)) * 16 + Math.sin(wobbleVal) * wobbleVal;
         const bx = safeBaseX + idleSway;
         const by = safeY;
         b.x = bx;
 
         // Waving String Physics Curve
-        const stringWave1 = Math.sin(timeSec * 3.5 + (b.seed || 0)) * 10;
-        const stringWave2 = Math.cos(timeSec * 2.8 + (b.seed || 0)) * 14;
-        ctx.strokeStyle = b.isWrong ? 'rgba(239, 68, 68, 0.75)' : 'rgba(255, 255, 255, 0.75)';
-        ctx.lineWidth = 2;
+        const stringWave1 = Math.sin(timeSec * 3.5 + (b.seed || 0)) * 12;
+        const stringWave2 = Math.cos(timeSec * 2.8 + (b.seed || 0)) * 16;
+        ctx.strokeStyle = b.isWrong ? 'rgba(239, 68, 68, 0.85)' : 'rgba(255, 255, 255, 0.85)';
+        ctx.lineWidth = 2.5;
         ctx.beginPath();
         ctx.moveTo(bx, by + safeRadius);
         ctx.bezierCurveTo(
-          bx + stringWave1, by + safeRadius + 15,
-          bx + stringWave2, by + safeRadius + 30,
-          bx + stringWave1 * 0.5, by + safeRadius + 45
+          bx + stringWave1, by + safeRadius + 18,
+          bx + stringWave2, by + safeRadius + 36,
+          bx + stringWave1 * 0.5, by + safeRadius + 52
         );
         ctx.stroke();
 
         // Balloon Tie Knot
         ctx.fillStyle = b.isWrong ? '#ef4444' : (b.color || '#38bdf8');
         ctx.beginPath();
-        ctx.arc(bx, by + safeRadius + 2, 4.5, 0, Math.PI * 2);
+        ctx.arc(bx, by + safeRadius + 2, 5, 0, Math.PI * 2);
         ctx.fill();
+
+        // Target Harmonic Shimmer / Radiant Glow Ring
+        if (b.isTarget) {
+          const shimmer = Math.sin(timeSec * 5) * 6;
+          ctx.shadowColor = '#fbbf24';
+          ctx.shadowBlur = 24 + shimmer;
+
+          ctx.strokeStyle = `rgba(251, 191, 36, ${0.45 + Math.sin(timeSec * 6) * 0.35})`;
+          ctx.lineWidth = 3.5;
+          ctx.beginPath();
+          ctx.arc(bx, by, safeRadius + 7 + Math.sin(timeSec * 4) * 2, 0, Math.PI * 2);
+          ctx.stroke();
+        } else {
+          ctx.shadowColor = b.isWrong ? '#ef4444' : (b.color || '#38bdf8');
+          ctx.shadowBlur = b.isWrong ? 28 : 10;
+        }
 
         // 3D Spherical Radial Gradient Body
         const balloonColor = b.isWrong ? '#ef4444' : (b.color || '#38bdf8');
@@ -522,35 +546,33 @@ const BalloonPopRAN = ({ onComplete }) => {
         radGrad.addColorStop(0.85, balloonColor);
         radGrad.addColorStop(1, '#0f172a');
 
-        ctx.shadowColor = b.isWrong ? '#ef4444' : (b.isTarget ? '#fbbf24' : balloonColor);
-        ctx.shadowBlur = b.isWrong ? 28 : (b.isTarget ? 24 : 10);
         ctx.fillStyle = radGrad;
         ctx.beginPath();
         ctx.arc(bx, by, safeRadius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Specular Glare Highlight (Top-Left Offset)
+        // Specular Glare Highlight
         ctx.shadowBlur = 0;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
         ctx.beginPath();
-        ctx.ellipse(bx - safeRadius * 0.35, by - safeRadius * 0.35, safeRadius * 0.24, safeRadius * 0.14, -Math.PI / 4, 0, Math.PI * 2);
+        ctx.ellipse(bx - safeRadius * 0.35, by - safeRadius * 0.35, safeRadius * 0.25, safeRadius * 0.15, -Math.PI / 4, 0, Math.PI * 2);
         ctx.fill();
 
-        // Lexend Label Text
+        // High-Contrast Solid White Text Label with Heavy Dark Outlines
         ctx.fillStyle = '#ffffff';
-        ctx.font = `900 ${safeRadius * 0.52}px "Lexend", sans-serif`;
+        ctx.font = `900 ${safeRadius * 0.54}px "Lexend", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        ctx.strokeStyle = 'rgba(15, 23, 42, 0.85)';
-        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = 'rgba(15, 23, 42, 0.95)';
+        ctx.lineWidth = 4.5;
         ctx.strokeText(b.text || '', bx, by);
         ctx.fillText(b.text || '', bx, by);
 
-        // ❌ Render Red Cross Mark on Wrong Balloon so it stays showing!
+        // Red Cross Mark on Wrong Balloon
         if (b.isWrong) {
           ctx.strokeStyle = '#dc2626';
-          ctx.lineWidth = 5;
+          ctx.lineWidth = 6;
           ctx.beginPath();
           ctx.moveTo(bx - safeRadius * 0.5, by - safeRadius * 0.5);
           ctx.lineTo(bx + safeRadius * 0.5, by + safeRadius * 0.5);
@@ -566,9 +588,9 @@ const BalloonPopRAN = ({ onComplete }) => {
         g.particles.forEach(p => {
           p.x += p.vx;
           p.y += p.vy;
-          p.vy += 0.15;
+          p.vy += 0.16;
           p.rot += p.vrot;
-          p.alpha -= 0.028;
+          p.alpha -= 0.026;
 
           ctx.save();
           ctx.translate(p.x, p.y);
@@ -585,11 +607,11 @@ const BalloonPopRAN = ({ onComplete }) => {
       if (g.burstRings.length > 0) {
         g.burstRings = g.burstRings.filter(r => r.alpha > 0.05);
         g.burstRings.forEach(r => {
-          r.radius += 2.5;
+          r.radius += 2.8;
           r.alpha -= 0.045;
           ctx.strokeStyle = r.color;
           ctx.globalAlpha = Math.max(0, r.alpha);
-          ctx.lineWidth = 3;
+          ctx.lineWidth = 3.5;
           ctx.beginPath();
           ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
           ctx.stroke();
@@ -597,14 +619,14 @@ const BalloonPopRAN = ({ onComplete }) => {
         ctx.globalAlpha = 1;
       }
 
-      // Ascending XP Stardust & Life Text
+      // Ascending XP Stardust Text
       if (g.popTexts.length > 0) {
         g.popTexts = g.popTexts.filter(pt => pt.alpha > 0.05);
         g.popTexts.forEach(pt => {
-          pt.y -= 0.95;
-          pt.alpha -= 0.025;
+          pt.y -= 1.1;
+          pt.alpha -= 0.024;
           ctx.fillStyle = pt.text.includes('WRONG') ? `rgba(248, 113, 113, ${pt.alpha})` : `rgba(251, 191, 36, ${pt.alpha})`;
-          ctx.font = '900 19px "Lexend", sans-serif';
+          ctx.font = '900 20px "Lexend", sans-serif';
           ctx.textAlign = 'center';
           ctx.fillText(pt.text, pt.x, pt.y);
         });
@@ -627,20 +649,26 @@ const BalloonPopRAN = ({ onComplete }) => {
     setLatencies([]);
     setLastLatencyMs(null);
     setPhase('playing');
-    setSparkyMsg('Target Balloon: Pop the correct item out loud or tap it! 🎈');
-    speakHumanText('Get ready! Tap or speak the target balloon!');
+    speakHumanText('Get ready! Tap the target balloon!');
     spawnNextTarget(1);
   };
+
+  // Auto-start in assessment mode
+  useEffect(() => {
+    if (assessmentMode && phase === 'playing' && gameRef.current.balloons.length === 0) {
+      spawnNextTarget(1);
+    }
+  }, [assessmentMode, phase, spawnNextTarget]);
 
   // ── START SCREEN ──
   if (phase === 'start') {
     return (
-      <div className="bpr-container">
+      <div className="bpr-game-wrapper flex items-center justify-center p-6">
         <div className="bpr-start-card">
           <div className="bpr-start-icon">🎈 🌤️ ❤️</div>
           <h1 className="bpr-start-title">BALLOON POP: VISUAL ATTENTION CHALLENGE</h1>
           <p className="bpr-start-desc">
-            Balloons fly upward across the sky! Tap target balloons or speak item names into your mic!
+            Balloons fly upward across the sky! Tap target balloons out loud or with touch/click!
             <br /><br />
             ❤️ <strong>3 Lives System</strong>: Popping wrong balloons costs 1 Life!
             <br />🔥 <strong>3-Combo Reward</strong>: 3 correct pops in a row rewards +1 Life!
@@ -655,17 +683,14 @@ const BalloonPopRAN = ({ onComplete }) => {
     );
   }
 
-  // ── GAME OVER / SURVIVAL RESULT SCREEN ──
+  // ── GAME OVER SCREEN ──
   if (phase === 'gameover') {
     const validLatencies = latencies.filter(l => l > 0);
-    const avgLatency = validLatencies.length > 0
-      ? Math.round(validLatencies.reduce((a, b) => a + b, 0) / validLatencies.length)
-      : 360;
     const fastestLatency = validLatencies.length > 0 ? Math.min(...validLatencies) : 290;
     const starCount = score > 300 ? 3 : score > 150 ? 2 : 1;
 
     return (
-      <div className="bpr-container">
+      <div className="bpr-game-wrapper flex items-center justify-center p-6">
         <div className="bpr-complete-card">
           <div className="bpr-star-rating">
             <span className={`star ${starCount >= 1 ? 'gold' : ''}`}>⭐</span>
@@ -705,86 +730,74 @@ const BalloonPopRAN = ({ onComplete }) => {
     );
   }
 
-  // ── PLAYING SCREEN (ARCADE HUD + SUNNY SKY CANVAS) ──
+  // ── PLAYING SCREEN: FULL-BLEED CANVAS WITH STYLED FLOATING GLASSMORPHIC OVERLAY ──
   return (
-    <div ref={gameWrapperRef} className={`bpr-container ${isFullView ? 'bpr-fullscreen' : ''}`}>
-      {/* Arcade HUD Header with Lives, Streak & Level */}
-      <header className="bpr-hud">
-        <div className="bpr-hud-title">
-          <span>🎈</span> BALLOON POP CHALLENGE
+    <div ref={gameWrapperRef} className="bpr-game-wrapper">
+      {/* ── SCREEN EDGE FLASH OVERLAYS ── */}
+      {successFlash && <div className="bpr-flash-overlay success" />}
+      {errorFlash && <div className="bpr-flash-overlay error" />}
+
+      {/* ── FLOATING TOP GLASSMORPHIC HUD OVERLAY ── */}
+      <div className="bpr-floating-hud-top">
+        {/* Left: Streak & Lives */}
+        <div className="bpr-glass-card">
+          <div className="bpr-heart-pool">
+            {Array.from({ length: 3 }).map((_, i) => (i < lives ? '❤️' : '🖤'))}
+          </div>
+          <div className="bpr-hud-divider" />
+          <div className="bpr-streak-badge">
+            <span>🔥</span>
+            <span>{streak} Streak</span>
+          </div>
         </div>
 
-        <div className="bpr-hud-stats">
-          <VoiceSelectorChip />
-          
-          {/* 3 Lives Counter */}
-          <div className="bpr-lives-pill">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <span key={i} className={`heart ${i < lives ? 'active' : 'lost'}`}>❤️</span>
-            ))}
-          </div>
-
-          {/* Streak Combo Pill */}
-          <div className="bpr-stat-pill combo">
-            🔥 Combo: {streak}
-          </div>
-
-          {/* Level Indicator */}
-          <div className="bpr-stat-pill level">
-            🏆 Lvl {level}
-          </div>
-
-          <div className="bpr-stat-pill score">
-            ⭐ {score} XP
-          </div>
-
-          <button className={`bpr-mic-btn ${isVoiceActive ? 'active' : ''}`} onClick={toggleSpeechRecognition}>
-            {isVoiceActive ? '🎙️ Mic ON' : '🎤 Voice Trigger'}
+        {/* Center: Target Prompt Badge */}
+        <div className="bpr-target-prompt-card">
+          <span className="bpr-target-label">Target:</span>
+          <span className="bpr-target-word">{currentHurdle.prompt}</span>
+          <button
+            onClick={() => speakHumanText(`Target balloon to pop: ${currentHurdle.prompt}`)}
+            className="bpr-replay-btn"
+          >
+            <span>🔊</span>
+            <span>Replay</span>
           </button>
         </div>
-      </header>
 
-      {/* Mascot Sparky Speech Target Banner */}
-      <div className="bpr-target-banner">
-        <div className="bpr-target-mascot">🦉</div>
-        <div>
-          <small className="uppercase text-slate-300 font-extrabold tracking-wide text-xs">🤖 SPARKY: "TARGET BALLOON TO POP:"</small>
-          <div className="bpr-target-word" style={{ color: currentHurdle.targetColor }}>{currentHurdle.prompt}</div>
+        {/* Right: Targets Popped Counter */}
+        <div className="bpr-popped-counter">
+          🎯 {targetCount} / {assessmentMode ? assessmentTargetCount : 6} Popped
         </div>
-        <button 
-          className="ml-2 px-3.5 py-1.5 bg-cyan-500/20 border border-cyan-400/40 rounded-full text-cyan-300 font-bold text-xs hover:bg-cyan-500/30 transition-all flex items-center gap-1.5"
-          onClick={() => speakHumanText(`Target balloon to pop: ${currentHurdle.prompt}`)}
+      </div>
+
+      {/* ── 100% FULL-BLEED CANVAS BACKDROP VIEWPORT ── */}
+      <div className="bpr-canvas-viewport">
+        <canvas
+          ref={canvasRef}
+          onPointerDown={handleCanvasPointerDown}
+        />
+      </div>
+
+      {/* ── FLOATING BOTTOM TELEMETRY STRIP ── */}
+      <div className="bpr-floating-hud-bottom">
+        <div className="bpr-latency-card">
+          <span>⚡</span>
+          <span>Latency:</span>
+          <strong style={{ color: '#ffffff' }}>{lastLatencyMs ? `${lastLatencyMs}ms` : '---'}</strong>
+          <span style={{ color: '#94a3b8' }}>
+            ({lastLatencyMs ? (lastLatencyMs < 600 ? 'Optimal' : 'Good') : 'Waiting'})
+          </span>
+        </div>
+
+        <button
+          onClick={onExit || onComplete || (() => window.history.back())}
+          className="bpr-exit-screening-btn"
         >
-          🔊 Hear Target
+          ✕ Exit Screening
         </button>
-        <div className="bpr-hurdle-counter ml-auto">
-          Targets Popped: {targetCount}
-        </div>
       </div>
-
-      {/* 60FPS Parallax Sky Canvas Viewport */}
-      <div className="bpr-canvas-viewport relative w-full flex justify-center">
-        <canvas ref={canvasRef} width={CANV_W} height={CANV_H} onPointerDown={handleCanvasPointerDown} className="cursor-pointer rounded-2xl border-4 border-cyan-400/40 shadow-2xl block bg-sky-400 touch-none select-none" />
-      </div>
-
-      {/* Arcade Footer Controls & Sparky Hint */}
-      <footer className="bpr-footer">
-        <button className="bpr-fullview-btn" onClick={toggleFullView}>
-          {isFullView ? '↙ Exit Fullscreen' : '🎮 Full View'}
-        </button>
-
-        <div className="bpr-quick-fire-btn" onClick={() => handlePopTargetBalloon('tactile')}>
-          🎈 POP TARGET BALLOON [{currentHurdle.text}]
-        </div>
-
-        <div className="bpr-sparky-hint">
-          🤖 SPARKY: "{sparkyMsg}"
-        </div>
-      </footer>
     </div>
   );
 };
 
 export default BalloonPopRAN;
-
-
