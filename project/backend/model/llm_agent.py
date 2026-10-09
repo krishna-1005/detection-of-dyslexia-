@@ -9,87 +9,113 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, '../.env'), override=True)
 
 def analyze_with_llm(text):
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    load_dotenv(os.path.join(basedir, '../.env'), override=True)
     api_key = os.getenv("GOOGLE_API_KEY")
+    
     if not api_key:
+        print("[LLM DIAGNOSTIC] GOOGLE_API_KEY missing from environment.")
         return {"error": "Gemini API key not found in environment. Check your .env file."}
     
+    key_prefix = api_key[:8] if len(api_key) >= 8 else api_key
+    print(f"[LLM DIAGNOSTIC] Loaded GOOGLE_API_KEY prefix: '{key_prefix}...' (Length: {len(api_key)})")
+
+    candidate_models = [
+        "gemini-flash-lite-latest",
+        "gemini-3.1-flash-lite",
+        "gemini-3.6-flash",
+        "gemini-3.8-flash"
+    ]
+
+    prompt = f"""
+    Role: Dyslexia Intent Decoder.
+    Task: Reconstruct the user's intended sentence and analyze ONLY the patterns found in the input.
+    
+    INPUT: "{text}"
+    
+    CRITICAL INSTRUCTIONS:
+    1. Return ONLY the linguistic patterns found in the provided input. 
+    2. If the input is short or has only one error, return ONLY that one error.
+    3. Do NOT include examples like "peple" or "uoy" unless they are in the input.
+    
+    Format: Return ONLY a JSON object.
+    JSON Structure:
+    {{
+        "total_words": int,
+        "misspelled_count": int,
+        "risk_score": float,
+        "corrected_sentence": "string",
+        "misspelled_words": [
+            {{ "original": "s", "suggested": "s", "type": "s", "reason": "s" }}
+        ],
+        "linguistic_patterns": [
+            {{ "category": "Type", "level": "High | Med | Low", "example": "original -> suggested" }}
+        ],
+        "analysis_feedback": "string",
+        "suggestions_for_improvement": ["string"]
+    }}
+    """
+
+    # If key is OAuth bearer token starting with AQ. or ya29., attempt REST OAuth flow
+    if api_key.startswith("AQ.") or api_key.startswith("ya29."):
+        print("[LLM DIAGNOSTIC] OAuth Bearer token detected. Attempting REST API flow...")
+        for model in candidate_models:
+            clean_model = model.replace("models/", "")
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{clean_model}:generateContent"
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json"
+            }
+            payload = {"contents": [{"parts": [{"text": prompt}]}]}
+            try:
+                print(f"[LLM DIAGNOSTIC] Trying REST model '{clean_model}'...")
+                resp = requests.post(url, headers=headers, json=payload, timeout=8)
+                if resp.status_code == 200:
+                    resp_json = resp.json()
+                    candidates = resp_json.get("candidates") or []
+                    if candidates:
+                        raw_txt = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                        if "```json" in raw_txt:
+                            raw_txt = raw_txt.split("```json")[1].split("```")[0].strip()
+                        elif "```" in raw_txt:
+                            raw_txt = raw_txt.split("```")[1].split("```")[0].strip()
+                        return json.loads(raw_txt)
+                else:
+                    print(f"[LLM API ERROR] Model '{clean_model}' REST HTTP Status {resp.status_code}: {resp.text[:150]}")
+            except Exception as rest_err:
+                print(f"[LLM EXCEPTION] REST Model '{clean_model}' error: {type(rest_err).__name__}: {str(rest_err)}")
+
+    # Standard SDK Client Flow (for AIza... API keys)
     try:
         client = genai.Client(api_key=api_key)
-        
-        # Step 1: Find ANY model that works for this key
-        valid_models = []
-        try:
-            for m in client.models.list():
-                if 'generateContent' in m.supported_methods or 'generate_content' in m.supported_methods:
-                    valid_models.append(m.name)
-        except Exception:
-            pass
+        last_err = None
+        for model_to_use in candidate_models:
+            try:
+                print(f"[LLM DIAGNOSTIC] Trying SDK model '{model_to_use}'...")
+                response = client.models.generate_content(
+                    model=model_to_use,
+                    contents=prompt
+                )
+                content = response.text.strip()
+                if "```json" in content:
+                    content = content.split("```json")[1].split("```")[0].strip()
+                elif "```" in content:
+                    content = content.split("```")[1].split("```")[0].strip()
+                
+                return json.loads(content)
+            except Exception as m_err:
+                err_msg = f"{type(m_err).__name__}: {str(m_err)}"
+                print(f"[LLM API ERROR] Model '{model_to_use}' SDK call failed: {err_msg}")
+                last_err = err_msg
+                continue
 
-        # Step 2: Set priority order
-        priority = ["models/gemini-1.5-flash", 
-    "models/gemini-1.5-pro", 
-    "models/gemini-1.5-flash-8b"]
-        model_to_use = None
-        
-        for p in priority:
-            if p in valid_models:
-                model_to_use = p
-                break
-        
-        if not model_to_use and valid_models:
-            model_to_use = valid_models[0]
-        
-        if not model_to_use:
-            model_to_use = "gemini-3.1-flash-lite-preview" # Absolute fallback
-
-        print(f"DEBUG: Using model '{model_to_use}'")
-
-        prompt = f"""
-        Role: Dyslexia Intent Decoder.
-        Task: Reconstruct the user's intended sentence and analyze ONLY the patterns found in the input.
-        
-        INPUT: "{text}"
-        
-        CRITICAL INSTRUCTIONS:
-        1. Return ONLY the linguistic patterns found in the provided input. 
-        2. If the input is short or has only one error, return ONLY that one error.
-        3. Do NOT include examples like "peple" or "uoy" unless they are in the input.
-        
-        Format: Return ONLY a JSON object.
-        JSON Structure:
-        {{
-            "total_words": int,
-            "misspelled_count": int,
-            "risk_score": float,
-            "corrected_sentence": "string",
-            "misspelled_words": [
-                {{ "original": "s", "suggested": "s", "type": "s", "reason": "s" }}
-            ],
-            "linguistic_patterns": [
-                {{ "category": "Type", "level": "High | Med | Low", "example": "original -> suggested" }}
-            ],
-            "analysis_feedback": "string",
-            "suggestions_for_improvement": ["string"]
-        }}
-        """
-
-        response = client.models.generate_content(
-            model=model_to_use,
-            contents=prompt
-        )
-        
-        content = response.text.strip()
-        if "```json" in content:
-            content = content.split("```json")[1].split("```")[0].strip()
-        elif "```" in content:
-            content = content.split("```")[1].split("```")[0].strip()
-        
-        return json.loads(content)
+        return {"error": f"All Gemini models failed: {last_err}", "fallback_needed": True}
         
     except Exception as e:
-        print(f"DEBUG: AI Error: {str(e)}")
+        err_detail = f"{type(e).__name__}: {str(e)}"
+        print(f"[LLM EXCEPTION] Top-level Gemini Client Exception: {err_detail}")
         return {
-            "error": str(e),
+            "error": err_detail,
             "fallback_needed": True
         }
 
@@ -192,7 +218,7 @@ def get_local_clinical_response(user_message):
             "• **Rapid Naming**: Boost rapid automatized naming (RAN) speed.\n"
             "• **Visual Tracking**: Train ocular motor coordination with saccadic target tracking.\n"
             "• **Auditory Processing**: Fine-tune sound discrimination skills.\n"
-            "• **Video Practice**: Record reading passages with real-time Azure speech pronunciation assessment."
+            "• **Video Practice**: Record reading passages with real-time speech reading analysis."
         )
     else:
         return (

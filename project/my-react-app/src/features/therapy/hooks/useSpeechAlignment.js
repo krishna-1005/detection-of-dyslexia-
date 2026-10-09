@@ -24,7 +24,28 @@ const levenshtein = (a, b) => {
   return dp[m][n];
 };
 
-const cleanWord = (w) => (w || '').toLowerCase().replace(/[^\w]/g, '');
+const HOMOPHONES = {
+  read: ['red', 'reid', 'reed'], red: ['read', 'reed'],
+  to: ['two', 'too', '2'], two: ['to', 'too', '2'], too: ['to', 'two', '2'],
+  sun: ['son'], son: ['sun'], for: ['four', 'fore', '4'], four: ['for', 'fore', '4'],
+  be: ['bee'], bee: ['be'], see: ['sea'], sea: ['see'], by: ['buy', 'bye'], buy: ['by', 'bye'],
+  hear: ['here'], here: ['hear'], right: ['write', 'wright'], write: ['right', 'wright'],
+  their: ['there', "they're"], there: ['their', "they're"], "they're": ['there', 'their'],
+  no: ['know'], know: ['no'], new: ['knew'], knew: ['new'], night: ['knight'], knight: ['night'],
+  one: ['won', '1'], won: ['one', '1'], our: ['hour'], hour: ['our'], book: ['books'], books: ['book'],
+  space: ['spaces'], spaces: ['space'], dog: ['dogs'], dogs: ['dog'], star: ['stars'], stars: ['star'],
+  i: ['eye', 'aye'], eye: ['i']
+};
+
+const isMatch = (target, spoken) => {
+  if (!target || !spoken) return false;
+  if (target === spoken) return true;
+  if (HOMOPHONES[target] && HOMOPHONES[target].includes(spoken)) return true;
+  if (HOMOPHONES[spoken] && HOMOPHONES[spoken].includes(target)) return true;
+  const strip = (w) => w.replace(/(es|s|ed|ing|ly|'s)$/gi, '');
+  if (strip(target) && strip(target) === strip(spoken) && Math.abs(target.length - spoken.length) <= 3) return true;
+  return levenshtein(target, spoken) <= 1 && (target.length >= 3 || spoken.length >= 3);
+};
 
 const useSpeechAlignment = (targetSentence) => {
   const targetWords = (targetSentence || '').split(/\s+/).filter(Boolean);
@@ -71,19 +92,19 @@ const useSpeechAlignment = (targetSentence) => {
         const target = cleanTargets[idx];
         if (!target) return { word: originalWord, status: 'pending', heard: '' };
 
-        // Look for exact match in spoken words after last matched position
+        // Look for exact/phonetic match in spoken words after last matched position
         const exactIdx = spokenWords.findIndex(
-          (sw, i) => i > matchedUpTo && sw === target
+          (sw, i) => i > matchedUpTo && isMatch(target, sw)
         );
         if (exactIdx !== -1) {
           matchedUpTo = exactIdx;
-          return { word: originalWord, status: 'correct', heard: target };
+          return { word: originalWord, status: 'correct', heard: spokenWords[exactIdx] };
         }
 
-        // Look for exact match anywhere
-        const anyExact = spokenWords.findIndex((sw) => sw === target);
+        // Look for exact/phonetic match anywhere
+        const anyExact = spokenWords.findIndex((sw) => isMatch(target, sw));
         if (anyExact !== -1) {
-          return { word: originalWord, status: 'correct', heard: target };
+          return { word: originalWord, status: 'correct', heard: spokenWords[anyExact] };
         }
 
         // Fuzzy match (mispronounced)

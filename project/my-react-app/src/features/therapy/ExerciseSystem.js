@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Exercises.css';
-import VideoPractice from './VideoPractice';
+import VoicePractice from './VoicePractice';
 import SoundQuest from './SoundQuest';
 import MorphologyQuest from './MorphologyQuest';
 import MorphoSnake from './MorphoSnake';
@@ -33,6 +33,7 @@ export const saveTherapyProgress = async (currentUser, type, score, accuracy, ti
     naming: 'Visual Attention Speed',
     visual: 'Visual Tracking',
     auditory: 'Auditory Processing',
+    voice: 'Live Voice Practice',
     video: 'Live Voice Practice'
   };
 
@@ -886,21 +887,21 @@ const ExerciseSystem = ({ type, onComplete }) => {
             width: '100%',
             background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)',
             border: '1.5px solid rgba(251,191,36,0.35)',
-            borderRadius: '16px',
-            padding: '0.65rem 1.25rem',
-            marginBottom: '0.85rem',
+            borderRadius: '14px',
+            padding: '0.4rem 0.85rem',
+            marginBottom: '0.5rem',
             color: '#f8fafc',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', fontSize: '0.85rem', fontWeight: 800 }}>
-              <span>🏆 Personal Best: <strong style={{ color: '#fbbf24' }}>{exerciseStats?.pb || '3020 pts'}</strong></span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', fontSize: '0.8rem', fontWeight: 800 }}>
+              <span>🏆 PB: <strong style={{ color: '#fbbf24' }}>{exerciseStats?.pb || '3020 pts'}</strong></span>
               <span>🎯 Accuracy: <strong style={{ color: '#4ade80' }}>{exerciseStats?.accuracy || '67%'}</strong></span>
               <span>⭐ Level: <strong style={{ color: '#38bdf8' }}>{isAdvanced ? 'Advanced Tier' : (exerciseStats?.level || 'Intermediate')}</strong></span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
               <button 
                 onClick={toggleAdvanced}
                 style={{
@@ -951,7 +952,7 @@ const ExerciseSystem = ({ type, onComplete }) => {
           {type === 'auditory' && <AuditoryProcessingSuite onComplete={onComplete} />}
           {type === 'morphology' && <MorphoSnake onComplete={onComplete} />}
           {type === 'naming' && <BalloonPopRAN onComplete={onComplete} />}
-          {type === 'video' && <VideoPractice onComplete={onComplete} />}
+          {(type === 'voice' || type === 'video') && <VoicePractice onComplete={onComplete} />}
         </div>
     </div>
   );

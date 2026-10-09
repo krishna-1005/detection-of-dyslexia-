@@ -427,11 +427,11 @@ const Home = () => {
 
               {/* CTA Buttons */}
               <div className="hero-btn-group-mockup">
-                <Link to={currentUser ? "/detect" : "/signup"} className="btn-royal-blue kids-btn-primary">
+                <Link to="/therapy/phoneme" className="btn-royal-blue kids-btn-primary">
                   Start Your Fun Quest! 🚀
                 </Link>
-                <Link to="/therapy/phoneme" className="btn-outline-white kids-btn-secondary">
-                  Play Therapy Games 🎮
+                <Link to={currentUser ? "/reading-test" : "/signup"} className="btn-outline-white kids-btn-secondary">
+                  Reading Test 🎤
                 </Link>
               </div>
 

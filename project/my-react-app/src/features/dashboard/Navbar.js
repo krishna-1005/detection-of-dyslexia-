@@ -37,7 +37,6 @@ const Navbar = ({ user: propUser, showDropdown, setShowDropdown }) => {
     { path: '/therapy/naming', label: 'Rapid Naming', icon: '⚡' },
     { path: '/therapy/visual', label: 'Visual Tracking Practice', icon: '📖' },
     { path: '/therapy/auditory', label: 'Auditory Processing', icon: '🎧' },
-    { path: '/therapy/video', label: 'Video Sessions', icon: '📹' },
   ];
 
   return (
@@ -63,6 +62,9 @@ const Navbar = ({ user: propUser, showDropdown, setShowDropdown }) => {
         </Link>
         <Link to="/detect" className={`nav-item ${location.pathname === '/detect' ? 'active' : ''}`}>
           <span>🧬 Diagnostic Engine</span>
+        </Link>
+        <Link to="/reading-test" className={`nav-item ${location.pathname === '/reading-test' ? 'active' : ''}`}>
+          <span>🎤 Reading Test</span>
         </Link>
         <Link to="/quiz" className={`nav-item ${location.pathname === '/quiz' ? 'active' : ''}`}>
           <span>📋 Symptoms Quiz</span>
@@ -115,6 +117,9 @@ const Navbar = ({ user: propUser, showDropdown, setShowDropdown }) => {
             </Link>
             <Link to="/detect" className={`mobile-drawer-link ${location.pathname === '/detect' ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}>
               🧬 Diagnostic Engine
+            </Link>
+            <Link to="/reading-test" className={`mobile-drawer-link ${location.pathname === '/reading-test' ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}>
+              🎤 Reading Test
             </Link>
             <Link to="/quiz" className={`mobile-drawer-link ${location.pathname === '/quiz' ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}>
               📋 Symptoms Quiz

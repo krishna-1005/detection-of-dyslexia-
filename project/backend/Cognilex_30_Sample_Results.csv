@@ -1,0 +1,31 @@
+sample_id,input_text,expected_category,det_risk_score,det_risk_category,det_latency_ms,llm_risk_score,llm_risk_category,llm_latency_ms,llm_error,combined_risk_score,combined_risk_category,fallback_used,effective_latency_ms
+1,The quick brown fox jumps over the lazy dog.,Low,0,Low,0.2,0.0,Low,12651.21,None,0.0,Low,False,12651.21
+2,Reading books helps expand vocabulary and understanding.,Low,0,Low,0.06,0.0,Low,14170.94,None,0.0,Low,False,14170.94
+3,She went to the grocery store to buy fresh vegetables.,Low,0,Low,0.07,0.0,Low,2430.29,None,0.0,Low,False,2430.29
+4,The students completed their science project on time.,Low,0,Low,0.06,0.0,Low,9980.56,None,0.0,Low,False,9980.56
+5,Clear communication is essential for effective teamwork.,Low,0,Low,0.07,0.0,Low,2907.92,None,0.0,Low,False,2907.92
+6,Water boils at one hundred degrees Celsius at sea level.,Low,0,Low,0.07,0.0,Low,2433.45,None,0.0,Low,False,2433.45
+7,The sun rises in the east and sets in the west.,Low,0,Low,0.07,0.0,Low,8116.28,None,0.0,Low,False,8116.28
+8,Music brings joy and comfort to many people worldwide.,Low,0,Low,0.07,0.0,Low,2359.84,None,0.0,Low,False,2359.84
+9,He likes to play basketball with his friends after school.,Low,0,Low,0.08,0.0,Low,2039.43,None,0.0,Low,False,2039.43
+10,The library is a quiet place for study and concentration.,Low,0,Low,0.11,0.0,Low,2475.34,None,0.0,Low,False,2475.34
+11,I have a small cat named whikser who loves milk.,Medium,100,High,0.95,10.0,Low,10875.66,None,10.0,Low,False,10875.66
+12,The boy ran across the yard with his blue ball.,Low,0,Low,0.08,0.0,Low,3300.04,None,0.0,Low,False,3300.04
+13,She accidentally droped the glass on the kitchen floor.,Medium,100,High,0.85,10.0,Low,13915.82,None,10.0,Low,False,13915.82
+14,We are planning a trip to the mountain next weekend.,Low,0,Low,0.08,0.0,Low,2618.48,None,0.0,Low,False,2618.48
+15,He forgot to bring his umbrella on a rainy day.,Low,0,Low,0.07,0.0,Low,2667.23,None,0.0,Low,False,2667.23
+16,The teaher explained the math problem carefully.,Medium,100,High,0.92,14.0,Low,3780.85,None,14.0,Low,False,3780.85
+17,Teh dog barked at the stranger near the front gate.,Medium,100,High,0.63,10.0,Low,2354.99,None,10.0,Low,False,2354.99
+18,I saw a big bear in the wood yesterday evening.,Low,0,Low,0.08,0.0,Low,2478.4,None,0.0,Low,False,2478.4
+19,He wrote a long letter to his grandmother in Florida.,Low,0,Low,0.08,0.0,Low,10378.49,None,0.0,Low,False,10378.49
+20,She was feeling tired after running five kilometers.,Low,0,Low,0.08,0.0,Low,13419.09,None,0.0,Low,False,13419.09
+21,The peple in uoy house are very frendly and nice.,High,100,High,2.14,20.0,Medium,2359.87,None,20.0,Medium,False,2359.87
+22,I sed that thier father was warking in the yard.,High,100,High,2.18,33.0,Medium,3080.34,None,33.0,Medium,False,3080.34
+23,Teh quik browon fox jmps over teh lasy doog.,High,100,High,3.85,67.0,High,3456.81,None,67.0,High,False,3456.81
+24,Becaos he was tired he went to slep early last night.,High,100,High,475.13,18.0,Low,2706.59,None,18.0,Low,False,2706.59
+25,Wene I go to skewl I like to reed big buks.,High,100,High,1.76,40.0,Medium,3693.44,None,40.0,Medium,False,3693.44
+26,My mother bawt me a new pair of shos for running.,High,100,High,1.19,20.0,Medium,3760.81,None,20.0,Medium,False,3760.81
+27,The sky is bren and the grass is blew today.,Medium,100,High,0.63,20.0,Medium,3580.35,None,20.0,Medium,False,3580.35
+28,Sudently the door opened and someone came in.,Medium,100,High,731.21,14.0,Low,2656.16,None,14.0,Low,False,2656.16
+29,Thair is a lot of noise in this crowded room.,Medium,100,High,0.92,10.0,Low,2728.13,None,10.0,Low,False,2728.13
+30,Every morning I wake up at seven and make coffee.,Low,0,Low,0.09,0.0,Low,2432.12,None,0.0,Low,False,2432.12

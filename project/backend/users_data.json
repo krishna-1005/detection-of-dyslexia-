@@ -13,6 +13,146 @@
       },
       "history": [
         {
+          "id": 1791565900581,
+          "date": "10/9/2026 10:41 PM",
+          "isoDate": "2026-10-09T17:11:40.571Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 64,
+          "riskLevel": "Moderate",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 192,
+            "accuracy": 64,
+            "timeTaken": "70s (15 WPM)",
+            "mode": "assessment",
+            "date": "10/9/2026 10:41 PM",
+            "timestamp": 1791565900571
+          },
+          "timestamp": "a2f8c144"
+        },
+        {
+          "id": 1791563505255,
+          "date": "10/9/2026 10:01 PM",
+          "isoDate": "2026-10-09T16:31:45.240Z",
+          "type": "Therapy: Visual Attention Speed",
+          "score": 100,
+          "riskLevel": "Low",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "naming",
+            "score": 270,
+            "accuracy": 100,
+            "timeTaken": "Avg Latency: 2315ms (Lvl 3)",
+            "mode": "assessment",
+            "date": "10/9/2026 10:01 PM",
+            "timestamp": 1791563505240
+          },
+          "timestamp": "9cb4573c"
+        },
+        {
+          "id": 1791546376506,
+          "date": "10/9/2026 05:16 PM",
+          "isoDate": "2026-10-09T11:46:16.505Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 0,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 0,
+            "accuracy": 0,
+            "timeTaken": "13s (0 WPM)",
+            "mode": "assessment",
+            "date": "10/9/2026 05:16 PM",
+            "timestamp": 1791546376505
+          },
+          "timestamp": "870640f6"
+        },
+        {
+          "id": 1791543170049,
+          "date": "10/9/2026 04:22 PM",
+          "isoDate": "2026-10-09T10:52:50.048Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 21,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 63,
+            "accuracy": 21,
+            "timeTaken": "159s (2 WPM)",
+            "mode": "assessment",
+            "date": "10/9/2026 04:22 PM",
+            "timestamp": 1791543170048
+          },
+          "timestamp": "4e3787b7"
+        },
+        {
+          "id": 1791542998447,
+          "date": "10/9/2026 04:19 PM",
+          "isoDate": "2026-10-09T10:49:58.443Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 0,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 0,
+            "accuracy": 0,
+            "timeTaken": "0s (0 WPM)",
+            "mode": "assessment",
+            "date": "10/9/2026 04:19 PM",
+            "timestamp": 1791542998443
+          },
+          "timestamp": "9a6862e1"
+        },
+        {
+          "id": 1791532517897,
+          "date": "10/9/2026 01:25 PM",
+          "isoDate": "2026-10-09T07:55:17.880Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 14,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "video",
+            "score": 42,
+            "accuracy": 14,
+            "timeTaken": "225s",
+            "mode": "assessment",
+            "date": "10/9/2026 01:25 PM",
+            "timestamp": 1791532517880
+          },
+          "timestamp": "38796d16"
+        },
+        {
+          "id": 1791439183290,
+          "date": "10/8/2026 11:29 AM",
+          "isoDate": "2026-10-08T05:59:43.282Z",
+          "type": "Therapy: Visual Attention Speed",
+          "score": 100,
+          "riskLevel": "Low",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "naming",
+            "score": 270,
+            "accuracy": 100,
+            "timeTaken": "Avg Latency: 31126ms (Lvl 3)",
+            "mode": "assessment",
+            "date": "10/8/2026 11:29 AM",
+            "timestamp": 1791439183282
+          },
+          "timestamp": "fe095fc6"
+        },
+        {
           "id": 1791316129909,
           "date": "10/7/2026 01:18 AM",
           "isoDate": "2026-10-06T19:48:49.909Z",
@@ -3490,6 +3630,69 @@
       "reading_progress": {},
       "therapy_sessions": [
         {
+          "id": "defeca5f-ec20-49f8-b575-1c0de3b8ed3e",
+          "type": "voice",
+          "score": 192,
+          "accuracy": 64,
+          "date": "10/9/2026 10:41 PM",
+          "timeTaken": "70s (15 WPM)",
+          "status": "Completed"
+        },
+        {
+          "id": "143a548b-995c-4dab-95d7-a1b80f0b5098",
+          "type": "naming",
+          "score": 270,
+          "accuracy": 100,
+          "date": "10/9/2026 10:01 PM",
+          "timeTaken": "Avg Latency: 2315ms (Lvl 3)",
+          "status": "Completed"
+        },
+        {
+          "id": "a5830414-3d8a-4f32-92bf-62b9dec52c80",
+          "type": "voice",
+          "score": 0,
+          "accuracy": 0,
+          "date": "10/9/2026 05:16 PM",
+          "timeTaken": "13s (0 WPM)",
+          "status": "Completed"
+        },
+        {
+          "id": "a435a4c5-c3db-420d-a62f-46b1cca2320c",
+          "type": "voice",
+          "score": 63,
+          "accuracy": 21,
+          "date": "10/9/2026 04:22 PM",
+          "timeTaken": "159s (2 WPM)",
+          "status": "Completed"
+        },
+        {
+          "id": "34fcc12f-220d-45f0-b62b-5c669bb373a6",
+          "type": "voice",
+          "score": 0,
+          "accuracy": 0,
+          "date": "10/9/2026 04:19 PM",
+          "timeTaken": "0s (0 WPM)",
+          "status": "Completed"
+        },
+        {
+          "id": "5049671d-6240-47d1-bd77-8cbcd4ea9709",
+          "type": "video",
+          "score": 42,
+          "accuracy": 14,
+          "date": "10/9/2026 01:25 PM",
+          "timeTaken": "225s",
+          "status": "Completed"
+        },
+        {
+          "id": "b4275fb5-2ccb-4cc0-8363-66b54801c9cf",
+          "type": "naming",
+          "score": 270,
+          "accuracy": 100,
+          "date": "10/8/2026 11:29 AM",
+          "timeTaken": "Avg Latency: 31126ms (Lvl 3)",
+          "status": "Completed"
+        },
+        {
           "id": "4b9ca769-18fc-4460-a2e3-9c1350f5b6e3",
           "type": "visual",
           "score": 200,
@@ -5334,20 +5537,20 @@
         },
         "naming": {
           "type": "naming",
-          "sessions": 29,
+          "sessions": 31,
           "accuracy": "100%",
           "pb": "500 pts",
           "pb_val": 500,
-          "lastPlayed": "10/4/2026 07:12 PM",
+          "lastPlayed": "10/9/2026 10:01 PM",
           "trend": "Improving"
         },
         "video": {
           "type": "video",
-          "sessions": 8,
-          "accuracy": "0%",
+          "sessions": 9,
+          "accuracy": "14%",
           "pb": "72 pts",
           "pb_val": 72,
-          "lastPlayed": "10/4/2026 05:54 PM",
+          "lastPlayed": "10/9/2026 01:25 PM",
           "trend": "Needs Practice"
         },
         "auditory": {
@@ -5376,9 +5579,18 @@
           "pb_val": 12540,
           "lastPlayed": "8/18/2026 12:08 PM",
           "trend": "Improving"
+        },
+        "voice": {
+          "type": "voice",
+          "sessions": 4,
+          "accuracy": "64%",
+          "pb": "192 pts",
+          "pb_val": 192,
+          "lastPlayed": "10/9/2026 10:41 PM",
+          "trend": "Stable"
         }
       },
-      "last_played_module": "visual"
+      "last_played_module": "voice"
     }
   }
 }

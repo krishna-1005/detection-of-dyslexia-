@@ -17,13 +17,41 @@ const SmartReader = () => {
         fontSize: 20,
         lineHeight: 1.8,
         letterSpacing: 2,
-        fontFamily: "'Lexend', sans-serif",
+        fontFamily: "'OpenDyslexic', 'Lexend', sans-serif",
+        contrastMode: "default", // default | dark | sepia | highcontrast
         bionicMode: false,
         showRuler: false
     });
     const [isReading, setIsReading] = useState(false);
     const [currentWordIndex, setCurrentWordIndex] = useState(-1);
     const readingAreaRef = useRef(null);
+    const fileInputRef = useRef(null);
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        setIsLoading(true);
+        const formData = new FormData();
+        formData.append("file", file);
+        try {
+            const response = await fetchWithAuth("/api/upload", {
+                method: "POST",
+                body: formData,
+            });
+            const data = await response.json();
+            if (response.ok && data.text) {
+                setText(data.text);
+                setViewMode("original");
+            } else {
+                alert(data.error || "Failed to parse document.");
+            }
+        } catch (err) {
+            alert("Error uploading document.");
+        } finally {
+            setIsLoading(false);
+            e.target.value = "";
+        }
+    };
 
     const handleSimplify = async () => {
         if (!text.trim()) return;
@@ -79,9 +107,22 @@ const SmartReader = () => {
         window.speechSynthesis.speak(utterance);
     };
 
+    const getContrastStyles = () => {
+        switch (settings.contrastMode) {
+            case "dark":
+                return { background: "#0f172a", color: "#f8fafc", border: "1px solid #334155" };
+            case "sepia":
+                return { background: "#fef3c7", color: "#78350f", border: "1px solid #fde68a" };
+            case "highcontrast":
+                return { background: "#000000", color: "#ffff00", border: "2px solid #ffff00" };
+            default:
+                return { background: "#ffffff", color: "#0f172a", border: "1px solid #e2e8f0" };
+        }
+    };
+
     const renderText = () => {
         const content = viewMode === "original" ? text : simplifiedText;
-        if (!content) return <p className="placeholder-text">Enter or paste complex text into the input section above to begin transformation...</p>;
+        if (!content) return <p className="placeholder-text">Enter text or upload a document (.pdf, .docx, .txt) above to transform...</p>;
 
         const words = content.split(/\s+/);
 
@@ -92,20 +133,32 @@ const SmartReader = () => {
                     fontSize: `${settings.fontSize}px`,
                     lineHeight: settings.lineHeight,
                     letterSpacing: `${settings.letterSpacing}px`,
-                    fontFamily: settings.fontFamily
+                    fontFamily: settings.fontFamily,
+                    ...getContrastStyles(),
+                    padding: "1.5rem",
+                    borderRadius: "12px"
                 }}
             >
-                {words.map((word, i) => (
-                    <span 
-                        key={i} 
-                        className={`reader-word ${currentWordIndex === i ? 'highlight' : ''}`}
-                    >
-                        {settings.bionicMode ? (
-                            <><strong>{word.substring(0, Math.ceil(word.length / 2))}</strong>{word.substring(Math.ceil(word.length / 2))}</>
-                        ) : word}
-                        {' '}
-                    </span>
-                ))}
+                {words.map((word, i) => {
+                    // Bold initial 30%-50% (approx 40%) of the word for Bionic Reading fixation point
+                    const fixLen = Math.max(1, Math.ceil(word.length * 0.4));
+                    return (
+                        <span 
+                            key={i} 
+                            className={`reader-word ${currentWordIndex === i ? 'highlight' : ''}`}
+                        >
+                            {settings.bionicMode ? (
+                                <>
+                                    <strong style={{ fontWeight: 900, color: settings.contrastMode === "highcontrast" ? "#00ffff" : "inherit" }}>
+                                        {word.substring(0, fixLen)}
+                                    </strong>
+                                    {word.substring(fixLen)}
+                                </>
+                            ) : word}
+                            {' '}
+                        </span>
+                    );
+                })}
             </div>
         );
     };
@@ -120,10 +173,10 @@ const SmartReader = () => {
                         <div className="title-area">
                             <span className="title-kids-badge" style={{ fontSize: '0.85rem', padding: '4px 12px', marginBottom: '0.4rem', display: 'inline-block' }}>✨ AI Story Accessibility 🎈</span>
                             <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#2f3542', margin: 0, fontFamily: 'var(--kids-font-display, "Fredoka", sans-serif)' }}>
-                                📖 Smart AI Story Reader & Simplifier 🎈
+                                📖 Smart AI Story Reader & Bionic Accessibility 🎈
                             </h1>
                             <p style={{ color: '#57606f', fontSize: '0.95rem', marginTop: '0.4rem', fontWeight: 600 }}>
-                                Transform complex paragraphs into high-readability dyslexia-friendly story formats with audio reading assist!
+                                Transform complex documents with Bionic Reading fixation bolds, OpenDyslexic font, contrast modes, and line rulers!
                             </p>
                         </div>
                         <div className="header-actions">
@@ -145,11 +198,17 @@ const SmartReader = () => {
 
                     <div className="reader-grid">
                         <section className="input-section medical-card">
-                            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem' }}>Source Content Input</h3>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, margin: 0 }}>Source Content Input</h3>
+                                <button className="btn-secondary" style={{ fontSize: '0.82rem', padding: '4px 12px' }} onClick={() => fileInputRef.current?.click()}>
+                                    📄 Upload File (.pdf, .docx, .txt)
+                                </button>
+                                <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept=".pdf,.docx,.txt" onChange={handleFileUpload} />
+                            </div>
                             <textarea 
                                 value={text}
                                 onChange={(e) => setText(e.target.value)}
-                                placeholder="Paste articles, textbook chapters, or complex clinical documents here..."
+                                placeholder="Paste text or upload document files (.pdf, .docx, .txt) here to transform..."
                                 className="reader-textarea"
                             />
                             <div className="input-actions" style={{ marginTop: '1.25rem' }}>
@@ -163,7 +222,7 @@ const SmartReader = () => {
                         </section>
 
                         <section className="controls-section medical-card">
-                            <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>Reader Toolbar</h3>
+                            <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1.25rem' }}>Reader Accessibility Toolbar</h3>
                             
                             <div className="control-group">
                                 <label className="medical-label">Audio Assist</label>
@@ -173,7 +232,7 @@ const SmartReader = () => {
                             </div>
 
                             <div className="control-group">
-                                <label className="medical-label">Visual Assist Tools</label>
+                                <label className="medical-label">Visual Scaffolding Tools</label>
                                 <div className="toggle-item">
                                     <span>Focus Line Ruler</span>
                                     <input 
@@ -183,7 +242,7 @@ const SmartReader = () => {
                                     />
                                 </div>
                                 <div className="toggle-item">
-                                    <span>Bionic Reading</span>
+                                    <span>Bionic Fixation (30-50%)</span>
                                     <input 
                                         type="checkbox" 
                                         checked={settings.bionicMode} 
@@ -193,13 +252,27 @@ const SmartReader = () => {
                             </div>
 
                             <div className="control-group">
+                                <label className="medical-label">Contrast Mode</label>
+                                <select 
+                                    value={settings.contrastMode} 
+                                    onChange={(e) => setSettings({...settings, contrastMode: e.target.value})}
+                                    className="font-select"
+                                >
+                                    <option value="default">Default Slate / Light</option>
+                                    <option value="dark">Dark Mode (Low Strain)</option>
+                                    <option value="sepia">Warm Cream / Sepia Tint</option>
+                                    <option value="highcontrast">High Contrast (Yellow / Black)</option>
+                                </select>
+                            </div>
+
+                            <div className="control-group">
                                 <label className="medical-label">Typography Controls</label>
                                 <div className="range-item">
                                     <span>Size ({settings.fontSize}px)</span>
-                                    <input type="range" min="16" max="32" value={settings.fontSize} onChange={(e) => setSettings({...settings, fontSize: e.target.value})} />
+                                    <input type="range" min="16" max="36" value={settings.fontSize} onChange={(e) => setSettings({...settings, fontSize: e.target.value})} />
                                 </div>
                                 <div className="range-item">
-                                    <span>Spacing</span>
+                                    <span>Letter Spacing</span>
                                     <input type="range" min="1" max="10" value={settings.letterSpacing} onChange={(e) => setSettings({...settings, letterSpacing: e.target.value})} />
                                 </div>
                             </div>
@@ -211,9 +284,10 @@ const SmartReader = () => {
                                     onChange={(e) => setSettings({...settings, fontFamily: e.target.value})}
                                     className="font-select"
                                 >
-                                    <option value="'Lexend', sans-serif">Lexend Clinical (Recommended)</option>
+                                    <option value="'OpenDyslexic', 'Lexend', sans-serif">OpenDyslexic (Heavy-Bottomed)</option>
+                                    <option value="'Lexend', sans-serif">Lexend Clinical</option>
                                     <option value="'Plus Jakarta Sans', sans-serif">Plus Jakarta Sans</option>
-                                    <option value="'Comic Sans MS', cursive">Dyslexia-Friendly Weighted</option>
+                                    <option value="'Comic Sans MS', cursive">Weighted Casual</option>
                                     <option value="monospace">Monospace</option>
                                 </select>
                             </div>

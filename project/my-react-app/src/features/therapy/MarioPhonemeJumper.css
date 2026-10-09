@@ -5,15 +5,15 @@
   max-width: 1100px;
   margin: 0 auto;
   background: radial-gradient(ellipse at 50% 0%, #1e293b 0%, #0f172a 100%);
-  border-radius: 28px;
+  border-radius: 20px;
   border: 3.5px solid #2B1B12;
   box-shadow: 0 0 60px rgba(56, 189, 248, 0.2), 0 20px 50px rgba(0,0,0,0.7);
-  padding: 1.75rem;
+  padding: 0.85rem 1.15rem;
   box-sizing: border-box;
   font-family: 'Lexend', 'Segoe UI', sans-serif;
   color: #f8fafc;
   overflow: hidden;
-  min-height: 600px;
+  min-height: auto;
   transition: transform 0.1s ease;
 }
 
@@ -36,37 +36,37 @@
   align-items: center;
   background: rgba(15, 23, 42, 0.9);
   border: 2px solid #2B1B12;
-  border-radius: 18px;
-  padding: 0.75rem 1.25rem;
-  margin-bottom: 1rem;
+  border-radius: 14px;
+  padding: 0.4rem 0.85rem;
+  margin-bottom: 0.5rem;
   backdrop-filter: blur(10px);
   position: relative;
   z-index: 2;
 }
 .mpj-hud-title {
-  font-size: 1.35rem;
+  font-size: 1.15rem;
   font-weight: 900;
   color: #FFC93C;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   letter-spacing: 0.02em;
 }
 .mpj-hud-stats {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
 }
 .mpj-stat-pill {
   background: rgba(255,255,255,0.08);
   border: 1.5px solid rgba(255,255,255,0.2);
-  padding: 5px 16px;
+  padding: 4px 12px;
   border-radius: 50px;
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   font-weight: 900;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   color: #ffffff;
 }
 
@@ -74,48 +74,48 @@
 .mpj-speech-bubble-banner {
   background: linear-gradient(135deg, rgba(255, 201, 60, 0.18), rgba(56, 189, 248, 0.18));
   border: 2.5px solid #FFC93C;
-  border-radius: 20px;
-  padding: 0.85rem 1.35rem;
-  margin-bottom: 1rem;
+  border-radius: 16px;
+  padding: 0.45rem 1rem;
+  margin-bottom: 0.5rem;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   position: relative;
   z-index: 2;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 .mpj-sparky-avatar {
-  font-size: 2.4rem;
+  font-size: 1.6rem;
   background: rgba(255, 201, 60, 0.25);
-  padding: 6px 12px;
-  border-radius: 16px;
+  padding: 4px 8px;
+  border-radius: 12px;
   border: 2px solid #FFC93C;
 }
 .mpj-bubble-text small {
   display: block;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 900;
   letter-spacing: 0.05em;
   color: #94a3b8;
   text-transform: uppercase;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 .mpj-target-prompt {
-  font-size: 1.35rem;
+  font-size: 1.1rem;
   font-weight: 900;
   color: #FFC93C;
   letter-spacing: 0.03em;
-  line-height: 1.4;
+  line-height: 1.3;
   text-align: left;
 }
 .mpj-hurdle-counter {
   margin-left: auto;
   background: rgba(255,255,255,0.1);
   border: 1.5px solid rgba(255,255,255,0.25);
-  padding: 6px 16px;
+  padding: 4px 12px;
   border-radius: 50px;
   font-weight: 900;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: #4CB753;
 }
 
@@ -132,7 +132,7 @@
   box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5);
   display: block;
   max-width: 100%;
-  max-height: calc(100vh - 270px);
+  max-height: calc(100vh - 310px);
   object-fit: contain;
   border-radius: 16px;
 }
@@ -142,7 +142,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 1rem;
+  margin-top: 0.4rem;
   position: relative;
   z-index: 2;
 }
@@ -150,26 +150,26 @@
   background: rgba(255, 255, 255, 0.08);
   border: 1.5px solid rgba(255, 255, 255, 0.25);
   color: #38bdf8;
-  padding: 8px 18px;
+  padding: 6px 14px;
   border-radius: 50px;
   font-weight: 800;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   cursor: pointer;
   font-family: inherit;
   transition: all 0.2s ease;
 }
 .mpj-dpad-controls {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 .mpj-ctrl-btn {
   background: rgba(56, 189, 248, 0.15);
   border: 2px solid rgba(56, 189, 248, 0.4);
   color: #38bdf8;
-  padding: 8px 16px;
-  border-radius: 12px;
+  padding: 6px 14px;
+  border-radius: 10px;
   font-weight: 900;
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   cursor: pointer;
   font-family: inherit;
   transition: all 0.15s ease;
@@ -186,17 +186,17 @@
 }
 
 .mpj-sparky-hint {
-  font-size: 0.88rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: #94a3b8;
   background: rgba(15, 23, 42, 0.7);
-  padding: 6px 14px;
+  padding: 4px 12px;
   border-radius: 50px;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 .mpj-stat-pill {
   background: rgba(15, 23, 42, 0.65);
-  padding: 6px 14px;
+  padding: 4px 12px;
   border-radius: 50px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #f8fafc;
@@ -206,10 +206,10 @@
   background: rgba(16, 185, 129, 0.15);
   border: 1.5px solid #10B981;
   color: #6EE7B7;
-  padding: 5px 14px;
+  padding: 4px 12px;
   border-radius: 50px;
   font-weight: 800;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   cursor: pointer;
   font-family: inherit;
   transition: all 0.2s ease;
@@ -224,11 +224,11 @@
   background: rgba(255, 201, 60, 0.2);
   border: 1.5px solid #FFC93C;
   color: #FFC93C;
-  padding: 4px 12px;
+  padding: 3px 10px;
   border-radius: 50px;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 800;
-  margin-left: 10px;
+  margin-left: 8px;
   cursor: pointer;
   font-family: inherit;
   transition: all 0.15s ease;
@@ -242,40 +242,40 @@
 .mpj-start-card {
   background: linear-gradient(145deg, #0f172a, #020617);
   border: 3px solid #2B1B12;
-  border-radius: 28px;
-  padding: 2.5rem 2rem;
-  max-width: 600px;
-  margin: 2rem auto;
+  border-radius: 20px;
+  padding: 1.25rem 1.5rem;
+  max-width: 540px;
+  margin: 0.5rem auto;
   text-align: center;
   box-shadow: 0 20px 50px rgba(0,0,0,0.6);
 }
-.mpj-start-icon { font-size: 4rem; margin-bottom: 0.75rem; }
+.mpj-start-icon { font-size: 2.2rem; margin-bottom: 0.35rem; }
 .mpj-start-title {
-  font-size: 2.1rem;
+  font-size: 1.45rem;
   font-weight: 900;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.25rem 0;
   color: #FFC93C;
 }
 .mpj-start-desc {
   color: #94a3b8;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  margin-bottom: 1.5rem;
+  font-size: 0.84rem;
+  line-height: 1.35;
+  margin-bottom: 0.85rem;
 }
 .mpj-tier-select {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 1.5rem;
+  gap: 6px;
+  margin-bottom: 0.85rem;
 }
 .mpj-tier-btn {
-  padding: 10px 18px;
+  padding: 7px 14px;
   border-radius: 50px;
   border: 2px solid rgba(255, 255, 255, 0.15);
   background: rgba(255, 255, 255, 0.05);
   color: #f8fafc;
   font-weight: 800;
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   cursor: pointer;
   font-family: inherit;
   transition: all 0.2s ease;
@@ -289,10 +289,10 @@
   background: linear-gradient(135deg, #FFC93C, #f59e0b);
   border: none;
   color: #0f172a;
-  padding: 16px 40px;
+  padding: 10px 28px;
   border-radius: 50px;
   font-weight: 900;
-  font-size: 1.15rem;
+  font-size: 0.95rem;
   cursor: pointer;
   font-family: inherit;
   box-shadow: 0 6px 20px rgba(255, 201, 60, 0.4);
@@ -304,10 +304,10 @@
 .mpj-complete-card {
   background: linear-gradient(145deg, #0f172a, #020617);
   border: 4px solid #FFC93C;
-  border-radius: 32px;
-  padding: 2.5rem;
-  max-width: 620px;
-  margin: 2rem auto;
+  border-radius: 24px;
+  padding: 1.5rem 1.75rem;
+  max-width: 550px;
+  margin: 0.5rem auto;
   text-align: center;
   box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 40px rgba(255, 201, 60, 0.2);
 }

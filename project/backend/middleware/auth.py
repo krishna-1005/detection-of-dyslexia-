@@ -95,7 +95,7 @@ def require_auth(f):
                 "name": decoded_token.get("name") or (decoded_token.get("email", "").split("@")[0] if decoded_token.get("email") else "User")
             }
         except Exception as e:
-            print(f"DEBUG: Primary Firebase token verification error: {e}")
+            # Fallback decoding for local development when ADC credentials are not configured
             try:
                 import jwt
                 unverified = jwt.decode(token, options={"verify_signature": False})

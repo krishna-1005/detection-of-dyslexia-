@@ -1,0 +1,31 @@
+sample_id,input_text,expected_category
+1,"The quick brown fox jumps over the lazy dog.",Low
+2,"Reading books helps expand vocabulary and understanding.",Low
+3,"She went to the grocery store to buy fresh vegetables.",Low
+4,"The students completed their science project on time.",Low
+5,"Clear communication is essential for effective teamwork.",Low
+6,"Water boils at one hundred degrees Celsius at sea level.",Low
+7,"The sun rises in the east and sets in the west.",Low
+8,"Music brings joy and comfort to many people worldwide.",Low
+9,"He likes to play basketball with his friends after school.",Low
+10,"The library is a quiet place for study and concentration.",Low
+11,"I have a small cat named whikser who loves milk.",Medium
+12,"The boy ran across the yard with his blue ball.",Low
+13,"She accidentally droped the glass on the kitchen floor.",Medium
+14,"We are planning a trip to the mountain next weekend.",Low
+15,"He forgot to bring his umbrella on a rainy day.",Low
+16,"The teaher explained the math problem carefully.",Medium
+17,"Teh dog barked at the stranger near the front gate.",Medium
+18,"I saw a big bear in the wood yesterday evening.",Low
+19,"He wrote a long letter to his grandmother in Florida.",Low
+20,"She was feeling tired after running five kilometers.",Low
+21,"The peple in uoy house are very frendly and nice.",High
+22,"I sed that thier father was warking in the yard.",High
+23,"Teh quik browon fox jmps over teh lasy doog.",High
+24,"Becaos he was tired he went to slep early last night.",High
+25,"Wene I go to skewl I like to reed big buks.",High
+26,"My mother bawt me a new pair of shos for running.",High
+27,"The sky is bren and the grass is blew today.",Medium
+28,"Sudently the door opened and someone came in.",Medium
+29,"Thair is a lot of noise in this crowded room.",Medium
+30,"Every morning I wake up at seven and make coffee.",Low

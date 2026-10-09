@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import useSpeechAlignment from './hooks/useSpeechAlignment';
 import { useAuth } from '../auth/AuthContext';
 import { saveTherapyProgress } from './ExerciseSystem';
-import './VideoPractice.css';
+import './VoicePractice.css';
 
 const masterSentences = [
   "The sun is bright and warm today.",

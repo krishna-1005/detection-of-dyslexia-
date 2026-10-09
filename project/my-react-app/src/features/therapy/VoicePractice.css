@@ -3,31 +3,32 @@
    ═══════════════════════════════════════════════════════ */
 
 .live-practice {
-  padding: 1.5rem;
+  padding: 0.5rem 1rem;
 }
 
 .live-practice h3 {
   font-family: inherit;
-  font-size: 1.5rem !important;
+  font-size: 1.25rem !important;
   font-weight: 700;
   color: var(--lf-text-primary);
   letter-spacing: -0.01em;
+  margin: 0;
 }
 
 .live-practice .exercise-desc {
   color: var(--lf-text-secondary);
-  font-size: 0.9rem;
-  line-height: 1.5;
+  font-size: 0.82rem;
+  line-height: 1.35;
   max-width: 600px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
 }
 
 /* ── Grid Layout ── */
 .live-practice-grid {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
   align-items: start;
 }
 

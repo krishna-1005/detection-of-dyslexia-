@@ -37,6 +37,7 @@ const Sidebar = () => {
   const mainLinks = [
     { path: '/dashboard', label: 'Overview', icon: '📊' },
     { path: '/detect', label: 'Diagnostic Engine', icon: '🧬' },
+    { path: '/reading-test', label: 'Reading Test', icon: '🎤' },
     { path: '/quiz', label: 'Symptoms Quiz', icon: '📋' },
     { path: '/reader', label: 'Smart AI Reader', icon: '✨' },
   ];
@@ -47,7 +48,6 @@ const Sidebar = () => {
     { path: '/therapy/naming', label: 'Visual Attention Speed', icon: '⚡' },
     { path: '/therapy/visual', label: 'Visual Tracking Practice', icon: '📖' },
     { path: '/therapy/auditory', label: 'Auditory Processing', icon: '🎧' },
-    { path: '/therapy/video', label: 'Voice Practice', icon: '🎤' },
   ];
 
   // Guide Me Integration

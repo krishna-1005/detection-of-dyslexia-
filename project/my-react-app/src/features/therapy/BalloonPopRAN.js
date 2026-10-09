@@ -92,6 +92,9 @@ const BalloonPopRAN = ({
   const [level, setLevel] = useState(1);
   const [targetCount, setTargetCount] = useState(0);
   const [currentHurdle, setCurrentHurdle] = useState(TARGET_POOL[0]);
+  const [isFullView, setIsFullView] = useState(false);
+
+  const toggleFullView = () => setIsFullView(prev => !prev);
 
   const [gateStartTime, setGateStartTime] = useState(0);
   const [latencies, setLatencies] = useState([]);
@@ -127,11 +130,14 @@ const BalloonPopRAN = ({
   // ── RESPONSIVE DYNAMIC CANVAS RESIZE HOOK ──
   useEffect(() => {
     const handleResize = () => {
-      if (canvasRef.current && gameWrapperRef.current) {
-        const rect = gameWrapperRef.current.getBoundingClientRect();
-        if (rect.width > 0 && rect.height > 0) {
-          canvasRef.current.width = rect.width;
-          canvasRef.current.height = rect.height;
+      if (canvasRef.current) {
+        const viewport = canvasRef.current.parentElement;
+        if (viewport) {
+          const rect = viewport.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            canvasRef.current.width = rect.width;
+            canvasRef.current.height = rect.height;
+          }
         }
       }
     };
@@ -730,47 +736,56 @@ const BalloonPopRAN = ({
     );
   }
 
-  // ── PLAYING SCREEN: FULL-BLEED CANVAS WITH STYLED FLOATING GLASSMORPHIC OVERLAY ──
+  // ── PLAYING SCREEN: STYLED FRAMED THERAPEUTIC CANVAS VIEWPORT ──
   return (
-    <div ref={gameWrapperRef} className="bpr-game-wrapper">
+    <div ref={gameWrapperRef} className={`bpr-game-wrapper ${isFullView ? 'bpr-fullscreen' : ''}`}>
       {/* ── SCREEN EDGE FLASH OVERLAYS ── */}
       {successFlash && <div className="bpr-flash-overlay success" />}
       {errorFlash && <div className="bpr-flash-overlay error" />}
 
-      {/* ── FLOATING TOP GLASSMORPHIC HUD OVERLAY ── */}
-      <div className="bpr-floating-hud-top">
-        {/* Left: Streak & Lives */}
-        <div className="bpr-glass-card">
-          <div className="bpr-heart-pool">
-            {Array.from({ length: 3 }).map((_, i) => (i < lives ? '❤️' : '🖤'))}
-          </div>
-          <div className="bpr-hud-divider" />
-          <div className="bpr-streak-badge">
-            <span>🔥</span>
-            <span>{streak} Streak</span>
-          </div>
+      {/* ── TOP HUD HEADER BAR ── */}
+      <header className="bpr-hud">
+        <div className="bpr-hud-title">
+          <span>⚡</span> VISUAL ATTENTION SPEED
         </div>
 
-        {/* Center: Target Prompt Badge */}
-        <div className="bpr-target-prompt-card">
-          <span className="bpr-target-label">Target:</span>
-          <span className="bpr-target-word">{currentHurdle.prompt}</span>
-          <button
-            onClick={() => speakHumanText(`Target balloon to pop: ${currentHurdle.prompt}`)}
-            className="bpr-replay-btn"
-          >
-            <span>🔊</span>
-            <span>Replay</span>
-          </button>
+        <div className="bpr-hud-stats">
+          <div className="bpr-stat-pill" style={{ color: '#ef4444' }}>
+            {Array.from({ length: 3 }).map((_, i) => (i < lives ? '❤️' : '🖤'))} {lives}/3
+          </div>
+          <div className="bpr-stat-pill" style={{ color: '#fbbf24' }}>
+            🔥 {streak} Streak
+          </div>
+          <div className="bpr-stat-pill" style={{ color: '#38bdf8' }}>
+            ⭐ {score} XP
+          </div>
+          <div className="bpr-stat-pill" style={{ color: '#c084fc' }}>
+            Lvl {level}
+          </div>
         </div>
+      </header>
 
-        {/* Right: Targets Popped Counter */}
-        <div className="bpr-popped-counter">
+      {/* ── PROMOTED SPEECH-BUBBLE CLUE BANNER ── */}
+      <div className="bpr-speech-bubble-banner">
+        <div className="bpr-sparky-avatar">🎈</div>
+        <div className="bpr-bubble-text">
+          <small>TARGET BALLOON TO POP:</small>
+          <div className="bpr-target-prompt">
+            "{currentHurdle.prompt}"
+            <button
+              className="bpr-sound-repeat-btn"
+              onClick={() => speakHumanText(`Target balloon to pop: ${currentHurdle.prompt}`)}
+            >
+              🔊 Hear Sound
+            </button>
+          </div>
+        </div>
+        <div className="bpr-hurdle-counter">
           🎯 {targetCount} / {assessmentMode ? assessmentTargetCount : 6} Popped
         </div>
       </div>
 
-      {/* ── 100% FULL-BLEED CANVAS BACKDROP VIEWPORT ── */}
+      {/* ── FRAMED CANVAS VIEWPORT ── */}
       <div className="bpr-canvas-viewport">
         <canvas
           ref={canvasRef}
@@ -778,8 +793,12 @@ const BalloonPopRAN = ({
         />
       </div>
 
-      {/* ── FLOATING BOTTOM TELEMETRY STRIP ── */}
-      <div className="bpr-floating-hud-bottom">
+      {/* ── FOOTER & TELEMETRY STRIP ── */}
+      <footer className="bpr-footer">
+        <button className="bpr-fullview-btn" onClick={toggleFullView}>
+          {isFullView ? '↙ Exit Fullscreen' : '⛶ Full View'}
+        </button>
+
         <div className="bpr-latency-card">
           <span>⚡</span>
           <span>Latency:</span>
@@ -795,7 +814,7 @@ const BalloonPopRAN = ({
         >
           ✕ Exit Screening
         </button>
-      </div>
+      </footer>
     </div>
   );
 };

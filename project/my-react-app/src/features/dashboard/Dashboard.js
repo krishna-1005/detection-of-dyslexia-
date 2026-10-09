@@ -77,8 +77,7 @@ const Dashboard = () => {
     { id: 'morphology', name: 'Morphology Builder', icon: '🧬', desc: 'Word structure training' },
     { id: 'naming', name: 'Visual Attention Speed', icon: '⚡', desc: 'Processing speed drills' },
     { id: 'visual', name: 'Visual Tracking Practice', icon: '📖', desc: 'Reversal & migration drills' },
-    { id: 'auditory', name: 'Auditory Processing', icon: '🎧', desc: 'Sound discrimination' },
-    { id: 'video', name: 'Live Voice Practice', icon: '🎤', desc: 'Oral reading practice' }
+    { id: 'auditory', name: 'Auditory Processing', icon: '🎧', desc: 'Sound discrimination' }
   ];
 
   useEffect(() => {
@@ -221,7 +220,7 @@ const Dashboard = () => {
     { id: 'first', icon: '🎉', title: 'First Session', desc: 'Completed 1 therapy session', unlocked: totalTherapySessions >= 1 },
     { id: 'sessions5', icon: '⭐', title: 'Dedicated Learner', desc: 'Completed 5 therapy sessions', unlocked: totalTherapySessions >= 5 },
     { id: 'accuracy90', icon: '🏆', title: 'High Accuracy', desc: 'Achieved 90%+ in a module', unlocked: bestModAcc >= 90 },
-    { id: 'all_modules', icon: '📚', title: 'Mastery Explorer', desc: 'Completed all 6 therapy modules', unlocked: completedModulesCount === 6 }
+    { id: 'all_modules', icon: '📚', title: 'Mastery Explorer', desc: 'Completed all 5 therapy modules', unlocked: completedModulesCount === 5 }
   ];
 
   // Dynamic Interpretation
@@ -389,7 +388,7 @@ const Dashboard = () => {
                     <div className="metric-icon" style={{ background: 'rgba(244, 63, 94, 0.15)', color: '#f43f5e' }}>🧩</div>
                   </div>
                   <div>
-                    <div className="metric-card-val">{completedModulesCount}/6</div>
+                    <div className="metric-card-val">{completedModulesCount}/5</div>
                     <div className="metric-card-label">Modules Completed</div>
                   </div>
                 </div>
