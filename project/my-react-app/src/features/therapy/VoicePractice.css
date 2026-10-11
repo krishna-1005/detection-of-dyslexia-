@@ -34,7 +34,7 @@
 
 /* ── Webcam Container ── */
 .webcam-container {
-  aspect-ratio: 16/10;
+  min-height: 220px;
   background: #f8fafc;
   border-radius: var(--lf-radius-sm);
   overflow: hidden;

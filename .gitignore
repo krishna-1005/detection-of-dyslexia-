@@ -11,3 +11,5 @@ project/backend/venv/
 project/my-react-app/.env
 project/my-react-app/build/
 project/my-react-app/node_modules/
+.env
+*.env

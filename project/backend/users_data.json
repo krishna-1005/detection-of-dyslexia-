@@ -13,6 +13,26 @@
       },
       "history": [
         {
+          "id": 1791748533475,
+          "date": "10/12/2026 01:25 AM",
+          "isoDate": "2026-10-11T19:55:33.464Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 86,
+          "riskLevel": "Low",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 258,
+            "accuracy": 86,
+            "timeTaken": "40s (36 WPM)",
+            "mode": "assessment",
+            "date": "10/12/2026 01:25 AM",
+            "timestamp": 1791748533464
+          },
+          "timestamp": "f609d72b"
+        },
+        {
           "id": 1791565900581,
           "date": "10/9/2026 10:41 PM",
           "isoDate": "2026-10-09T17:11:40.571Z",
@@ -3630,6 +3650,24 @@
       "reading_progress": {},
       "therapy_sessions": [
         {
+          "id": "85ad0fd5-f766-485b-a0d2-61ca70ed39f6",
+          "type": "voice",
+          "score": 237,
+          "accuracy": 79,
+          "date": "10/12/2026 01:26 AM",
+          "timeTaken": "32s (41 WPM)",
+          "status": "Completed"
+        },
+        {
+          "id": "816ea4ee-1a76-4131-a5ff-6f345f7c3aa2",
+          "type": "voice",
+          "score": 258,
+          "accuracy": 86,
+          "date": "10/12/2026 01:25 AM",
+          "timeTaken": "40s (36 WPM)",
+          "status": "Completed"
+        },
+        {
           "id": "defeca5f-ec20-49f8-b575-1c0de3b8ed3e",
           "type": "voice",
           "score": 192,
@@ -5582,11 +5620,11 @@
         },
         "voice": {
           "type": "voice",
-          "sessions": 4,
-          "accuracy": "64%",
-          "pb": "192 pts",
-          "pb_val": 192,
-          "lastPlayed": "10/9/2026 10:41 PM",
+          "sessions": 6,
+          "accuracy": "79%",
+          "pb": "258 pts",
+          "pb_val": 258,
+          "lastPlayed": "10/12/2026 01:26 AM",
           "trend": "Stable"
         }
       },

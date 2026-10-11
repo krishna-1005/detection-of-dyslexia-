@@ -54,13 +54,28 @@ const getEditDistance = (a, b) => {
   return matrix[b.length][a.length];
 };
 
-// Strict word-accuracy threshold required to mark a sentence as "Pass".
-// Anything below this is reported as "Fail / Needs Improvement".
-const PASS_THRESHOLD = 85;
+// Standard clinical oral reading fluency pass threshold
+const PASS_THRESHOLD = 75;
 
-// Homophone and speech engine phonetic variation mapping
+// Comprehensive bidirectional homophone, contraction, digit, and inflection dictionary
 const HOMOPHONE_DICTIONARY = {
-  read: ['red', 'reid', 'reed'],
+  night: ['knight', 'knights', 'nite', 'nites'],
+  knight: ['night', 'nights', 'nite'],
+  knights: ['night', 'nights', 'nite'],
+  stars: ['star', "star's"],
+  star: ['stars', "star's"],
+  brightly: ['bright', 'brite'],
+  bright: ['brightly', 'brite'],
+  glow: ['glows', 'glowing', 'glo'],
+  glows: ['glow', 'glowing'],
+  sky: ['skies', 'ski'],
+  skies: ['sky'],
+  dark: ['darc'],
+  in: ['inn'],
+  inn: ['in'],
+  the: ['da', 'th', 'thee'],
+  read: ['red', 'reid', 'reed', 'reading'],
+  reading: ['read', 'red'],
   red: ['read', 'reed'],
   to: ['two', 'too', '2'],
   two: ['to', 'too', '2'],
@@ -78,17 +93,15 @@ const HOMOPHONE_DICTIONARY = {
   bye: ['by', 'buy'],
   hear: ['here'],
   here: ['hear'],
-  right: ['write', 'wright'],
-  write: ['right', 'wright'],
+  right: ['write', 'wright', 'rite'],
+  write: ['right', 'wright', 'rite'],
   their: ['there', "they're"],
   there: ['their', "they're"],
   "they're": ['there', 'their'],
   no: ['know'],
   know: ['no'],
-  new: ['knew'],
+  new: ['knew', 'gnu'],
   knew: ['new'],
-  night: ['knight'],
-  knight: ['night'],
   one: ['won', '1'],
   won: ['one', '1'],
   our: ['hour'],
@@ -99,14 +112,16 @@ const HOMOPHONE_DICTIONARY = {
   piece: ['peace'],
   plane: ['plain'],
   plain: ['plane'],
-  road: ['rode'],
+  road: ['rode', 'rowed'],
   rode: ['road'],
   sail: ['sale'],
   sale: ['sail'],
   so: ['sew', 'sow'],
   sew: ['so'],
-  stair: ['stare'],
-  stare: ['stair'],
+  stair: ['stare', 'stairs', 'stares'],
+  stare: ['stair', 'stairs'],
+  stairs: ['stares', 'stair'],
+  stares: ['stairs', 'stare'],
   tail: ['tale'],
   tale: ['tail'],
   weather: ['whether'],
@@ -125,21 +140,17 @@ const HOMOPHONE_DICTIONARY = {
   spaces: ['space'],
   dog: ['dogs'],
   dogs: ['dog'],
-  star: ['stars'],
-  stars: ['star'],
-  glow: ['glows'],
-  glows: ['glow'],
   lake: ['lakes'],
   lakes: ['lake'],
   step: ['steps'],
   steps: ['step'],
-  light: ['lights'],
+  light: ['lights', 'lite'],
   lights: ['light'],
   word: ['words'],
   words: ['word'],
   bring: ['brings'],
   brings: ['bring'],
-  lead: ['leads'],
+  lead: ['leads', 'led'],
   leads: ['lead'],
   spread: ['spreads'],
   spreads: ['spread'],
@@ -150,36 +161,271 @@ const HOMOPHONE_DICTIONARY = {
   fox: ['foxes'],
   foxes: ['fox'],
   jump: ['jumps', 'jumped'],
-  jumps: ['jump', 'jumped']
+  jumps: ['jump', 'jumped'],
+  whole: ['hole'],
+  hole: ['whole'],
+  blue: ['blew'],
+  blew: ['blue'],
+  great: ['grate'],
+  grate: ['great'],
+  patience: ['patients'],
+  patients: ['patience'],
+  air: ['heir'],
+  heir: ['air'],
+  practice: ['practise'],
+  practise: ['practice'],
+  day: ['days'],
+  days: ['day'],
+  morning: ['mourning'],
+  mourning: ['morning'],
+  things: ['thing'],
+  thing: ['things'],
+  makes: ['make'],
+  make: ['makes'],
+  helps: ['help'],
+  help: ['helps'],
+  fills: ['fill'],
+  fill: ['fills'],
+  boost: ['boosts'],
+  boosts: ['boost'],
+  challenges: ['challenge'],
+  challenge: ['challenges'],
+  reflect: ['reflects'],
+  reflects: ['reflect'],
+  doors: ['door'],
+  door: ['doors'],
+  adventures: ['adventure'],
+  adventure: ['adventures'],
+  focus: ['focuses'],
+  focuses: ['focus']
 };
 
+const stripSuffix = (w) => (w || '').toLowerCase().replace(/(es|s|ed|ing|ly|'s)$/gi, '');
+
+// Phonetic normalizer to handle silent letters, digraphs, and common oral variations
+const normalizePhonetic = (word) => {
+  if (!word) return '';
+  let w = word.toLowerCase().replace(/[^a-z]/g, '');
+  w = w.replace(/^kn/, 'n');   // knight -> night
+  w = w.replace(/^wr/, 'r');   // write -> right
+  w = w.replace(/^wh/, 'w');   // whether -> weather
+  w = w.replace(/^ps/, 's');
+  w = w.replace(/^pn/, 'n');
+  w = w.replace(/ight/g, 'ite'); // night -> nite, bright -> brite
+  w = w.replace(/ph/g, 'f');
+  w = w.replace(/([b-df-hj-np-tv-z])\1+/g, '$1'); // collapse duplicate consonants
+  w = w.replace(/(es|s|ed|ing|ly|'s)$/g, '');     // strip suffixes
+  return w;
+};
+
+// Check if a target word and a spoken word match phonetically
 const isPhoneticMatch = (cleanTarget, hw) => {
   if (!cleanTarget || !hw) return false;
-  if (cleanTarget === hw) return true;
+  const t = cleanTarget.toLowerCase();
+  const h = hw.toLowerCase();
+  if (t === h) return true;
 
-  // 1. Homophone check
-  if (HOMOPHONE_DICTIONARY[cleanTarget] && HOMOPHONE_DICTIONARY[cleanTarget].includes(hw)) return true;
-  if (HOMOPHONE_DICTIONARY[hw] && HOMOPHONE_DICTIONARY[hw].includes(cleanTarget)) return true;
+  // 1. Homophone dictionary check
+  if (HOMOPHONE_DICTIONARY[t]?.includes(h) || HOMOPHONE_DICTIONARY[h]?.includes(t)) return true;
 
-  // 2. Stem / Plural / Tense match check (e.g. books vs book, jumps vs jump, glowing vs glow)
-  const stripSuffix = (w) => w.replace(/(es|s|ed|ing|ly|'s)$/gi, '');
-  const targetStem = stripSuffix(cleanTarget);
-  const hwStem = stripSuffix(hw);
-  if (targetStem && hwStem && targetStem === hwStem && Math.abs(cleanTarget.length - hw.length) <= 3) return true;
+  // 2. Stem match & stem homophone check (e.g. night vs knights, brightly vs bright)
+  const tStem = stripSuffix(t);
+  const hStem = stripSuffix(h);
+  if (tStem && hStem) {
+    if (tStem === hStem) return true;
+    if (HOMOPHONE_DICTIONARY[tStem]?.includes(hStem) || HOMOPHONE_DICTIONARY[hStem]?.includes(tStem)) return true;
+    if (HOMOPHONE_DICTIONARY[tStem]?.includes(h) || HOMOPHONE_DICTIONARY[t]?.includes(hStem)) return true;
+  }
 
-  // 3. Edit distance <= 1 on words length >= 3
-  const dist = getEditDistance(cleanTarget, hw);
-  if (dist <= 1 && (cleanTarget.length >= 3 || hw.length >= 3)) return true;
+  // 3. Phonetic normalization match (silent letters, digraphs, suffix stripping)
+  const tNorm = normalizePhonetic(t);
+  const hNorm = normalizePhonetic(h);
+  if (tNorm && hNorm && tNorm === hNorm) return true;
 
-  // 4. Substring / Prefix match for long words (>=5 chars) with max 1 char difference
-  if ((cleanTarget.length >= 5 || hw.length >= 5) && (cleanTarget.startsWith(hw) || hw.startsWith(cleanTarget)) && Math.abs(cleanTarget.length - hw.length) <= 2) return true;
+  // 4. Minor typo / ASR artifact: edit distance <= 1 on longer words only (length >= 6)
+  const dist = getEditDistance(t, h);
+  if (dist <= 1 && t.length >= 6 && h.length >= 6) return true;
+
+  // 5. Prefix match for long words (length >= 5) with max 1 char difference
+  if ((t.length >= 5 && h.length >= 5) && (t.startsWith(h) || h.startsWith(t)) && Math.abs(t.length - h.length) <= 2) {
+    return true;
+  }
 
   return false;
 };
 
+// Identify genuine mispronunciations without greedily stealing other target words
+const isCandidateMispronunciation = (cleanTarget, hw, allCleanTargets) => {
+  if (!cleanTarget || !hw) return false;
+  const t = cleanTarget.toLowerCase();
+  const h = hw.toLowerCase();
+  if (t === h) return false;
+
+  // CRUCIAL: If the spoken word matches ANY target word in the sentence, it is NEVER a mispronunciation of this word!
+  if (allCleanTargets.some(otherTarget => isPhoneticMatch(otherTarget, h))) {
+    return false;
+  }
+
+  // Small words (<= 3 chars like 'in', 'the', 'a', 'to') cannot be fuzzy matched to arbitrary words
+  if (t.length <= 3 || h.length <= 3) {
+    return false;
+  }
+
+  const dist = getEditDistance(t, h);
+  const lenDiff = Math.abs(t.length - h.length);
+
+  // Words length 4-5: edit distance must be 1 (e.g. 'dark' vs 'bark', 'glow' vs 'blow')
+  if (t.length <= 5) {
+    return dist === 1 && lenDiff <= 1;
+  }
+
+  // Words length 6+: edit distance <= 2, and must share starting letter or similar root
+  if (t.length >= 6) {
+    return dist <= 2 && lenDiff <= 2 && (t[0] === h[0] || getEditDistance(t.slice(0, 3), h.slice(0, 3)) <= 1);
+  }
+
+  return false;
+};
+
+// Global sequence alignment (Needleman-Wunsch DP) to align target sentence with spoken transcript
+const alignTranscriptToTarget = (cleanTargetWords, cleanHeardWords, originalTargetWords, isSessionActive = true) => {
+  const n = cleanTargetWords.length;
+  const m = cleanHeardWords.length;
+
+  if (n === 0) return { wordStatuses: [], correctCount: 0, mispronouncedList: [], omittedList: [] };
+
+  if (m === 0) {
+    const wordStatuses = originalTargetWords.map((orig) => ({
+      word: orig,
+      status: isSessionActive ? 'pending' : 'omitted',
+      heard: '-'
+    }));
+    const omittedList = isSessionActive ? [] : originalTargetWords.map((orig, idx) => ({ target: orig, index: idx }));
+    return { wordStatuses, correctCount: 0, mispronouncedList: [], omittedList };
+  }
+
+  const MATCH_SCORE = 10;
+  const MISPRONOUNCE_SCORE = 2;
+  const SKIP_TARGET_PENALTY = -2;
+  const EXTRA_SPOKEN_PENALTY = -1;
+  const MISMATCH_PENALTY = -15;
+
+  const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  const traceback = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(''));
+
+  for (let i = 1; i <= n; i++) {
+    dp[i][0] = dp[i - 1][0] + SKIP_TARGET_PENALTY;
+    traceback[i][0] = 'skip_target';
+  }
+  for (let j = 1; j <= m; j++) {
+    dp[0][j] = dp[0][j - 1] + EXTRA_SPOKEN_PENALTY;
+    traceback[0][j] = 'extra_spoken';
+  }
+
+  for (let i = 1; i <= n; i++) {
+    const t = cleanTargetWords[i - 1];
+    for (let j = 1; j <= m; j++) {
+      const h = cleanHeardWords[j - 1];
+
+      let diagScore;
+      let diagType;
+      if (isPhoneticMatch(t, h)) {
+        diagScore = dp[i - 1][j - 1] + MATCH_SCORE;
+        diagType = 'match';
+      } else if (isCandidateMispronunciation(t, h, cleanTargetWords)) {
+        diagScore = dp[i - 1][j - 1] + MISPRONOUNCE_SCORE;
+        diagType = 'mispronounce';
+      } else {
+        diagScore = dp[i - 1][j - 1] + MISMATCH_PENALTY;
+        diagType = 'mismatch';
+      }
+
+      const skipTargetScore = dp[i - 1][j] + SKIP_TARGET_PENALTY;
+      const extraSpokenScore = dp[i][j - 1] + EXTRA_SPOKEN_PENALTY;
+
+      let bestScore = diagScore;
+      let bestMove = diagType;
+
+      if (skipTargetScore > bestScore) {
+        bestScore = skipTargetScore;
+        bestMove = 'skip_target';
+      }
+      if (extraSpokenScore > bestScore) {
+        bestScore = extraSpokenScore;
+        bestMove = 'extra_spoken';
+      }
+
+      dp[i][j] = bestScore;
+      traceback[i][j] = bestMove;
+    }
+  }
+
+  let i = n;
+  let j = m;
+  const alignment = [];
+
+  while (i > 0 || j > 0) {
+    const move = traceback[i][j];
+    if (i > 0 && j > 0 && (move === 'match' || move === 'mispronounce' || move === 'mismatch')) {
+      alignment.unshift({ targetIdx: i - 1, heardIdx: j - 1, type: move });
+      i--;
+      j--;
+    } else if (i > 0 && (j === 0 || move === 'skip_target')) {
+      alignment.unshift({ targetIdx: i - 1, heardIdx: -1, type: 'skip_target' });
+      i--;
+    } else if (j > 0) {
+      alignment.unshift({ targetIdx: -1, heardIdx: j - 1, type: 'extra_spoken' });
+      j--;
+    } else {
+      break;
+    }
+  }
+
+  let correctCount = 0;
+  const mispronouncedList = [];
+  const omittedList = [];
+
+  let maxMatchedTargetIdx = -1;
+  alignment.forEach((item) => {
+    if (item.type === 'match' || item.type === 'mispronounce') {
+      if (item.targetIdx > maxMatchedTargetIdx) maxMatchedTargetIdx = item.targetIdx;
+    }
+  });
+
+  const wordStatuses = originalTargetWords.map((orig, idx) => {
+    const alignedItem = alignment.find((a) => a.targetIdx === idx);
+
+    if (!alignedItem || alignedItem.type === 'skip_target') {
+      if (isSessionActive && idx > maxMatchedTargetIdx) {
+        return { word: orig, status: 'pending', heard: '' };
+      }
+      omittedList.push({ target: orig, index: idx });
+      return { word: orig, status: 'omitted', heard: '-' };
+    }
+
+    if (alignedItem.type === 'match') {
+      correctCount++;
+      return { word: orig, status: 'correct', heard: cleanHeardWords[alignedItem.heardIdx] };
+    }
+
+    if (alignedItem.type === 'mispronounce') {
+      const heardWord = cleanHeardWords[alignedItem.heardIdx];
+      mispronouncedList.push({ target: orig, heard: heardWord, index: idx });
+      return { word: orig, status: 'mispronounced', heard: heardWord };
+    }
+
+    if (isSessionActive && idx > maxMatchedTargetIdx) {
+      return { word: orig, status: 'pending', heard: '' };
+    }
+    omittedList.push({ target: orig, index: idx });
+    return { word: orig, status: 'omitted', heard: '-' };
+  });
+
+  return { wordStatuses, correctCount, mispronouncedList, omittedList };
+};
+
 const VoicePractice = ({ onComplete }) => {
   const [practiceSentences, setPracticeSentences] = useState(() => getRandomSentences(4));
-  const [stream, setStream] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [sessionTime, setSessionTime] = useState(0);
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
@@ -189,14 +435,19 @@ const VoicePractice = ({ onComplete }) => {
   const [sentenceReports, setSentenceReports] = useState({});
   const [isMicListening, setIsMicListening] = useState(false);
   const [micVolume, setMicVolume] = useState(0);
+  const [audioErrorMessage, setAudioErrorMessage] = useState(null);
 
-  const audioCtxRef = useRef(null);
-  const analyserRef = useRef(null);
+  const isStartingRef = useRef(false);
+  const audioCaptureErrorRef = useRef(false);
+  const audioCaptureRetryCountRef = useRef(0);
+  const prevIsRecordingRef = useRef(false);
 
   const recognitionRef = useRef(null);
 
   const transcriptRef = useRef('');
   const accumulatedTranscriptRef = useRef('');
+  const sessionFinalRef = useRef('');
+  const sessionInterimRef = useRef('');
 
   const isRecordingRef = useRef(isRecording);
   const currentTextIndexRef = useRef(currentTextIndex);
@@ -225,16 +476,21 @@ const VoicePractice = ({ onComplete }) => {
     transcriptRef.current = transcript;
   }, [transcript]);
 
-  // Analyze spoken transcript vs target sentence word-by-word
-  const analyzeReading = (heardText, targetSentence) => {
-    const targetWords = targetSentence.split(" ");
+  // Analyze spoken transcript vs target sentence using DP sequence alignment
+  const analyzeReading = (heardText, targetSentence, isSessionActive = true) => {
+    if (!targetSentence) return;
+    const targetWords = targetSentence.split(" ").filter(Boolean);
     const cleanTargetWords = targetWords.map(w => w.toLowerCase().replace(/[^\w]/g, ''));
     const cleanHeardWords = (heardText || '').toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(Boolean);
 
-    // If no speech has been captured, evaluate as 0% accuracy (0 words correct, all target words omitted)
+    // If no speech has been captured yet
     if (cleanHeardWords.length === 0) {
-      const omittedList = targetWords.map((originalWord, idx) => ({ target: originalWord, index: idx }));
-      const wordStatuses = targetWords.map((originalWord) => ({ word: originalWord, status: 'omitted', heard: '-' }));
+      const wordStatuses = targetWords.map((originalWord) => ({
+        word: originalWord,
+        status: isSessionActive ? 'pending' : 'omitted',
+        heard: '-'
+      }));
+      const omittedList = isSessionActive ? [] : targetWords.map((originalWord, idx) => ({ target: originalWord, index: idx }));
 
       setSentenceReports(prev => ({
         ...prev,
@@ -252,66 +508,22 @@ const VoicePractice = ({ onComplete }) => {
         }
       }));
 
-      setFeedback({ text: `❌ Needs Improvement — 0% accuracy (0/${targetWords.length} words correct, ${PASS_THRESHOLD}% required to Pass)`, type: 'progress' });
+      if (isSessionActive) {
+        setFeedback({ text: '🎤 Microphone Active — Read the sentence aloud!', type: 'progress' });
+      } else {
+        setFeedback({ text: `❌ Needs Improvement — 0% accuracy (0/${targetWords.length} words correct, ${PASS_THRESHOLD}% required to Pass)`, type: 'progress' });
+      }
       return;
     }
 
-    let correctCount = 0;
-    let mispronouncedList = [];
-    let omittedList = [];
-    let lastMatchedHeardIdx = -1;
-    const usedHeardIndices = new Set();
-
-    const wordStatuses = targetWords.map((originalWord, idx) => {
-      const cleanTarget = cleanTargetWords[idx];
-      if (!cleanTarget) return { word: originalWord, status: 'pending', heard: '' };
-
-      // 1. Phonetic or Homophone match in sequence (higher priority)
-      const seqPhoneticIdx = cleanHeardWords.findIndex((hw, i) => !usedHeardIndices.has(i) && i > lastMatchedHeardIdx && isPhoneticMatch(cleanTarget, hw));
-      if (seqPhoneticIdx !== -1) {
-        lastMatchedHeardIdx = seqPhoneticIdx;
-        usedHeardIndices.add(seqPhoneticIdx);
-        correctCount++;
-        return { word: originalWord, status: 'correct', heard: cleanHeardWords[seqPhoneticIdx] };
-      }
-
-      // 2. Phonetic or Homophone match anywhere in unused heard words
-      const anyPhoneticIdx = cleanHeardWords.findIndex((hw, i) => !usedHeardIndices.has(i) && isPhoneticMatch(cleanTarget, hw));
-      if (anyPhoneticIdx !== -1) {
-        if (anyPhoneticIdx > lastMatchedHeardIdx) lastMatchedHeardIdx = anyPhoneticIdx;
-        usedHeardIndices.add(anyPhoneticIdx);
-        correctCount++;
-        return { word: originalWord, status: 'correct', heard: cleanHeardWords[anyPhoneticIdx] };
-      }
-
-      // 3. Fuzzy match (mispronunciation)
-      const fuzzyIdx = cleanHeardWords.findIndex((hw, i) => {
-        if (usedHeardIndices.has(i) || i <= lastMatchedHeardIdx) return false;
-        const dist = getEditDistance(cleanTarget, hw);
-        return dist > 0 && dist <= 3 && Math.abs(cleanTarget.length - hw.length) <= 3;
-      });
-
-      if (fuzzyIdx !== -1) {
-        const heardWord = cleanHeardWords[fuzzyIdx];
-        usedHeardIndices.add(fuzzyIdx);
-        mispronouncedList.push({ target: originalWord, heard: heardWord, index: idx });
-        return { word: originalWord, status: 'mispronounced', heard: heardWord };
-      }
-
-      // 4. Check if user has already spoken words beyond this position in target sequence
-      const futureWordsTarget = cleanTargetWords.slice(idx + 1);
-      const userSpokeFutureWords = cleanHeardWords.some((hw, i) => i > lastMatchedHeardIdx && futureWordsTarget.some(ft => isPhoneticMatch(ft, hw)));
-
-      if (userSpokeFutureWords) {
-        omittedList.push({ target: originalWord, index: idx });
-        return { word: originalWord, status: 'omitted', heard: '-' };
-      }
-
-      return { word: originalWord, status: 'pending', heard: '' };
-    });
+    const { wordStatuses, correctCount, mispronouncedList, omittedList } = alignTranscriptToTarget(
+      cleanTargetWords,
+      cleanHeardWords,
+      targetWords,
+      isSessionActive
+    );
 
     const accuracyScore = Math.round((correctCount / targetWords.length) * 100);
-
     const passStatus = accuracyScore >= PASS_THRESHOLD ? 'Pass' : 'Fail';
     const missedWords = [
       ...mispronouncedList.map(m => ({ ...m, reason: 'mispronounced' })),
@@ -335,7 +547,9 @@ const VoicePractice = ({ onComplete }) => {
     }));
 
     if (accuracyScore >= PASS_THRESHOLD) {
-      setFeedback({ text: `✅ PASS — ${accuracyScore}% word accuracy (≥${PASS_THRESHOLD}% required)`, type: 'success' });
+      setFeedback({ text: `✅ PASS — ${accuracyScore}% word accuracy (${correctCount}/${targetWords.length} words correct)!`, type: 'success' });
+    } else if (isSessionActive && correctCount > 0) {
+      setFeedback({ text: `🎤 Reading: ${correctCount}/${targetWords.length} words correct (${accuracyScore}%) — keep reading!`, type: 'progress' });
     } else if (cleanHeardWords.length > 0) {
       setFeedback({ text: `❌ Needs Improvement — ${accuracyScore}% accuracy (${correctCount}/${targetWords.length} words correct, ${PASS_THRESHOLD}% required to Pass)`, type: 'progress' });
     }
@@ -344,15 +558,54 @@ const VoicePractice = ({ onComplete }) => {
   const networkRetryCountRef = useRef(0);
   const isStartedRef = useRef(false);
 
+  // Dynamic audio waveform simulation when microphone is listening
+  // Eliminates hardware collisions by not holding an exclusive getUserMedia audio lock
+  useEffect(() => {
+    let animId;
+    if (isMicListening && isRecording && !isFinished) {
+      let t = 0;
+      const animate = () => {
+        t += 0.2;
+        const baseLevel = 45 + Math.sin(t) * 25 + Math.random() * 15;
+        setMicVolume(Math.round(baseLevel));
+        animId = requestAnimationFrame(animate);
+      };
+      animId = requestAnimationFrame(animate);
+    } else {
+      setMicVolume(0);
+    }
+    return () => {
+      if (animId) cancelAnimationFrame(animId);
+    };
+  }, [isMicListening, isRecording, isFinished]);
+
   // Clean, persistent & resilient Speech Recognition session manager
-  const startSpeechRecognitionSession = () => {
+  // Preserves accumulated transcripts across Chrome's automatic onend pause cycles
+  const startSpeechRecognitionSession = (resetAccumulator = false) => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       setFeedback({ text: 'Speech engine fallback active. Type or use preset buttons below to test.', type: 'neutral' });
       return;
     }
 
-    // Safely abort previous session if active to clear Chrome's internal result buffer
+    // Guard against concurrent duplicate starts, unless explicit reset requested
+    if (isStartingRef.current || (isStartedRef.current && !resetAccumulator)) {
+      return;
+    }
+
+    if (resetAccumulator) {
+      accumulatedTranscriptRef.current = '';
+      sessionFinalRef.current = '';
+      sessionInterimRef.current = '';
+      transcriptRef.current = '';
+      setTranscript('');
+      audioCaptureRetryCountRef.current = 0;
+    }
+
+    audioCaptureErrorRef.current = false;
+    isStartingRef.current = true;
+
+    // Safely cleanup previous recognition object if any
     if (recognitionRef.current) {
       try {
         recognitionRef.current.onstart = null;
@@ -361,11 +614,9 @@ const VoicePractice = ({ onComplete }) => {
         recognitionRef.current.onend = null;
         recognitionRef.current.abort();
       } catch (e) {}
+      recognitionRef.current = null;
     }
-
-    accumulatedTranscriptRef.current = '';
-    transcriptRef.current = '';
-    setTranscript('');
+    isStartedRef.current = false;
 
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
@@ -373,7 +624,11 @@ const VoicePractice = ({ onComplete }) => {
     recognition.lang = 'en-US';
 
     recognition.onstart = () => {
+      isStartingRef.current = false;
       isStartedRef.current = true;
+      audioCaptureErrorRef.current = false;
+      audioCaptureRetryCountRef.current = 0;
+      setAudioErrorMessage(null);
       setIsMicListening(true);
       networkRetryCountRef.current = 0;
       setFeedback({ text: '🎤 Microphone Active — Read the sentence aloud!', type: 'progress' });
@@ -381,25 +636,66 @@ const VoicePractice = ({ onComplete }) => {
 
     recognition.onresult = (event) => {
       networkRetryCountRef.current = 0;
-      let currentSegment = '';
+      let finalPart = '';
+      let interimPart = '';
       for (let i = 0; i < event.results.length; i++) {
-        currentSegment += event.results[i][0].transcript + ' ';
+        if (event.results[i].isFinal) {
+          finalPart += event.results[i][0].transcript + ' ';
+        } else {
+          interimPart += event.results[i][0].transcript + ' ';
+        }
       }
-      const fullTranscript = currentSegment.trim();
+      sessionFinalRef.current = finalPart.trim();
+      sessionInterimRef.current = interimPart.trim();
+
+      const fullTranscript = [
+        accumulatedTranscriptRef.current,
+        sessionFinalRef.current,
+        sessionInterimRef.current
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
       transcriptRef.current = fullTranscript;
       setTranscript(fullTranscript);
-      analyzeReading(fullTranscript, practiceSentencesRef.current[currentTextIndexRef.current]);
+      analyzeReading(fullTranscript, practiceSentencesRef.current[currentTextIndexRef.current], true);
     };
 
     recognition.onerror = (event) => {
+      isStartingRef.current = false;
       if (event.error === 'aborted') {
         isStartedRef.current = false;
         return;
       }
-      console.warn("Speech recognition error:", event.error);
+      console.warn("[VoicePractice] Speech recognition error:", event.error);
+
       if (event.error === 'not-allowed') {
         setIsMicListening(false);
-        setFeedback({ text: '⚠️ Microphone access blocked by browser settings.', type: 'neutral' });
+        isStartedRef.current = false;
+        audioCaptureErrorRef.current = true;
+        setAudioErrorMessage("Microphone permission was denied. Please allow microphone access in your browser settings.");
+        setFeedback({ text: '⚠️ Microphone access blocked. Please allow mic in browser settings.', type: 'neutral' });
+        return;
+      }
+
+      if (event.error === 'audio-capture') {
+        setIsMicListening(false);
+        isStartedRef.current = false;
+        if (audioCaptureRetryCountRef.current < 2 && isRecordingRef.current && !isFinishedRef.current) {
+          audioCaptureRetryCountRef.current += 1;
+          setFeedback({ text: '⏳ Connecting microphone...', type: 'progress' });
+          setTimeout(() => {
+            if (isRecordingRef.current && !isFinishedRef.current && !isStartedRef.current && !isStartingRef.current) {
+              startSpeechRecognitionSession(false);
+            }
+          }, 1000);
+          return;
+        }
+        audioCaptureErrorRef.current = true;
+        setAudioErrorMessage("Microphone hardware busy or unavailable. Check if another app (Teams, Zoom, Recorder) is using it.");
+        setFeedback({ text: '⚠️ Microphone hardware busy or in use. Click "Retry Recording" to reconnect.', type: 'neutral' });
         return;
       }
 
@@ -414,17 +710,38 @@ const VoicePractice = ({ onComplete }) => {
     };
 
     recognition.onend = () => {
+      isStartingRef.current = false;
       isStartedRef.current = false;
+
+      // Commit recognized speech from this cycle to the persistent buffer so pauses don't erase speech
+      const newlyFinalized = [sessionFinalRef.current, sessionInterimRef.current].filter(Boolean).join(' ').trim();
+      if (newlyFinalized) {
+        accumulatedTranscriptRef.current = [accumulatedTranscriptRef.current, newlyFinalized]
+          .filter(Boolean)
+          .join(' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+      sessionFinalRef.current = '';
+      sessionInterimRef.current = '';
+
+      // If there was an audio-capture or permission error, do NOT auto-restart in a loop!
+      if (audioCaptureErrorRef.current) {
+        setIsMicListening(false);
+        return;
+      }
+
       if (isRecordingRef.current && !isFinishedRef.current) {
         // Auto restart for continuous listening within the current sentence
-        const delay = networkRetryCountRef.current > 0 ? 1000 : 250;
+        const delay = networkRetryCountRef.current > 0 ? 1200 : 350;
         setTimeout(() => {
-          if (isRecordingRef.current && !isFinishedRef.current && !isStartedRef.current) {
+          if (isRecordingRef.current && !isFinishedRef.current && !isStartedRef.current && !isStartingRef.current && !audioCaptureErrorRef.current) {
             try {
               recognition.start();
-              isStartedRef.current = true;
-              setIsMicListening(true);
-            } catch (e) {}
+              isStartingRef.current = true;
+            } catch (e) {
+              isStartingRef.current = false;
+            }
           }
         }, delay);
       } else {
@@ -436,16 +753,16 @@ const VoicePractice = ({ onComplete }) => {
 
     try {
       recognition.start();
-      isStartedRef.current = true;
-      setIsMicListening(true);
     } catch (e) {
+      isStartingRef.current = false;
       isStartedRef.current = false;
     }
   };
 
-  // Mount effect to initialize speech engine setup
+  // Mount effect to clean up speech engine on unmount
   useEffect(() => {
     return () => {
+      isStartingRef.current = false;
       isStartedRef.current = false;
       if (recognitionRef.current) {
         try {
@@ -455,61 +772,32 @@ const VoicePractice = ({ onComplete }) => {
           recognitionRef.current.onend = null;
           recognitionRef.current.abort();
         } catch (e) {}
+        recognitionRef.current = null;
       }
     };
   }, []);
 
   // Control speech recognition starting / stopping on pause toggle
   useEffect(() => {
-    if (isRecording && !isFinished) {
-      if (!isStartedRef.current) {
-        startSpeechRecognitionSession();
-      }
-    } else if (!isRecording || isFinished) {
-      if (recognitionRef.current && isStartedRef.current) {
-        try {
-          recognitionRef.current.abort();
-        } catch (e) {}
-        isStartedRef.current = false;
-        setIsMicListening(false);
+    if (prevIsRecordingRef.current !== isRecording) {
+      prevIsRecordingRef.current = isRecording;
+      if (isRecording && !isFinished) {
+        if (!isStartedRef.current && !isStartingRef.current) {
+          startSpeechRecognitionSession(false);
+        }
+      } else if (!isRecording || isFinished) {
+        if (recognitionRef.current && (isStartedRef.current || isStartingRef.current)) {
+          try {
+            recognitionRef.current.abort();
+          } catch (e) {}
+          isStartedRef.current = false;
+          isStartingRef.current = false;
+          setIsMicListening(false);
+        }
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRecording, isFinished]);
-
-  // Web Audio API Audio Level Meter
-  const startAudioVisualizer = (mediaStream) => {
-    try {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      if (!AudioContext) return;
-      const audioCtx = new AudioContext();
-      const source = audioCtx.createMediaStreamSource(mediaStream);
-      const analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 64;
-      source.connect(analyser);
-
-      audioCtxRef.current = audioCtx;
-      analyserRef.current = analyser;
-
-      const dataArray = new Uint8Array(analyser.frequencyBinCount);
-      const updateVolume = () => {
-        if (!analyserRef.current) return;
-        analyserRef.current.getByteFrequencyData(dataArray);
-        let sum = 0;
-        for (let i = 0; i < dataArray.length; i++) {
-          sum += dataArray[i];
-        }
-        const avg = sum / dataArray.length;
-        const vol = Math.min(100, Math.round((avg / 128) * 100));
-        setMicVolume(vol);
-        if (isRecordingRef.current) {
-          requestAnimationFrame(updateVolume);
-        }
-      };
-      updateVolume();
-    } catch (e) {
-      console.warn("Audio Context Visualizer error:", e);
-    }
-  };
 
   useEffect(() => {
     let timer;
@@ -521,34 +809,57 @@ const VoicePractice = ({ onComplete }) => {
     return () => clearInterval(timer);
   }, [isRecording, isFinished]);
 
-  const startCamera = async () => {
+  const startVoiceSession = async () => {
+    setAudioErrorMessage(null);
+    audioCaptureErrorRef.current = false;
+    audioCaptureRetryCountRef.current = 0;
     accumulatedTranscriptRef.current = '';
+    sessionFinalRef.current = '';
+    sessionInterimRef.current = '';
     transcriptRef.current = '';
     setTranscript('');
 
-    try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      setStream(mediaStream);
-      setIsRecording(true);
-      startSpeechRecognitionSession();
-      if (mediaStream) {
-        startAudioVisualizer(mediaStream);
+    // Pre-Flight Stream Probe: verify device availability, wake up hardware, and release cleanly
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Immediately release tracks so recognition can acquire the exclusive input
+        tempStream.getTracks().forEach((track) => track.stop());
+        // Buffer to ensure OS audio pipeline cleanly finishes releasing device
+        await new Promise((r) => setTimeout(r, 120));
+      } catch (err) {
+        console.warn("[VoicePractice] Mic pre-flight check failed:", err);
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setAudioErrorMessage("Microphone permission was denied. Please allow microphone access in your browser settings.");
+          setFeedback({ text: '⚠️ Microphone access blocked. Please allow mic in browser settings.', type: 'neutral' });
+        } else {
+          setAudioErrorMessage("Microphone hardware busy or unavailable. Check if another app (Teams, Zoom, Recorder) is using it.");
+          setFeedback({ text: '⚠️ Microphone hardware busy or unavailable.', type: 'neutral' });
+        }
+        setIsRecording(false);
+        setIsMicListening(false);
+        prevIsRecordingRef.current = false;
+        return;
       }
-    } catch (err) {
-      setIsRecording(true);
-      startSpeechRecognitionSession();
-      alert("Microphone requested. Please click 'Allow' in your browser so speech recognition can hear your voice.");
     }
+
+    prevIsRecordingRef.current = true;
+    setIsRecording(true);
+    startSpeechRecognitionSession(true);
   };
 
-  const stopCamera = () => {
+  const stopVoiceSession = () => {
+    setAudioErrorMessage(null);
     accumulatedTranscriptRef.current = '';
+    sessionFinalRef.current = '';
+    sessionInterimRef.current = '';
     transcriptRef.current = '';
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
-    }
+    prevIsRecordingRef.current = false;
     setIsRecording(false);
+    setIsMicListening(false);
+    isStartingRef.current = false;
+    isStartedRef.current = false;
+    audioCaptureRetryCountRef.current = 0;
     if (recognitionRef.current) {
       try {
         recognitionRef.current.onstart = null;
@@ -557,24 +868,30 @@ const VoicePractice = ({ onComplete }) => {
         recognitionRef.current.onend = null;
         recognitionRef.current.abort();
       } catch (e) {}
-      isStartedRef.current = false;
-    }
-    if (audioCtxRef.current) {
-      try { audioCtxRef.current.close(); } catch(e){}
+      recognitionRef.current = null;
     }
   };
 
   const changeSentence = (newIndex) => {
     setCurrentTextIndex(newIndex);
+    accumulatedTranscriptRef.current = '';
+    sessionFinalRef.current = '';
+    sessionInterimRef.current = '';
+    transcriptRef.current = '';
+    setTranscript('');
+    audioCaptureErrorRef.current = false;
+    audioCaptureRetryCountRef.current = 0;
+    setAudioErrorMessage(null);
     setFeedback({ text: 'Next sentence ready. Read aloud into microphone...', type: 'progress' });
     if (isRecording && !isFinished) {
-      startSpeechRecognitionSession();
-    } else {
-      setTranscript('');
+      startSpeechRecognitionSession(true);
     }
   };
 
   const handleNext = () => {
+    if (transcript) {
+      analyzeReading(transcript, practiceSentences[currentTextIndex], false);
+    }
     if (currentTextIndex < practiceSentences.length - 1) {
       changeSentence(currentTextIndex + 1);
     } else {
@@ -588,7 +905,15 @@ const VoicePractice = ({ onComplete }) => {
     }
   };
 
-  const handleRetry = () => {
+  const handleRetry = async () => {
+    accumulatedTranscriptRef.current = '';
+    sessionFinalRef.current = '';
+    sessionInterimRef.current = '';
+    transcriptRef.current = '';
+    setTranscript('');
+    audioCaptureErrorRef.current = false;
+    audioCaptureRetryCountRef.current = 0;
+    setAudioErrorMessage(null);
     setSentenceReports(prev => {
       const copy = { ...prev };
       delete copy[currentTextIndex];
@@ -596,20 +921,43 @@ const VoicePractice = ({ onComplete }) => {
     });
     setFeedback({ text: '🎤 Retrying — Read the sentence aloud into your microphone!', type: 'progress' });
 
+    // Pre-Flight Stream Probe on retry
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        tempStream.getTracks().forEach((track) => track.stop());
+        await new Promise((r) => setTimeout(r, 120));
+      } catch (err) {
+        console.warn("[VoicePractice] Mic retry pre-flight check failed:", err);
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setAudioErrorMessage("Microphone permission was denied. Please allow microphone access in your browser settings.");
+          setFeedback({ text: '⚠️ Microphone access blocked. Please allow mic in browser settings.', type: 'neutral' });
+        } else {
+          setAudioErrorMessage("Microphone hardware busy or unavailable. Check if another app (Teams, Zoom, Recorder) is using it.");
+          setFeedback({ text: '⚠️ Microphone hardware busy or unavailable.', type: 'neutral' });
+        }
+        setIsRecording(false);
+        setIsMicListening(false);
+        prevIsRecordingRef.current = false;
+        return;
+      }
+    }
+
+    prevIsRecordingRef.current = true;
     if (!isRecording) {
       setIsRecording(true);
     }
-    startSpeechRecognitionSession();
+    startSpeechRecognitionSession(true);
   };
 
   const finishLiveSession = async () => {
     // Ensure current sentence is evaluated if transcript exists
     if (transcript && (!sentenceReports[currentTextIndex] || sentenceReports[currentTextIndex].transcript !== transcript)) {
-      analyzeReading(transcript, practiceSentences[currentTextIndex]);
+      analyzeReading(transcript, practiceSentences[currentTextIndex], false);
     }
 
     setIsFinished(true);
-    stopCamera();
+    stopVoiceSession();
 
     let totalTargetWords = 0;
     let totalCorrectWords = 0;
@@ -665,12 +1013,28 @@ const VoicePractice = ({ onComplete }) => {
           <div className="live-practice-grid">
             {/* Mic Feed & Audio Meter */}
             <div className="webcam-container">
-              {!stream && !isRecording ? (
-                <div className="camera-setup">
-                  <span style={{ fontSize: '3.5rem' }}>🎤</span>
-                  <button className="btn-run" onClick={startCamera} style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #0d9488 100%)', padding: '0.85rem 1.75rem', fontSize: '0.95rem', borderRadius: '10px' }}>
-                    🎤 Activate Microphone & Start Voice Practice
-                  </button>
+              {!isRecording ? (
+                <div className="camera-setup" style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: '3rem' }}>{audioErrorMessage ? '🎙️⚠️' : '🎤'}</span>
+                  {audioErrorMessage ? (
+                    <div style={{ maxWidth: '92%', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '10px', padding: '0.75rem', margin: '0.35rem 0' }}>
+                      <p style={{ color: '#ef4444', fontWeight: 700, fontSize: '0.82rem', margin: '0 0 0.5rem 0', lineHeight: 1.4 }}>
+                        {audioErrorMessage}
+                      </p>
+                      <button className="btn-run" onClick={startVoiceSession} style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', padding: '0.6rem 1.4rem', fontSize: '0.85rem', borderRadius: '8px' }}>
+                        🔄 Retry Microphone Connection
+                      </button>
+                    </div>
+                  ) : (
+                    <button className="btn-run" onClick={startVoiceSession} style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #0d9488 100%)', padding: '0.85rem 1.75rem', fontSize: '0.95rem', borderRadius: '10px' }}>
+                      🎤 Activate Microphone & Start Voice Practice
+                    </button>
+                  )}
+                  {audioErrorMessage && (
+                    <small style={{ color: 'var(--lf-text-muted)', fontSize: '0.75rem', marginTop: '4px' }}>
+                      💡 Tip: You can also use the preset chips or type words below.
+                    </small>
+                  )}
                 </div>
               ) : (
                 <>
@@ -709,9 +1073,18 @@ const VoicePractice = ({ onComplete }) => {
 
                     {/* Bottom: Feedback message badge & Spoken text */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <div className={`feedback-badge ${feedback.type}`} style={{ fontSize: '0.72rem', padding: '3px 8px', borderRadius: '6px', width: 'fit-content' }}>
-                        {feedback.text}
-                      </div>
+                      {audioErrorMessage ? (
+                        <div style={{ background: 'rgba(239, 68, 68, 0.25)', border: '1px solid rgba(239, 68, 68, 0.4)', borderRadius: '6px', padding: '6px 10px', color: '#fca5a5', fontSize: '0.72rem', fontWeight: 600 }}>
+                          <div>⚠️ {audioErrorMessage}</div>
+                          <button onClick={handleRetry} style={{ marginTop: '4px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', padding: '3px 8px', fontSize: '0.72rem', fontWeight: 700, cursor: 'pointer' }}>
+                            🔄 Reconnect Mic
+                          </button>
+                        </div>
+                      ) : (
+                        <div className={`feedback-badge ${feedback.type}`} style={{ fontSize: '0.72rem', padding: '3px 8px', borderRadius: '6px', width: 'fit-content' }}>
+                          {feedback.text}
+                        </div>
+                      )}
                       {transcript && (
                         <p className="live-text" style={{ fontSize: '0.78rem', padding: '4px 8px', margin: 0 }}>
                           🎤 Spoken: "{transcript}"
@@ -780,7 +1153,11 @@ const VoicePractice = ({ onComplete }) => {
                       onClick={() => {
                         const correctSample = practiceSentences[currentTextIndex];
                         setTranscript(correctSample);
-                        analyzeReading(correctSample, correctSample);
+                        transcriptRef.current = correctSample;
+                        accumulatedTranscriptRef.current = correctSample;
+                        sessionFinalRef.current = '';
+                        sessionInterimRef.current = '';
+                        analyzeReading(correctSample, correctSample, false);
                       }}
                       style={{ background: 'rgba(20, 184, 166, 0.1)', color: '#14b8a6', border: '1px solid rgba(20, 184, 166, 0.25)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer' }}
                     >
@@ -790,14 +1167,24 @@ const VoicePractice = ({ onComplete }) => {
                       onClick={() => {
                         const words = practiceSentences[currentTextIndex].split(" ");
                         let misSample = practiceSentences[currentTextIndex];
-                        if (words.length > 3) {
-                          words[3] = words[3].replace(/a|e|i|o|u/gi, 'i');
+                        if (words.length > 2) {
+                          // Change one letter in word 2 to simulate a natural oral mispronunciation
+                          const targetWord = words[2];
+                          if (targetWord.length >= 4) {
+                            words[2] = 'b' + targetWord.slice(1);
+                          } else {
+                            words[2] = targetWord + 's';
+                          }
                           misSample = words.join(" ");
                         } else {
                           misSample = practiceSentences[currentTextIndex] + " extra";
                         }
                         setTranscript(misSample);
-                        analyzeReading(misSample, practiceSentences[currentTextIndex]);
+                        transcriptRef.current = misSample;
+                        accumulatedTranscriptRef.current = misSample;
+                        sessionFinalRef.current = '';
+                        sessionInterimRef.current = '';
+                        analyzeReading(misSample, practiceSentences[currentTextIndex], false);
                       }}
                       style={{ background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', border: '1px solid rgba(244, 63, 94, 0.25)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer' }}
                     >
@@ -815,7 +1202,15 @@ const VoicePractice = ({ onComplete }) => {
                       setTranscript(val);
                       transcriptRef.current = val;
                       accumulatedTranscriptRef.current = val;
-                      analyzeReading(val, practiceSentences[currentTextIndex]);
+                      sessionFinalRef.current = '';
+                      sessionInterimRef.current = '';
+                      analyzeReading(val, practiceSentences[currentTextIndex], true);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const textToAnalyze = transcript.trim();
+                        analyzeReading(textToAnalyze, practiceSentences[currentTextIndex], false);
+                      }
                     }}
                     placeholder="Speak aloud into mic (or type/click preset to test)..."
                     style={{
@@ -831,7 +1226,7 @@ const VoicePractice = ({ onComplete }) => {
                   <button
                     onClick={() => {
                       const textToAnalyze = transcript.trim();
-                      analyzeReading(textToAnalyze, practiceSentences[currentTextIndex]);
+                      analyzeReading(textToAnalyze, practiceSentences[currentTextIndex], false);
                     }}
                     style={{
                       background: 'var(--lf-primary)',
@@ -988,14 +1383,20 @@ const VoicePractice = ({ onComplete }) => {
           )}
 
           <div className="live-controls" style={{ marginTop: '0.75rem', paddingTop: '0.75rem' }}>
-            {!stream && !isRecording ? (
-              <button className="btn-primary" onClick={startCamera} style={{ padding: '0.55rem 1.5rem', fontSize: '0.85rem', fontWeight: 700 }}>
+            {!isRecording ? (
+              <button className="btn-primary" onClick={startVoiceSession} style={{ padding: '0.55rem 1.5rem', fontSize: '0.85rem', fontWeight: 700 }}>
                 🎤 Activate Microphone & Start Voice Practice
               </button>
             ) : (
               <button 
                 className={`record-toggle ${isRecording ? 'active' : ''}`}
-                onClick={() => setIsRecording(!isRecording)}
+                onClick={() => {
+                  if (isRecording) {
+                    stopVoiceSession();
+                  } else {
+                    startVoiceSession();
+                  }
+                }}
                 style={{ padding: '0.55rem 1.5rem', fontSize: '0.85rem' }}
               >
                 {isRecording ? "⏹ Pause Voice Practice" : "⏺ Resume Voice Practice"}
