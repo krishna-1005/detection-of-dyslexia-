@@ -442,6 +442,36 @@ const VoicePractice = ({ onComplete }) => {
   const [micVolume, setMicVolume] = useState(0);
   const [audioErrorMessage, setAudioErrorMessage] = useState(null);
 
+  // Live display state (separate from scoring)
+  const [liveWordStatuses, setLiveWordStatuses] = useState([]);
+  const [liveAccuracy, setLiveAccuracy]         = useState(null);
+
+  // Auto-advance mechanism for seamless progression between sentences
+  const [autoAdvanceCountdown, setAutoAdvanceCountdown] = useState(null);
+  const [autoAdvanceEnabled, setAutoAdvanceEnabled]     = useState(true);
+  const autoAdvanceIntervalRef = useRef(null);
+  const handleNextRef          = useRef(null);
+
+  // Doctor & Clinician Diagnostic Suite state
+  const [reportViewMode, setReportViewMode] = useState('clinical'); // 'clinical' (Doctor View) | 'patient' (Parent/Child View)
+  const [doctorObservedTags, setDoctorObservedTags] = useState({}); // { [sentenceIdx]: string[] }
+  const [doctorClinicalNotes, setDoctorClinicalNotes] = useState(() => {
+    try {
+      return localStorage.getItem('cognilex_doctor_notes') || '';
+    } catch (e) {
+      return '';
+    }
+  });
+
+  const toggleDoctorObservationTag = (tag) => {
+    const curIdx = currentTextIndexRef.current;
+    setDoctorObservedTags(prev => {
+      const curList = prev[curIdx] || [];
+      const updated = curList.includes(tag) ? curList.filter(t => t !== tag) : [...curList, tag];
+      return { ...prev, [curIdx]: updated };
+    });
+  };
+
   // Refs for stale-closure-safe access inside async callbacks
   const sentenceReportsRef = useRef({});   // mirrors sentenceReports state
   const sessionTimeRef     = useRef(0);    // mirrors sessionTime state
@@ -464,6 +494,41 @@ const VoicePractice = ({ onComplete }) => {
   const currentTextIndexRef = useRef(currentTextIndex);
   const isFinishedRef = useRef(isFinished);
   const practiceSentencesRef = useRef(practiceSentences);
+
+  const cancelAutoAdvance = useCallback(() => {
+    if (autoAdvanceIntervalRef.current) {
+      clearInterval(autoAdvanceIntervalRef.current);
+      autoAdvanceIntervalRef.current = null;
+    }
+    setAutoAdvanceCountdown(null);
+  }, []);
+
+  const triggerAutoAdvance = useCallback((seconds = 2) => {
+    if (!autoAdvanceEnabled || isFinishedRef.current) return;
+    if (autoAdvanceIntervalRef.current) {
+      clearInterval(autoAdvanceIntervalRef.current);
+      autoAdvanceIntervalRef.current = null;
+    }
+
+    let remaining = Math.round(seconds);
+    setAutoAdvanceCountdown(remaining);
+
+    autoAdvanceIntervalRef.current = setInterval(() => {
+      remaining -= 1;
+      if (remaining > 0) {
+        setAutoAdvanceCountdown(remaining);
+      } else {
+        if (autoAdvanceIntervalRef.current) {
+          clearInterval(autoAdvanceIntervalRef.current);
+          autoAdvanceIntervalRef.current = null;
+        }
+        setAutoAdvanceCountdown(null);
+        if (handleNextRef.current) {
+          handleNextRef.current();
+        }
+      }
+    }, 1000);
+  }, [autoAdvanceEnabled]);
 
   const { currentUser } = useAuth();
 
@@ -531,12 +596,14 @@ const VoicePractice = ({ onComplete }) => {
     } else {
       setFeedback({ text: `❌ Needs Improvement — ${accuracyScore}% accuracy (${correctCount}/${targetWords.length} words correct, ${PASS_THRESHOLD}% required to Pass)`, type: 'progress' });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
-  // Live display state (separate from scoring)
-  const [liveWordStatuses, setLiveWordStatuses] = useState([]);
-  const [liveAccuracy, setLiveAccuracy]         = useState(null);
+    // Auto-advance trigger:
+    // If all words evaluated (no 'pending' left) or user finished speaking all target words
+    const hasCompletedReading = (wordStatuses.length > 0 && wordStatuses.every(w => w.status !== 'pending')) || cleanHeardWords.length >= cleanTargetWords.length;
+    if (hasCompletedReading && (!isSessionActive || accuracyScore >= PASS_THRESHOLD || cleanHeardWords.length >= cleanTargetWords.length)) {
+      triggerAutoAdvance(2);
+    }
+  }, [triggerAutoAdvance]);
 
   const networkRetryCountRef = useRef(0);
   const isStartedRef = useRef(false);
@@ -745,6 +812,7 @@ const VoicePractice = ({ onComplete }) => {
   // Mount effect to clean up speech engine on unmount
   useEffect(() => {
     return () => {
+      cancelAutoAdvance();
       isStartingRef.current = false;
       isStartedRef.current = false;
       if (recognitionRef.current) {
@@ -758,7 +826,7 @@ const VoicePractice = ({ onComplete }) => {
         recognitionRef.current = null;
       }
     };
-  }, []);
+  }, [cancelAutoAdvance]);
 
   // Control speech recognition starting / stopping on pause toggle
   useEffect(() => {
@@ -867,55 +935,125 @@ const VoicePractice = ({ onComplete }) => {
     }
   };
 
-  const changeSentence = (newIndex) => {
+  const changeSentence = useCallback((newIndex) => {
+    cancelAutoAdvance();
+    currentTextIndexRef.current = newIndex;
     setCurrentTextIndex(newIndex);
     accumulatedTranscriptRef.current = '';
     sessionFinalRef.current = '';
     sessionInterimRef.current = '';
     transcriptRef.current = '';
     setTranscript('');
+    setLiveWordStatuses([]);
+    setLiveAccuracy(null);
     audioCaptureErrorRef.current = false;
     audioCaptureRetryCountRef.current = 0;
     setAudioErrorMessage(null);
     setFeedback({ text: 'Next sentence ready. Read aloud into microphone...', type: 'progress' });
-    if (isRecording && !isFinished) {
-      startSpeechRecognitionSession(true);
-    }
-  };
 
-  const handleNext = () => {
-    // Save current transcript to ref before moving
-    if (transcript) {
-      const newReports = { ...sentenceReportsRef.current, [currentTextIndexRef.current]: transcript };
+    if (isRecordingRef.current && !isFinishedRef.current) {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.onstart = null;
+          recognitionRef.current.onresult = null;
+          recognitionRef.current.onerror = null;
+          recognitionRef.current.onend = null;
+          recognitionRef.current.abort();
+        } catch (e) {}
+        recognitionRef.current = null;
+      }
+      isStartedRef.current = false;
+      isStartingRef.current = false;
+
+      // Small debounce delay (180ms) for Chrome audio pipeline to cleanly unbind
+      setTimeout(() => {
+        if (isRecordingRef.current && !isFinishedRef.current) {
+          startSpeechRecognitionSession(true);
+        }
+      }, 180);
+    }
+  }, [cancelAutoAdvance]);
+
+  const finishLiveSession = async () => {
+    cancelAutoAdvance();
+    // Save current sentence transcript to ref BEFORE stopping
+    const curIdx = currentTextIndexRef.current;
+    const currentTranscript = transcriptRef.current || transcript || '';
+    if (currentTranscript) {
+      const newReports = { ...sentenceReportsRef.current, [curIdx]: currentTranscript };
       sentenceReportsRef.current = newReports;
       setSentenceReports(newReports);
-      analyzeLive(transcript, practiceSentences[currentTextIndex], false);
     }
-    if (currentTextIndex < practiceSentences.length - 1) {
-      changeSentence(currentTextIndex + 1);
+
+    stopVoiceSession(); // records endTimestampRef
+    setIsFinished(true);
+
+    // Build transcripts array from ref (stale-closure-safe)
+    const sentences      = practiceSentencesRef.current;
+    const transcriptMap  = sentenceReportsRef.current;
+    const transcripts    = sentences.map((_, idx) => transcriptMap[idx] || '');
+    const startTs        = startTimestampRef.current || (Date.now() - sessionTimeRef.current * 1000);
+    const endTs          = endTimestampRef.current   || Date.now();
+
+    // ── SINGLE SOURCE OF TRUTH: one call, one result object ──
+    const report = analyzeReadingEngine(sentences, transcripts, startTs, endTs);
+    setFinalReport(report);
+
+    // Persist progress using real numbers from report
+    const { summary } = report;
+    const computedWpm = summary.wpm ?? 0;
+    await saveTherapyProgress(
+      currentUser,
+      'voice',
+      Math.round(summary.accuracy * 3),
+      summary.accuracy,
+      `${summary.durationSeconds}s (${computedWpm} WPM)`
+    );
+  };
+
+  const handleNext = useCallback(() => {
+    cancelAutoAdvance();
+    const curIdx = currentTextIndexRef.current;
+    const currentTranscript = transcriptRef.current || transcript || '';
+    if (currentTranscript) {
+      const newReports = { ...sentenceReportsRef.current, [curIdx]: currentTranscript };
+      sentenceReportsRef.current = newReports;
+      setSentenceReports(newReports);
+    }
+    if (curIdx < practiceSentencesRef.current.length - 1) {
+      changeSentence(curIdx + 1);
     } else {
       finishLiveSession();
     }
-  };
+  }, [transcript, cancelAutoAdvance, changeSentence]);
+
+  useEffect(() => {
+    handleNextRef.current = handleNext;
+  }, [handleNext]);
 
   const handlePrev = () => {
-    if (currentTextIndex > 0) {
-      changeSentence(currentTextIndex - 1);
+    cancelAutoAdvance();
+    if (currentTextIndexRef.current > 0) {
+      changeSentence(currentTextIndexRef.current - 1);
     }
   };
 
   const handleRetry = async () => {
+    cancelAutoAdvance();
     accumulatedTranscriptRef.current = '';
     sessionFinalRef.current = '';
     sessionInterimRef.current = '';
     transcriptRef.current = '';
     setTranscript('');
+    setLiveWordStatuses([]);
+    setLiveAccuracy(null);
     audioCaptureErrorRef.current = false;
     audioCaptureRetryCountRef.current = 0;
     setAudioErrorMessage(null);
+    const curIdx = currentTextIndexRef.current;
     setSentenceReports(prev => {
       const copy = { ...prev };
-      delete copy[currentTextIndex];
+      delete copy[curIdx];
       return copy;
     });
     setFeedback({ text: '🎤 Retrying — Read the sentence aloud into your microphone!', type: 'progress' });
@@ -949,44 +1087,10 @@ const VoicePractice = ({ onComplete }) => {
     startSpeechRecognitionSession(true);
   };
 
-  const finishLiveSession = async () => {
-    // Save current sentence transcript to ref BEFORE stopping
-    if (transcript) {
-      const newReports = { ...sentenceReportsRef.current, [currentTextIndexRef.current]: transcript };
-      sentenceReportsRef.current = newReports;
-      setSentenceReports(newReports);
-    }
-
-    stopVoiceSession(); // records endTimestampRef
-    setIsFinished(true);
-
-    // Build transcripts array from ref (stale-closure-safe)
-    const sentences      = practiceSentencesRef.current;
-    const transcriptMap  = sentenceReportsRef.current;
-    const transcripts    = sentences.map((_, idx) => transcriptMap[idx] || '');
-    const startTs        = startTimestampRef.current || (Date.now() - sessionTimeRef.current * 1000);
-    const endTs          = endTimestampRef.current   || Date.now();
-
-    // ── SINGLE SOURCE OF TRUTH: one call, one result object ──
-    const report = analyzeReadingEngine(sentences, transcripts, startTs, endTs);
-    setFinalReport(report);
-
-    // Persist progress using real numbers from report
-    const { summary } = report;
-    const computedWpm = summary.wpm ?? 0;
-    await saveTherapyProgress(
-      currentUser,
-      'voice',
-      Math.round(summary.accuracy * 3),
-      summary.accuracy,
-      `${summary.durationSeconds}s (${computedWpm} WPM)`
-    );
-  };
-
   // Live display only — uses liveWordStatuses set by analyzeLive
   const currentStatuses = liveWordStatuses.length > 0
     ? liveWordStatuses
-    : practiceSentences[currentTextIndex].split(" ").map(w => ({ word: w, status: 'pending' }));
+    : (practiceSentences[currentTextIndex] || '').split(" ").filter(Boolean).map(w => ({ word: w, status: 'pending' }));
 
   // For the completed report, pull everything from finalReport (single source of truth)
   const reportReady = isFinished && finalReport !== null;
@@ -1145,23 +1249,28 @@ const VoicePractice = ({ onComplete }) => {
                   </label>
                   <div style={{ display: 'flex', gap: '4px' }}>
                     <button
+                      type="button"
                       onClick={() => {
-                        const correctSample = practiceSentences[currentTextIndex];
+                        const curIdx = currentTextIndexRef.current;
+                        const correctSample = practiceSentences[curIdx];
                         setTranscript(correctSample);
                         transcriptRef.current = correctSample;
                         accumulatedTranscriptRef.current = correctSample;
                         sessionFinalRef.current = '';
                         sessionInterimRef.current = '';
                         analyzeLive(correctSample, correctSample, false);
+                        triggerAutoAdvance(2);
                       }}
                       style={{ background: 'rgba(20, 184, 166, 0.1)', color: '#14b8a6', border: '1px solid rgba(20, 184, 166, 0.25)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer' }}
                     >
                       🧪 Test Correct
                     </button>
                     <button
+                      type="button"
                       onClick={() => {
-                        const words = practiceSentences[currentTextIndex].split(" ");
-                        let misSample = practiceSentences[currentTextIndex];
+                        const curIdx = currentTextIndexRef.current;
+                        const words = (practiceSentences[curIdx] || '').split(" ").filter(Boolean);
+                        let misSample = practiceSentences[curIdx];
                         if (words.length > 2) {
                           // Change one letter in word 2 to simulate a natural oral mispronunciation
                           const targetWord = words[2];
@@ -1172,14 +1281,15 @@ const VoicePractice = ({ onComplete }) => {
                           }
                           misSample = words.join(" ");
                         } else {
-                          misSample = practiceSentences[currentTextIndex] + " extra";
+                          misSample = practiceSentences[curIdx] + " extra";
                         }
                         setTranscript(misSample);
                         transcriptRef.current = misSample;
                         accumulatedTranscriptRef.current = misSample;
                         sessionFinalRef.current = '';
                         sessionInterimRef.current = '';
-                        analyzeLive(misSample, practiceSentences[currentTextIndex], false);
+                        analyzeLive(misSample, practiceSentences[curIdx], false);
+                        triggerAutoAdvance(2.5);
                       }}
                       style={{ background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', border: '1px solid rgba(244, 63, 94, 0.25)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer' }}
                     >
@@ -1194,17 +1304,21 @@ const VoicePractice = ({ onComplete }) => {
                     value={transcript}
                     onChange={(e) => {
                       const val = e.target.value;
+                      cancelAutoAdvance();
                       setTranscript(val);
                       transcriptRef.current = val;
                       accumulatedTranscriptRef.current = val;
                       sessionFinalRef.current = '';
                       sessionInterimRef.current = '';
-                      analyzeLive(val, practiceSentences[currentTextIndex], true);
+                      analyzeLive(val, practiceSentences[currentTextIndexRef.current], true);
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         const textToAnalyze = transcript.trim();
-                        analyzeLive(textToAnalyze, practiceSentences[currentTextIndex], false);
+                        if (textToAnalyze) {
+                          analyzeLive(textToAnalyze, practiceSentences[currentTextIndexRef.current], false);
+                          triggerAutoAdvance(2);
+                        }
                       }
                     }}
                     placeholder="Speak aloud into mic (or type/click preset to test)..."
@@ -1219,9 +1333,13 @@ const VoicePractice = ({ onComplete }) => {
                     }}
                   />
                   <button
+                    type="button"
                     onClick={() => {
                       const textToAnalyze = transcript.trim();
-                      analyzeLive(textToAnalyze, practiceSentences[currentTextIndex], false);
+                      if (textToAnalyze) {
+                        analyzeLive(textToAnalyze, practiceSentences[currentTextIndexRef.current], false);
+                        triggerAutoAdvance(2);
+                      }
                     }}
                     style={{
                       background: 'var(--lf-primary)',
@@ -1238,6 +1356,7 @@ const VoicePractice = ({ onComplete }) => {
                     🔍 Analyze
                   </button>
                   <button
+                    type="button"
                     onClick={handleRetry}
                     style={{
                       background: 'rgba(245, 158, 11, 0.12)',
@@ -1256,7 +1375,74 @@ const VoicePractice = ({ onComplete }) => {
                 </div>
               </div>
 
-              <div className="practice-nav" style={{ marginTop: '0.65rem', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              {/* Auto-Advance Countdown Banner */}
+              {autoAdvanceCountdown !== null && (
+                <div
+                  style={{
+                    marginTop: '0.65rem',
+                    background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.12) 0%, rgba(99, 102, 241, 0.12) 100%)',
+                    border: '1.5px solid #14b8a6',
+                    borderRadius: '10px',
+                    padding: '8px 12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '8px',
+                    boxShadow: '0 2px 10px rgba(20, 184, 166, 0.15)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '1.25rem' }}>⏳</span>
+                    <div>
+                      <div style={{ fontWeight: 800, fontSize: '0.86rem', color: '#0f766e' }}>
+                        Sentence evaluated! Moving to {currentTextIndex + 2 > practiceSentences.length ? 'Final Report' : `Sentence ${currentTextIndex + 2}/${practiceSentences.length}`} in {autoAdvanceCountdown}s...
+                      </div>
+                      <div style={{ fontSize: '0.72rem', color: 'var(--lf-text-muted)' }}>
+                        {liveAccuracy !== null ? `Evaluation Accuracy: ${liveAccuracy}%` : 'Evaluation recorded'} • Ready for next question
+                      </div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        cancelAutoAdvance();
+                        handleNext();
+                      }}
+                      style={{
+                        background: '#14b8a6',
+                        color: '#ffffff',
+                        border: 'none',
+                        padding: '5px 12px',
+                        borderRadius: '6px',
+                        fontWeight: 800,
+                        fontSize: '0.78rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Go Now →
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelAutoAdvance}
+                      style={{
+                        background: 'transparent',
+                        color: 'var(--lf-text-muted)',
+                        border: '1px solid var(--lf-border)',
+                        padding: '5px 10px',
+                        borderRadius: '6px',
+                        fontWeight: 600,
+                        fontSize: '0.75rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Stay Here
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <div className="practice-nav" style={{ marginTop: '0.65rem', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <button 
                   disabled={currentTextIndex === 0} 
                   onClick={handlePrev}
@@ -1287,11 +1473,69 @@ const VoicePractice = ({ onComplete }) => {
                 >
                   {currentTextIndex === practiceSentences.length - 1 ? "Finish & Generate Report →" : "Next Sentence →"}
                 </button>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '0.76rem', fontWeight: 700, color: 'var(--lf-text-muted)', marginLeft: 'auto', cursor: 'pointer', userSelect: 'none' }}>
+                  <input
+                    type="checkbox"
+                    checked={autoAdvanceEnabled}
+                    onChange={(e) => {
+                      setAutoAdvanceEnabled(e.target.checked);
+                      if (!e.target.checked) cancelAutoAdvance();
+                    }}
+                    style={{ accentColor: '#14b8a6', cursor: 'pointer' }}
+                  />
+                  ⚡ Auto-Advance
+                </label>
               </div>
             </div>
           </div>
 
-          {/* ── SPACIOUS SENTENCE DIAGNOSTIC & DEFECT REPORT SECTION (Collapsible for zero-scroll default zoom view) ── */}
+          {/* ── CLINICIAN & SLP LIVE BEHAVIORAL OBSERVATION PANEL ── */}
+          <div style={{ marginTop: '0.75rem', background: '#f8fafc', padding: '0.75rem 1rem', borderRadius: '12px', border: '1.5px solid #cbd5e1', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.45rem', flexWrap: 'wrap', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '1.05rem' }}>🩺</span>
+                <strong style={{ fontSize: '0.84rem', color: '#0f766e' }}>Clinician & Doctor Realtime Behavioral Observer:</strong>
+                <span className="badge" style={{ background: '#e0f2fe', color: '#0369a1', fontSize: '0.7rem', padding: '1px 6px', fontWeight: 800 }}>
+                  Sentence #{currentTextIndex + 1}
+                </span>
+              </div>
+              <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Click symptoms below to log into the final diagnostic report</span>
+            </div>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {[
+                { id: 'subvocal', label: '🗣️ Subvocal Sounding Out' },
+                { id: 'finger', label: '👉 Finger Tracking' },
+                { id: 'pause', label: '⏱️ Hesitation / Latency > 2s' },
+                { id: 'self_correct', label: '🔄 Spontaneous Self-Correction' },
+                { id: 'reversal', label: '🪞 Static Mirror Reversal (b/d)' },
+                { id: 'guess', label: '🎯 Initial-Phoneme Word Guessing' },
+              ].map(item => {
+                const isSelected = (doctorObservedTags[currentTextIndex] || []).includes(item.label);
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => toggleDoctorObservationTag(item.label)}
+                    style={{
+                      background: isSelected ? '#0f766e' : '#ffffff',
+                      color: isSelected ? '#ffffff' : '#334155',
+                      border: `1.5px solid ${isSelected ? '#0f766e' : '#cbd5e1'}`,
+                      borderRadius: '6px',
+                      padding: '4px 10px',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      boxShadow: isSelected ? '0 1px 4px rgba(15,118,110,0.3)' : 'none',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    {isSelected ? '✓ ' : '+ '}{item.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           {sentenceReports[currentTextIndex] !== undefined && (
             <details style={{ marginTop: '0.75rem', background: '#ffffff', padding: '0.85rem 1.25rem', borderRadius: '14px', border: '1.5px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
               <summary style={{ cursor: 'pointer', fontWeight: 800, fontSize: '0.92rem', color: 'var(--lf-text-primary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', userSelect: 'none' }}>
@@ -1365,141 +1609,548 @@ const VoicePractice = ({ onComplete }) => {
 
             return (
               <>
-                <header style={{ borderBottom: '2px dashed var(--lf-border)', paddingBottom: '1.25rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <span className="badge badge-info" style={{ marginBottom: '0.4rem', fontSize: '0.85rem', padding: '4px 12px' }}>🎈 Child Reading Diagnostic Report</span>
-                    <h2 style={{ fontSize: '1.75rem', fontWeight: 900, margin: 0, color: 'var(--lf-text-primary)' }}>Oral Reading Fluency & Speech Analysis</h2>
-                    <small style={{ color: 'var(--lf-text-muted)', fontWeight: 600 }}>
-                      Session Duration: {summary.durationSeconds}s | Speaker: {currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Learner'}
-                    </small>
+                {/* ── DUAL VIEW SEGMENTED SWITCHER ── */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem', borderBottom: '2px dashed var(--lf-border)', paddingBottom: '1rem' }}>
+                  <div style={{ display: 'inline-flex', background: '#f1f5f9', padding: '4px', borderRadius: '12px', border: '1px solid #cbd5e1' }}>
+                    <button
+                      type="button"
+                      onClick={() => setReportViewMode('clinical')}
+                      style={{
+                        padding: '7px 16px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        fontWeight: 800,
+                        fontSize: '0.84rem',
+                        cursor: 'pointer',
+                        background: reportViewMode === 'clinical' ? '#0f766e' : 'transparent',
+                        color: reportViewMode === 'clinical' ? '#ffffff' : '#475569',
+                        boxShadow: reportViewMode === 'clinical' ? '0 2px 8px rgba(15, 118, 110, 0.3)' : 'none',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      🩺 Doctor & Clinician Diagnostic Suite
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setReportViewMode('patient')}
+                      style={{
+                        padding: '7px 16px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        fontWeight: 800,
+                        fontSize: '0.84rem',
+                        cursor: 'pointer',
+                        background: reportViewMode === 'patient' ? '#4f46e5' : 'transparent',
+                        color: reportViewMode === 'patient' ? '#ffffff' : '#475569',
+                        boxShadow: reportViewMode === 'patient' ? '0 2px 8px rgba(79, 70, 229, 0.3)' : 'none',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      👨‍👩‍👧 Parent & Child View
+                    </button>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '1.5rem', marginBottom: '2px' }}>{acc >= 90 ? '⭐️⭐️⭐️' : acc >= 70 ? '⭐️⭐️' : '⭐️'}</div>
-                    <div style={{ fontSize: '2rem', fontWeight: 900, color: acc >= 70 ? '#14b8a6' : '#f59e0b' }}>{acc}%</div>
-                    <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Phonetic Accuracy</small>
-                  </div>
-                </header>
-
-                {/* ── METRICS GRID — from summary only ── */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1rem', marginBottom: '1.75rem' }}>
-                  <div style={{ background: 'rgba(20,184,166,0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(20,184,166,0.25)', textAlign: 'center' }}>
-                    <span style={{ fontSize: '1.6rem' }}>✅</span>
-                    <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#14b8a6' }}>{summary.correctWords} / {summary.totalWords}</strong>
-                    <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Words Correct</small>
-                  </div>
-                  <div style={{ background: 'rgba(59,130,246,0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(59,130,246,0.25)', textAlign: 'center' }}>
-                    <span style={{ fontSize: '1.6rem' }}>⏱️</span>
-                    <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#3b82f6' }}>{wpmDisplay}</strong>
-                    <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Reading Speed</small>
-                  </div>
-                  <div style={{ background: 'rgba(244,63,94,0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(244,63,94,0.25)', textAlign: 'center' }}>
-                    <span style={{ fontSize: '1.6rem' }}>❌</span>
-                    <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#f43f5e' }}>{summary.mispronounced}</strong>
-                    <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Mispronounced</small>
-                  </div>
-                  <div style={{ background: 'rgba(245,158,11,0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(245,158,11,0.25)', textAlign: 'center' }}>
-                    <span style={{ fontSize: '1.6rem' }}>⚠️</span>
-                    <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#f59e0b' }}>{summary.skipped}</strong>
-                    <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Skipped Words</small>
-                  </div>
-                  <div style={{ background: 'rgba(100,116,139,0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(100,116,139,0.25)', textAlign: 'center' }}>
-                    <span style={{ fontSize: '1.6rem' }}>🕐</span>
-                    <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#64748b' }}>{summary.durationSeconds}s</strong>
-                    <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Session Duration</small>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                    <span className="badge" style={{ background: 'rgba(15, 118, 110, 0.12)', color: '#0f766e', border: '1px solid rgba(15, 118, 110, 0.25)', fontWeight: 800, padding: '4px 10px', fontSize: '0.75rem' }}>
+                      DSM-5: 315.00 • ICD-11: 6A03.0
+                    </span>
                   </div>
                 </div>
 
-                {/* ── DIAGNOSTIC — shown only when there is real data ── */}
-                {summary.diagnostic && summary.diagnostic.type !== 'no_data' && (
-                  <div style={{ background: 'linear-gradient(135deg, rgba(79,70,229,0.06) 0%, rgba(13,148,136,0.06) 100%)', padding: '1.25rem', borderRadius: '14px', border: '1.5px solid rgba(79,70,229,0.18)', marginBottom: '1.75rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem' }}>
-                      <span style={{ fontSize: '1.2rem' }}>🔬</span>
-                      <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--lf-primary)' }}>Child Dyslexia Speech & Fluency Diagnostic:</h4>
-                    </div>
-                    <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: '1.6', color: 'var(--lf-text-secondary)', fontWeight: 600 }}>
-                      {summary.diagnostic.message}
-                    </p>
-                    {summary.diagnostic.disclaimer && (
-                      <p style={{ margin: '0.75rem 0 0 0', fontSize: '0.78rem', color: 'var(--lf-text-muted)', fontStyle: 'italic' }}>
-                        {summary.diagnostic.disclaimer}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* ── SENTENCE BREAKDOWN — from sentenceResults, not sentenceReports ── */}
-                <h4 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--lf-text-primary)' }}>Sentence-by-Sentence Fluency Breakdown</h4>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
-                  {sentenceResults.map((sr, idx) => {
-                    const badgeStyle = sr.status === 'PASS'
-                      ? { bg: 'rgba(20,184,166,0.12)', color: '#14b8a6' }
-                      : sr.status === 'NEEDS_PRACTICE'
-                      ? { bg: 'rgba(245,158,11,0.12)', color: '#d97706' }
-                      : { bg: 'rgba(244,63,94,0.12)', color: '#f43f5e' };
-                    const statusLabel = sr.status === 'PASS' ? '✅ PASS' : sr.status === 'NEEDS_PRACTICE' ? '🟡 NEEDS PRACTICE' : '❌ FAIL';
-                    const fluent = sr.mispronouncedCount === 0 && sr.skippedCount === 0 && sr.accuracy === 100;
-
-                    return (
-                      <div key={idx} style={{ background: '#f8fafc', padding: '1.1rem', borderRadius: '12px', border: '1px solid var(--lf-border)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                          <strong style={{ fontSize: '0.85rem', color: 'var(--lf-primary)' }}>Sentence #{idx + 1}</strong>
-                          <span style={{ background: badgeStyle.bg, color: badgeStyle.color, border: `1px solid ${badgeStyle.color}`, padding: '2px 10px', borderRadius: '6px', fontWeight: 800, fontSize: '0.78rem' }}>
-                            {statusLabel} ({sr.accuracy}%)
+                {reportViewMode === 'clinical' ? (
+                  /* ══════════════════════════════════════════════════════════
+                     DOCTOR & CLINICIAN DIAGNOSTIC SUITE
+                     ══════════════════════════════════════════════════════════ */
+                  <div className="clinical-doctor-suite">
+                    {/* Medical Header */}
+                    <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem', paddingBottom: '1rem', borderBottom: '1px solid #e2e8f0', flexWrap: 'wrap', gap: '1rem' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                          <span style={{ fontSize: '1.25rem' }}>📋</span>
+                          <span style={{ textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '0.05em', fontWeight: 800, color: '#0f766e' }}>
+                            Clinical Neurological & SLP Diagnostic Battery
                           </span>
                         </div>
+                        <h2 style={{ fontSize: '1.6rem', fontWeight: 900, margin: '0 0 4px 0', color: '#0f172a' }}>
+                          Oral Reading Fluency & Miscue Taxonomy Report
+                        </h2>
+                        <div style={{ fontSize: '0.82rem', color: '#64748b', fontWeight: 600 }}>
+                          Patient: <strong>{currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Patient #4028'}</strong> | Session Duration: <strong>{summary.durationSeconds}s</strong> | Evaluated Sentences: <strong>{sentenceResults.length}</strong>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <div style={{ background: 'rgba(20,184,166,0.1)', border: '1px solid #14b8a6', padding: '8px 14px', borderRadius: '10px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#0f766e' }}>{acc}%</div>
+                          <small style={{ fontSize: '0.7rem', fontWeight: 800, color: '#0f766e', textTransform: 'uppercase' }}>Phonetic Accuracy</small>
+                        </div>
+                        <div style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid #3b82f6', padding: '8px 14px', borderRadius: '10px', textAlign: 'center' }}>
+                          <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#2563eb' }}>{wpmDisplay}</div>
+                          <small style={{ fontSize: '0.7rem', fontWeight: 800, color: '#2563eb', textTransform: 'uppercase' }}>Oral Cadence</small>
+                        </div>
+                      </div>
+                    </header>
 
-                        <p style={{ margin: '0 0 0.4rem 0', fontSize: '1.05rem', fontWeight: 700, color: 'var(--lf-text-primary)' }}>"{sr.referenceText}"</p>
+                    {/* Primary Clinical Phenotype Formulation Alert */}
+                    {summary.clinicalDiagnostics && (
+                      <div style={{
+                        background: 'linear-gradient(135deg, #0f766e 0%, #0d9488 100%)',
+                        color: '#ffffff',
+                        padding: '1.15rem 1.4rem',
+                        borderRadius: '14px',
+                        marginBottom: '1.5rem',
+                        boxShadow: '0 4px 15px rgba(15, 118, 110, 0.2)'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                          <span style={{ fontSize: '1.25rem' }}>🔬</span>
+                          <span style={{ fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', background: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '4px' }}>
+                            Primary Clinical Diagnostic Formulation
+                          </span>
+                        </div>
+                        <h3 style={{ margin: '0 0 6px 0', fontSize: '1.2rem', fontWeight: 900, color: '#ffffff' }}>
+                          {summary.clinicalDiagnostics.primaryPhenotype}
+                        </h3>
+                        <p style={{ margin: 0, fontSize: '0.86rem', lineHeight: '1.55', color: '#f0fdfa', opacity: 0.95 }}>
+                          {summary.clinicalDiagnostics.primaryDescription}
+                        </p>
+                      </div>
+                    )}
 
-                        {/* Show spoken transcript */}
-                        {(sentenceReports[idx] || '') && (
-                          <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.88rem', color: 'var(--lf-text-secondary)' }}>
-                            🎤 <em>Spoken:</em> "{sentenceReports[idx]}"
-                          </p>
-                        )}
-
-                        {/* Metrics row */}
-                        <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.8rem', flexWrap: 'wrap', marginBottom: '0.4rem' }}>
-                          <span><strong style={{ color: '#14b8a6' }}>✅ {sr.correctCount}</strong> correct</span>
-                          <span><strong style={{ color: '#f43f5e' }}>❌ {sr.mispronouncedCount}</strong> mispronounced</span>
-                          <span><strong style={{ color: '#f59e0b' }}>⚠️ {sr.skippedCount}</strong> skipped</span>
-                          {sr.insertedCount > 0 && <span><strong style={{ color: '#6366f1' }}>➕ {sr.insertedCount}</strong> extra</span>}
+                    {/* Subtype Differential Risk Matrix (3 Interactive Cards) */}
+                    {summary.clinicalDiagnostics && (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+                        {/* 1. Phonological Risk */}
+                        <div style={{ background: '#ffffff', padding: '1rem 1.15rem', borderRadius: '12px', border: '1.5px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <strong style={{ fontSize: '0.86rem', color: '#0f172a' }}>Phonological Circuit</strong>
+                            <span style={{
+                              background: summary.clinicalDiagnostics.subtypes.phonological.risk.includes('Elevated') ? 'rgba(239,68,68,0.12)' : summary.clinicalDiagnostics.subtypes.phonological.risk.includes('Moderate') ? 'rgba(245,158,11,0.12)' : 'rgba(16,185,129,0.12)',
+                              color: summary.clinicalDiagnostics.subtypes.phonological.risk.includes('Elevated') ? '#dc2626' : summary.clinicalDiagnostics.subtypes.phonological.risk.includes('Moderate') ? '#d97706' : '#059669',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              fontWeight: 800,
+                              fontSize: '0.7rem'
+                            }}>
+                              {summary.clinicalDiagnostics.subtypes.phonological.risk}
+                            </span>
+                          </div>
+                          <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden', marginBottom: '8px' }}>
+                            <div style={{ width: `${summary.clinicalDiagnostics.subtypes.phonological.score}%`, height: '100%', background: summary.clinicalDiagnostics.subtypes.phonological.score > 40 ? '#ef4444' : summary.clinicalDiagnostics.subtypes.phonological.score > 20 ? '#f59e0b' : '#10b981' }}></div>
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: '#64748b', lineHeight: '1.4' }}>
+                            <div>• Phonemic substitutions: <strong>{summary.clinicalDiagnostics.miscueCounts.phonologicalSubs}</strong></div>
+                            <div>• Neurological: <em>Dorsal Temporo-Parietal Circuit</em></div>
+                          </div>
                         </div>
 
-                        {/* Mispronounced words */}
-                        {sr.mispronouncedCount > 0 && (
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '0.5rem' }}>
-                            {sr.words.filter(w => w.status === 'mispronounced').map((w, i) => (
-                              <span key={i} style={{ background: 'rgba(244,63,94,0.12)', color: '#f43f5e', border: '1px solid rgba(244,63,94,0.3)', padding: '3px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600 }}>
-                                "{w.expected}" → "{w.spoken}"
-                              </span>
-                            ))}
+                        {/* 2. Visual / Orthographic Risk */}
+                        <div style={{ background: '#ffffff', padding: '1rem 1.15rem', borderRadius: '12px', border: '1.5px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <strong style={{ fontSize: '0.86rem', color: '#0f172a' }}>Orthographic / VWFA</strong>
+                            <span style={{
+                              background: summary.clinicalDiagnostics.subtypes.visualOrthographic.risk.includes('Elevated') ? 'rgba(239,68,68,0.12)' : summary.clinicalDiagnostics.subtypes.visualOrthographic.risk.includes('Moderate') ? 'rgba(245,158,11,0.12)' : 'rgba(16,185,129,0.12)',
+                              color: summary.clinicalDiagnostics.subtypes.visualOrthographic.risk.includes('Elevated') ? '#dc2626' : summary.clinicalDiagnostics.subtypes.visualOrthographic.risk.includes('Moderate') ? '#d97706' : '#059669',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              fontWeight: 800,
+                              fontSize: '0.7rem'
+                            }}>
+                              {summary.clinicalDiagnostics.subtypes.visualOrthographic.risk}
+                            </span>
                           </div>
-                        )}
-
-                        {/* Skipped words */}
-                        {sr.skippedCount > 0 && (
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '0.4rem' }}>
-                            {sr.words.filter(w => w.status === 'skipped').map((w, i) => (
-                              <span key={i} style={{ background: 'rgba(245,158,11,0.12)', color: '#d97706', border: '1px solid rgba(245,158,11,0.3)', padding: '3px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600 }}>
-                                Skipped: "{w.expected}"
-                              </span>
-                            ))}
+                          <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden', marginBottom: '8px' }}>
+                            <div style={{ width: `${summary.clinicalDiagnostics.subtypes.visualOrthographic.score}%`, height: '100%', background: summary.clinicalDiagnostics.subtypes.visualOrthographic.score > 40 ? '#ef4444' : summary.clinicalDiagnostics.subtypes.visualOrthographic.score > 20 ? '#f59e0b' : '#10b981' }}></div>
                           </div>
-                        )}
+                          <div style={{ fontSize: '0.75rem', color: '#64748b', lineHeight: '1.4' }}>
+                            <div>• Mirror reversals (b/d, p/q): <strong>{summary.clinicalDiagnostics.miscueCounts.visualReversals}</strong></div>
+                            <div>• Tracking omissions: <strong>{summary.clinicalDiagnostics.miscueCounts.trackingOmissions}</strong></div>
+                            <div>• Neurological: <em>Ventral Occipito-Temporal</em></div>
+                          </div>
+                        </div>
 
-                        {/* "All fluent" — ONLY when accuracy IS 100% and errors ARE 0 */}
-                        {fluent && sr.noSpeech !== true && (
-                          <small style={{ color: '#14b8a6', fontWeight: 600 }}>✓ All words read fluently without errors!</small>
-                        )}
+                        {/* 3. Fluency / RAN */}
+                        <div style={{ background: '#ffffff', padding: '1rem 1.15rem', borderRadius: '12px', border: '1.5px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                            <strong style={{ fontSize: '0.86rem', color: '#0f172a' }}>Fluency & RAN</strong>
+                            <span style={{
+                              background: summary.clinicalDiagnostics.subtypes.fluencyRan.risk.includes('Elevated') ? 'rgba(239,68,68,0.12)' : summary.clinicalDiagnostics.subtypes.fluencyRan.risk.includes('Moderate') ? 'rgba(245,158,11,0.12)' : 'rgba(16,185,129,0.12)',
+                              color: summary.clinicalDiagnostics.subtypes.fluencyRan.risk.includes('Elevated') ? '#dc2626' : summary.clinicalDiagnostics.subtypes.fluencyRan.risk.includes('Moderate') ? '#d97706' : '#059669',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              fontWeight: 800,
+                              fontSize: '0.7rem'
+                            }}>
+                              {summary.clinicalDiagnostics.subtypes.fluencyRan.risk.split(' ')[0]}
+                            </span>
+                          </div>
+                          <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden', marginBottom: '8px' }}>
+                            <div style={{ width: `${Math.min(100, ((summary.wpm || 0) / 90) * 100)}%`, height: '100%', background: '#3b82f6' }}></div>
+                          </div>
+                          <div style={{ fontSize: '0.75rem', color: '#64748b', lineHeight: '1.4' }}>
+                            <div>• Reading speed: <strong>{wpmDisplay}</strong></div>
+                            <div>• Decoding latency: <strong>{summary.durationSeconds}s total</strong></div>
+                            <div>• Neurological: <em>Cerebellar / Rapid Retrieval</em></div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
-                        {/* No speech case */}
-                        {sr.noSpeech && (
-                          <small style={{ color: '#f43f5e', fontWeight: 600 }}>🎤 No speech detected for this sentence.</small>
+                    {/* Standardized Grade Benchmark Comparison Table (Hasbrouck & Tindal) */}
+                    {summary.clinicalDiagnostics?.gradeNorms && (
+                      <div style={{ background: '#ffffff', padding: '1.25rem', borderRadius: '14px', border: '1.5px solid #e2e8f0', marginBottom: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '6px' }}>
+                          <h4 style={{ margin: 0, fontSize: '0.94rem', fontWeight: 800, color: '#0f172a' }}>
+                            📊 Standardized Grade-Level Benchmark Comparison (Hasbrouck & Tindal ORF Norms)
+                          </h4>
+                          <span style={{ fontSize: '0.74rem', color: '#64748b', fontWeight: 600 }}>
+                            Patient Score: <strong>{wpmDisplay}</strong> | Accuracy: <strong>{acc}%</strong>
+                          </span>
+                        </div>
+                        <div style={{ overflowX: 'auto' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
+                            <thead>
+                              <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
+                                <th style={{ padding: '8px 12px' }}>Grade Level</th>
+                                <th style={{ padding: '8px 12px' }}>Expected Normative WPM</th>
+                                <th style={{ padding: '8px 12px' }}>Target Accuracy</th>
+                                <th style={{ padding: '8px 12px' }}>Clinical Evaluation Status</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {summary.clinicalDiagnostics.gradeNorms.map((norm, i) => (
+                                <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                  <td style={{ padding: '8px 12px', fontWeight: 700 }}>{norm.grade}</td>
+                                  <td style={{ padding: '8px 12px', color: '#2563eb', fontWeight: 600 }}>{norm.expectedWpm}</td>
+                                  <td style={{ padding: '8px 12px', color: '#059669', fontWeight: 600 }}>{norm.expectedAcc}</td>
+                                  <td style={{ padding: '8px 12px' }}>
+                                    <span style={{
+                                      background: norm.status === 'Meeting Norms' ? 'rgba(16,185,129,0.12)' : 'rgba(239,68,68,0.12)',
+                                      color: norm.status === 'Meeting Norms' ? '#059669' : '#dc2626',
+                                      padding: '3px 8px',
+                                      borderRadius: '4px',
+                                      fontWeight: 800,
+                                      fontSize: '0.74rem'
+                                    }}>
+                                      {norm.status}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* DSM-5 & ICD-11 Diagnostic Criteria Checklist */}
+                    {summary.clinicalDiagnostics?.dsm5Classification && (
+                      <div style={{ background: '#f8fafc', padding: '1.15rem', borderRadius: '12px', border: '1px solid #cbd5e1', marginBottom: '1.5rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.65rem' }}>
+                          <strong style={{ fontSize: '0.88rem', color: '#0f766e' }}>
+                            ⚖️ DSM-5 (315.00) & ICD-11 (6A03.0) Diagnostic Criteria Mapping:
+                          </strong>
+                          <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Clinical Reference Checklist</span>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
+                          {summary.clinicalDiagnostics.dsm5Classification.subcomponents.map((comp, idx) => (
+                            <div key={idx} style={{ background: '#ffffff', padding: '8px 10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                              <div style={{ fontSize: '0.74rem', color: '#64748b', fontWeight: 600, marginBottom: '2px' }}>{comp.name}</div>
+                              <div style={{
+                                fontSize: '0.8rem',
+                                fontWeight: 800,
+                                color: comp.status === 'Intact' ? '#059669' : '#dc2626'
+                              }}>
+                                {comp.status === 'Intact' ? '✓ ' : '⚠️ '}{comp.status}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Deep Clinical Miscue Classification Table */}
+                    {summary.clinicalDiagnostics?.allWordMiscues?.length > 0 ? (
+                      <div style={{ background: '#ffffff', padding: '1.25rem', borderRadius: '14px', border: '1.5px solid #e2e8f0', marginBottom: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                        <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem', fontWeight: 800, color: '#0f172a' }}>
+                          🔬 Complete Clinical Miscue Taxonomy Breakdown
+                        </h4>
+                        <div style={{ overflowX: 'auto' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem', textAlign: 'left' }}>
+                            <thead>
+                              <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0', color: '#475569' }}>
+                                <th style={{ padding: '8px 10px' }}>Target Word</th>
+                                <th style={{ padding: '8px 10px' }}>Spoken Attempt</th>
+                                <th style={{ padding: '8px 10px' }}>Miscue Classification</th>
+                                <th style={{ padding: '8px 10px' }}>Neurological Circuit</th>
+                                <th style={{ padding: '8px 10px' }}>Severity</th>
+                                <th style={{ padding: '8px 10px' }}>Clinical Diagnostic Finding</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {summary.clinicalDiagnostics.allWordMiscues.map((item, i) => (
+                                <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                  <td style={{ padding: '8px 10px', fontWeight: 800, color: '#0f172a' }}>"{item.expected}"</td>
+                                  <td style={{ padding: '8px 10px', fontWeight: 700, color: '#f43f5e' }}>
+                                    {item.spoken ? `"${item.spoken}"` : '— (Omitted)'}
+                                  </td>
+                                  <td style={{ padding: '8px 10px' }}>
+                                    <span style={{
+                                      background: item.miscue?.type === 'visual_reversal' || item.miscue?.type === 'kinetic_reversal' ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)',
+                                      color: item.miscue?.type === 'visual_reversal' || item.miscue?.type === 'kinetic_reversal' ? '#dc2626' : '#d97706',
+                                      padding: '2px 8px',
+                                      borderRadius: '4px',
+                                      fontWeight: 800,
+                                      fontSize: '0.72rem'
+                                    }}>
+                                      {item.miscue?.label || item.status}
+                                    </span>
+                                  </td>
+                                  <td style={{ padding: '8px 10px', fontSize: '0.74rem', color: '#64748b' }}>
+                                    {item.miscue?.pathway || 'Dorsal Stream'}
+                                  </td>
+                                  <td style={{ padding: '8px 10px' }}>
+                                    <span style={{
+                                      textTransform: 'uppercase',
+                                      fontWeight: 800,
+                                      fontSize: '0.68rem',
+                                      color: item.miscue?.severity === 'high' ? '#ef4444' : item.miscue?.severity === 'moderate' ? '#f59e0b' : '#3b82f6'
+                                    }}>
+                                      {item.miscue?.severity || 'moderate'}
+                                    </span>
+                                  </td>
+                                  <td style={{ padding: '8px 10px', fontSize: '0.75rem', color: '#334155', maxWidth: '240px', lineHeight: '1.35' }}>
+                                    {item.miscue?.details || 'Oral decoding miscue.'}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ background: 'rgba(16,185,129,0.08)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(16,185,129,0.25)', marginBottom: '1.5rem', textAlign: 'center' }}>
+                        <span style={{ color: '#059669', fontWeight: 800, fontSize: '0.88rem' }}>
+                          ✓ Zero Oral Reading Miscues Detected: Patient achieved 100% grapheme-phoneme accuracy across all target sentences.
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Doctor's Observation Log & Behavioral Notes */}
+                    <div style={{ background: '#f8fafc', padding: '1.25rem', borderRadius: '14px', border: '1.5px solid #cbd5e1', marginBottom: '1.5rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <strong style={{ fontSize: '0.9rem', color: '#0f766e', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span>📝</span> Doctor's Clinical Assessment & Behavioral Observation Notes:
+                        </strong>
+                        <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Auto-saved to patient medical record</span>
+                      </div>
+
+                      {/* Display live tags recorded during reading session */}
+                      {Object.keys(doctorObservedTags).length > 0 && (
+                        <div style={{ marginBottom: '0.75rem', display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
+                          <small style={{ fontWeight: 800, color: '#475569', fontSize: '0.74rem' }}>Observed During Reading:</small>
+                          {Object.entries(doctorObservedTags).map(([sentIdx, tags]) =>
+                            tags.map((t, idx) => (
+                              <span key={`${sentIdx}-${idx}`} style={{ background: '#e0f2fe', color: '#0369a1', border: '1px solid #bae6fd', padding: '2px 8px', borderRadius: '4px', fontSize: '0.72rem', fontWeight: 700 }}>
+                                Sent #{Number(sentIdx) + 1}: {t}
+                              </span>
+                            ))
+                          )}
+                        </div>
+                      )}
+
+                      <textarea
+                        rows={4}
+                        value={doctorClinicalNotes}
+                        onChange={(e) => {
+                          setDoctorClinicalNotes(e.target.value);
+                          try {
+                            localStorage.setItem('cognilex_doctor_notes', e.target.value);
+                          } catch (err) {}
+                        }}
+                        placeholder="Enter clinical assessment, physical reading posture/eye-tracking stability, anxiety indicators, and official medical recommendations..."
+                        style={{
+                          width: '100%',
+                          padding: '10px 14px',
+                          borderRadius: '8px',
+                          border: '1px solid #cbd5e1',
+                          fontSize: '0.86rem',
+                          fontFamily: 'inherit',
+                          lineHeight: '1.5',
+                          background: '#ffffff',
+                          color: '#1e293b',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+
+                    {/* Prescriptive Therapy Plan */}
+                    {summary.clinicalDiagnostics?.recommendations && (
+                      <div style={{ background: '#ffffff', padding: '1.25rem', borderRadius: '14px', border: '1.5px solid #e2e8f0', marginBottom: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                        <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem', fontWeight: 800, color: '#0f766e' }}>
+                          💊 Targeted Evidence-Based Clinical Interventions & Accommodations
+                        </h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '0.85rem' }}>
+                          {summary.clinicalDiagnostics.recommendations.map((rec, i) => (
+                            <div key={i} style={{ background: '#f8fafc', padding: '0.85rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                <strong style={{ fontSize: '0.84rem', color: '#0f766e' }}>{rec.domain}</strong>
+                                <span className="badge" style={{ background: 'rgba(20,184,166,0.12)', color: '#0f766e', fontSize: '0.68rem', padding: '2px 6px', fontWeight: 800 }}>Prescribed</span>
+                              </div>
+                              <p style={{ margin: '0 0 4px 0', fontSize: '0.82rem', fontWeight: 700, color: '#0f172a' }}>{rec.action}</p>
+                              <p style={{ margin: 0, fontSize: '0.76rem', color: '#64748b', lineHeight: '1.4' }}>{rec.detail}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Physician Signature Line */}
+                    <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '2px dashed #cbd5e1', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem' }}>
+                      <div>
+                        <div style={{ fontSize: '0.78rem', color: '#64748b', fontWeight: 600 }}>Diagnostic System: Cognilex AI Neuro-Linguistic Evaluator v2.4</div>
+                        <div style={{ fontSize: '0.74rem', color: '#94a3b8' }}>Protocol: Hasbrouck & Tindal Normed ORF Battery • Diagnostic Code: DSM-5 315.00 / ICD-11 6A03.0</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ width: '220px', borderBottom: '1.5px solid #334155', marginBottom: '4px' }}></div>
+                        <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#334155' }}>Authorized Physician / SLP Signature</div>
+                        <div style={{ fontSize: '0.72rem', color: '#64748b' }}>Date: {new Date().toLocaleDateString()}</div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* ══════════════════════════════════════════════════════════
+                     PARENT & CHILD FRIENDLY VIEW
+                     ══════════════════════════════════════════════════════════ */
+                  <div className="parent-child-suite">
+                    <header style={{ borderBottom: '2px dashed var(--lf-border)', paddingBottom: '1.25rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <span className="badge badge-info" style={{ marginBottom: '0.4rem', fontSize: '0.85rem', padding: '4px 12px' }}>🎈 Child Reading Diagnostic Report</span>
+                        <h2 style={{ fontSize: '1.75rem', fontWeight: 900, margin: 0, color: 'var(--lf-text-primary)' }}>Oral Reading Fluency & Speech Analysis</h2>
+                        <small style={{ color: 'var(--lf-text-muted)', fontWeight: 600 }}>
+                          Session Duration: {summary.durationSeconds}s | Speaker: {currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Learner'}
+                        </small>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '1.5rem', marginBottom: '2px' }}>{acc >= 90 ? '⭐️⭐️⭐️' : acc >= 70 ? '⭐️⭐️' : '⭐️'}</div>
+                        <div style={{ fontSize: '2rem', fontWeight: 900, color: acc >= 70 ? '#14b8a6' : '#f59e0b' }}>{acc}%</div>
+                        <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Phonetic Accuracy</small>
+                      </div>
+                    </header>
+
+                    {/* Metrics Grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1rem', marginBottom: '1.75rem' }}>
+                      <div style={{ background: 'rgba(20,184,166,0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(20,184,166,0.25)', textAlign: 'center' }}>
+                        <span style={{ fontSize: '1.6rem' }}>✅</span>
+                        <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#14b8a6' }}>{summary.correctWords} / {summary.totalWords}</strong>
+                        <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Words Correct</small>
+                      </div>
+                      <div style={{ background: 'rgba(59,130,246,0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(59,130,246,0.25)', textAlign: 'center' }}>
+                        <span style={{ fontSize: '1.6rem' }}>⏱️</span>
+                        <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#3b82f6' }}>{wpmDisplay}</strong>
+                        <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Reading Speed</small>
+                      </div>
+                      <div style={{ background: 'rgba(244,63,94,0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(244,63,94,0.25)', textAlign: 'center' }}>
+                        <span style={{ fontSize: '1.6rem' }}>❌</span>
+                        <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#f43f5e' }}>{summary.mispronounced}</strong>
+                        <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Mispronounced</small>
+                      </div>
+                      <div style={{ background: 'rgba(245,158,11,0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(245,158,11,0.25)', textAlign: 'center' }}>
+                        <span style={{ fontSize: '1.6rem' }}>⚠️</span>
+                        <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#f59e0b' }}>{summary.skipped}</strong>
+                        <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Skipped Words</small>
+                      </div>
+                      <div style={{ background: 'rgba(100,116,139,0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(100,116,139,0.25)', textAlign: 'center' }}>
+                        <span style={{ fontSize: '1.6rem' }}>🕐</span>
+                        <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#64748b' }}>{summary.durationSeconds}s</strong>
+                        <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Session Duration</small>
+                      </div>
+                    </div>
+
+                    {/* Diagnostic Banner */}
+                    {summary.diagnostic && summary.diagnostic.type !== 'no_data' && (
+                      <div style={{ background: 'linear-gradient(135deg, rgba(79,70,229,0.06) 0%, rgba(13,148,136,0.06) 100%)', padding: '1.25rem', borderRadius: '14px', border: '1.5px solid rgba(79,70,229,0.18)', marginBottom: '1.75rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem' }}>
+                          <span style={{ fontSize: '1.2rem' }}>🔬</span>
+                          <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--lf-primary)' }}>Child Dyslexia Speech & Fluency Diagnostic:</h4>
+                        </div>
+                        <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: '1.6', color: 'var(--lf-text-secondary)', fontWeight: 600 }}>
+                          {summary.diagnostic.message}
+                        </p>
+                        {summary.diagnostic.disclaimer && (
+                          <p style={{ margin: '0.75rem 0 0 0', fontSize: '0.78rem', color: 'var(--lf-text-muted)', fontStyle: 'italic' }}>
+                            {summary.diagnostic.disclaimer}
+                          </p>
                         )}
                       </div>
-                    );
-                  })}
-                </div>
+                    )}
+
+                    {/* Sentence Breakdown */}
+                    <h4 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--lf-text-primary)' }}>Sentence-by-Sentence Fluency Breakdown</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
+                      {sentenceResults.map((sr, idx) => {
+                        const badgeStyle = sr.status === 'PASS'
+                          ? { bg: 'rgba(20,184,166,0.12)', color: '#14b8a6' }
+                          : sr.status === 'NEEDS_PRACTICE'
+                          ? { bg: 'rgba(245,158,11,0.12)', color: '#d97706' }
+                          : { bg: 'rgba(244,63,94,0.12)', color: '#f43f5e' };
+                        const statusLabel = sr.status === 'PASS' ? '✅ PASS' : sr.status === 'NEEDS_PRACTICE' ? '🟡 NEEDS PRACTICE' : '❌ FAIL';
+                        const fluent = sr.mispronouncedCount === 0 && sr.skippedCount === 0 && sr.accuracy === 100;
+
+                        return (
+                          <div key={idx} style={{ background: '#f8fafc', padding: '1.1rem', borderRadius: '12px', border: '1px solid var(--lf-border)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                              <strong style={{ fontSize: '0.85rem', color: 'var(--lf-primary)' }}>Sentence #{idx + 1}</strong>
+                              <span style={{ background: badgeStyle.bg, color: badgeStyle.color, border: `1px solid ${badgeStyle.color}`, padding: '2px 10px', borderRadius: '6px', fontWeight: 800, fontSize: '0.78rem' }}>
+                                {statusLabel} ({sr.accuracy}%)
+                              </span>
+                            </div>
+
+                            <p style={{ margin: '0 0 0.4rem 0', fontSize: '1.05rem', fontWeight: 700, color: 'var(--lf-text-primary)' }}>"{sr.referenceText}"</p>
+
+                            {(sentenceReports[idx] || '') && (
+                              <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.88rem', color: 'var(--lf-text-secondary)' }}>
+                                🎤 <em>Spoken:</em> "{sentenceReports[idx]}"
+                              </p>
+                            )}
+
+                            <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.8rem', flexWrap: 'wrap', marginBottom: '0.4rem' }}>
+                              <span><strong style={{ color: '#14b8a6' }}>✅ {sr.correctCount}</strong> correct</span>
+                              <span><strong style={{ color: '#f43f5e' }}>❌ {sr.mispronouncedCount}</strong> mispronounced</span>
+                              <span><strong style={{ color: '#f59e0b' }}>⚠️ {sr.skippedCount}</strong> skipped</span>
+                              {sr.insertedCount > 0 && <span><strong style={{ color: '#6366f1' }}>➕ {sr.insertedCount}</strong> extra</span>}
+                            </div>
+
+                            {sr.mispronouncedCount > 0 && (
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '0.5rem' }}>
+                                {sr.words.filter(w => w.status === 'mispronounced').map((w, i) => (
+                                  <span key={i} style={{ background: 'rgba(244,63,94,0.12)', color: '#f43f5e', border: '1px solid rgba(244,63,94,0.3)', padding: '3px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600 }}>
+                                    "{w.expected}" → "{w.spoken}" {w.miscue?.label ? `(${w.miscue.label})` : ''}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+
+                            {sr.skippedCount > 0 && (
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '0.4rem' }}>
+                                {sr.words.filter(w => w.status === 'skipped').map((w, i) => (
+                                  <span key={i} style={{ background: 'rgba(245,158,11,0.12)', color: '#d97706', border: '1px solid rgba(245,158,11,0.3)', padding: '3px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600 }}>
+                                    Skipped: "{w.expected}"
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+
+                            {fluent && sr.noSpeech !== true && (
+                              <small style={{ color: '#14b8a6', fontWeight: 600 }}>✓ All words read fluently without errors!</small>
+                            )}
+
+                            {sr.noSpeech && (
+                              <small style={{ color: '#f43f5e', fontWeight: 600 }}>🎤 No speech detected for this sentence.</small>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', flexWrap: 'wrap' }}>
                   <button className="btn-secondary" onClick={() => window.print()} style={{ fontWeight: 700 }}>🖨️ Print Report</button>
