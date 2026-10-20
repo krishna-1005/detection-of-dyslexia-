@@ -1,6 +1,6 @@
-"""
+﻿"""
 Cognilex 30-Sample Benchmark Evaluation Runner
-Evaluates LexiFlow Backend Detection Models:
+Evaluates Cognilex Backend Detection Models:
 - Deterministic NLP Agent (model.detection_agent.analyze_text)
 - Gemini LLM Agent (model.llm_agent.analyze_with_llm)
 - Combined / Fallback Engine
@@ -50,7 +50,7 @@ def categorize_risk(score):
 
 def run_benchmark(input_csv, output_csv):
     print("================================================================================")
-    print("         LEXIFLOW BACKEND NLP BENCHMARK EVALUATION RUNNER (30 SAMPLES)")
+    print("         COGNILEX BACKEND NLP BENCHMARK EVALUATION RUNNER (30 SAMPLES)")
     print("================================================================================")
 
     # 1. Environment & Pre-Flight Check

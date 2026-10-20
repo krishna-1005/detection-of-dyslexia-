@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 
 // ── HIGH-DEFINITION NATURAL HUMAN AUDIO VOICE API ENGINE ──
 // eslint-disable-next-line no-unused-vars
 let cachedVoices = [];
-let selectedVoiceURI = typeof localStorage !== 'undefined' ? localStorage.getItem('lexiflow_preferred_voice') || '' : '';
+let selectedVoiceURI = typeof localStorage !== 'undefined' ? localStorage.getItem('cognilex_preferred_voice') || '' : '';
 // eslint-disable-next-line no-unused-vars
 let currentUtterance = null; // Global reference to prevent Chrome Garbage Collection mid-speech
 
@@ -57,7 +57,7 @@ export const getSelectedVoice = () => {
 export const setPreferredVoice = (voiceURI) => {
   selectedVoiceURI = voiceURI;
   if (typeof localStorage !== 'undefined') {
-    localStorage.setItem('lexiflow_preferred_voice', voiceURI);
+    localStorage.setItem('cognilex_preferred_voice', voiceURI);
   }
 };
 

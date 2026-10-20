@@ -516,3 +516,28 @@
   }
 }
 
+/* ── Mobile Responsive Adjustments ── */
+@media (max-width: 600px) {
+  .guide-me-wrapper {
+    bottom: 16px;
+    left: 16px;
+    right: auto;
+  }
+
+  .guide-companion-card {
+    position: fixed;
+    bottom: 70px;
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: calc(100vw - 24px);
+    border-radius: 18px;
+    padding: 0.95rem;
+  }
+
+  .character-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+

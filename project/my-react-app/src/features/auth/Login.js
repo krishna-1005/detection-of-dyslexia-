@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import "./Login.css";
 import { useAuth } from "./AuthContext";
@@ -57,7 +57,7 @@ const Login = () => {
       <div className="auth-card">
         <Link to="/" className="auth-brand-badge">
           <div className="nav-logo-icon">L</div>
-          <h2>LexiFlow Kids 🎈</h2>
+          <h2>Cognilex Kids 🎈</h2>
         </Link>
         <h3>Welcome Back</h3>
         <p>Access your diagnostic sessions and therapy progress.</p>

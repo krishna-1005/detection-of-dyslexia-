@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import './VoicePractice.css';
 import { useAuth } from '../auth/AuthContext';
 import { saveTherapyProgress } from './ExerciseSystem';
+import { analyzeReading as analyzeReadingEngine } from './readingAnalyzer';
 
 const masterPracticeSentencesPool = [
   "The sun is bright and warm today.",
@@ -31,7 +32,10 @@ const getRandomSentences = (count = 4) => {
   return shuffled.slice(0, count);
 };
 
-// Helper to compute edit distance (Levenshtein) between two strings for mispronunciation detection
+// ─── All analysis logic is now in readingAnalyzer.js ───────────────────────
+// The following helpers remain only for the live per-sentence word-coloring
+// during recording (not for final scoring).
+
 const getEditDistance = (a, b) => {
   if (!a || !b) return (a || b).length;
   if (a.length === 0) return b.length;
@@ -432,10 +436,17 @@ const VoicePractice = ({ onComplete }) => {
   const [transcript, setTranscript] = useState('');
   const [feedback, setFeedback] = useState({ text: 'Click "Activate Microphone & Start Voice Practice" to begin', type: 'neutral' });
   const [isFinished, setIsFinished] = useState(false);
-  const [sentenceReports, setSentenceReports] = useState({});
+  const [sentenceReports, setSentenceReports] = useState({});  // { [idx]: string transcript }
+  const [finalReport, setFinalReport] = useState(null);        // analyzeReading() result (single source of truth)
   const [isMicListening, setIsMicListening] = useState(false);
   const [micVolume, setMicVolume] = useState(0);
   const [audioErrorMessage, setAudioErrorMessage] = useState(null);
+
+  // Refs for stale-closure-safe access inside async callbacks
+  const sentenceReportsRef = useRef({});   // mirrors sentenceReports state
+  const sessionTimeRef     = useRef(0);    // mirrors sessionTime state
+  const startTimestampRef  = useRef(null); // Date.now() when recording started
+  const endTimestampRef    = useRef(null); // Date.now() when recording stopped
 
   const isStartingRef = useRef(false);
   const audioCaptureErrorRef = useRef(false);
@@ -476,38 +487,28 @@ const VoicePractice = ({ onComplete }) => {
     transcriptRef.current = transcript;
   }, [transcript]);
 
-  // Analyze spoken transcript vs target sentence using DP sequence alignment
-  const analyzeReading = (heardText, targetSentence, isSessionActive = true) => {
+  // ─── Live per-sentence analysis (for word-coloring during recording) ────────
+  // Stores only the transcript string per sentence; final scoring runs
+  // via analyzeReadingEngine in finishLiveSession.
+  const analyzeLive = useCallback((heardText, targetSentence, isSessionActive = true) => {
     if (!targetSentence) return;
     const targetWords = targetSentence.split(" ").filter(Boolean);
     const cleanTargetWords = targetWords.map(w => w.toLowerCase().replace(/[^\w]/g, ''));
     const cleanHeardWords = (heardText || '').toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(Boolean);
 
-    // If no speech has been captured yet
+    // Save transcript string for final scoring (ref is stale-closure-safe)
+    const newReports = {
+      ...sentenceReportsRef.current,
+      [currentTextIndexRef.current]: heardText || ''
+    };
+    sentenceReportsRef.current = newReports;
+    setSentenceReports(newReports);
+
+    // Live word coloring via existing DP alignment (kept for UX only, not scoring)
     if (cleanHeardWords.length === 0) {
-      const wordStatuses = targetWords.map((originalWord) => ({
-        word: originalWord,
-        status: isSessionActive ? 'pending' : 'omitted',
-        heard: '-'
-      }));
-      const omittedList = isSessionActive ? [] : targetWords.map((originalWord, idx) => ({ target: originalWord, index: idx }));
-
-      setSentenceReports(prev => ({
-        ...prev,
-        [currentTextIndexRef.current]: {
-          targetSentence,
-          transcript: heardText || '',
-          wordStatuses,
-          correctCount: 0,
-          totalWords: targetWords.length,
-          accuracy: 0,
-          mispronounced: [],
-          omitted: omittedList,
-          passStatus: 'Fail',
-          missedWords: omittedList.map(m => ({ ...m, reason: 'omitted' }))
-        }
-      }));
-
+      const wordStatuses = targetWords.map(w => ({ word: w, status: isSessionActive ? 'pending' : 'omitted', heard: '-' }));
+      setLiveWordStatuses(wordStatuses);
+      setLiveAccuracy(null);
       if (isSessionActive) {
         setFeedback({ text: '🎤 Microphone Active — Read the sentence aloud!', type: 'progress' });
       } else {
@@ -516,44 +517,26 @@ const VoicePractice = ({ onComplete }) => {
       return;
     }
 
-    const { wordStatuses, correctCount, mispronouncedList, omittedList } = alignTranscriptToTarget(
-      cleanTargetWords,
-      cleanHeardWords,
-      targetWords,
-      isSessionActive
+    const { wordStatuses, correctCount, mispronouncedList } = alignTranscriptToTarget(
+      cleanTargetWords, cleanHeardWords, targetWords, isSessionActive
     );
-
     const accuracyScore = Math.round((correctCount / targetWords.length) * 100);
-    const passStatus = accuracyScore >= PASS_THRESHOLD ? 'Pass' : 'Fail';
-    const missedWords = [
-      ...mispronouncedList.map(m => ({ ...m, reason: 'mispronounced' })),
-      ...omittedList.map(m => ({ ...m, reason: 'omitted' }))
-    ];
-
-    setSentenceReports(prev => ({
-      ...prev,
-      [currentTextIndexRef.current]: {
-        targetSentence,
-        transcript: heardText,
-        wordStatuses,
-        correctCount,
-        totalWords: targetWords.length,
-        accuracy: accuracyScore,
-        mispronounced: mispronouncedList,
-        omitted: omittedList,
-        passStatus,
-        missedWords
-      }
-    }));
+    setLiveWordStatuses(wordStatuses);
+    setLiveAccuracy(accuracyScore);
 
     if (accuracyScore >= PASS_THRESHOLD) {
       setFeedback({ text: `✅ PASS — ${accuracyScore}% word accuracy (${correctCount}/${targetWords.length} words correct)!`, type: 'success' });
     } else if (isSessionActive && correctCount > 0) {
       setFeedback({ text: `🎤 Reading: ${correctCount}/${targetWords.length} words correct (${accuracyScore}%) — keep reading!`, type: 'progress' });
-    } else if (cleanHeardWords.length > 0) {
+    } else {
       setFeedback({ text: `❌ Needs Improvement — ${accuracyScore}% accuracy (${correctCount}/${targetWords.length} words correct, ${PASS_THRESHOLD}% required to Pass)`, type: 'progress' });
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Live display state (separate from scoring)
+  const [liveWordStatuses, setLiveWordStatuses] = useState([]);
+  const [liveAccuracy, setLiveAccuracy]         = useState(null);
 
   const networkRetryCountRef = useRef(0);
   const isStartedRef = useRef(false);
@@ -660,7 +643,7 @@ const VoicePractice = ({ onComplete }) => {
 
       transcriptRef.current = fullTranscript;
       setTranscript(fullTranscript);
-      analyzeReading(fullTranscript, practiceSentencesRef.current[currentTextIndexRef.current], true);
+      analyzeLive(fullTranscript, practiceSentencesRef.current[currentTextIndexRef.current], true);
     };
 
     recognition.onerror = (event) => {
@@ -799,11 +782,17 @@ const VoicePractice = ({ onComplete }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRecording, isFinished]);
 
+  // Timer — keeps sessionTimeRef in sync so finishLiveSession has the real value
   useEffect(() => {
     let timer;
     if (isRecording && !isFinished) {
+      if (!startTimestampRef.current) {
+        startTimestampRef.current = Date.now();
+      }
       timer = setInterval(() => {
-        setSessionTime(prev => prev + 1);
+        const elapsed = Math.round((Date.now() - startTimestampRef.current) / 1000);
+        sessionTimeRef.current = elapsed;
+        setSessionTime(elapsed);
       }, 1000);
     }
     return () => clearInterval(timer);
@@ -818,6 +807,11 @@ const VoicePractice = ({ onComplete }) => {
     sessionInterimRef.current = '';
     transcriptRef.current = '';
     setTranscript('');
+    // Start timestamp for accurate WPM / duration
+    startTimestampRef.current = Date.now();
+    endTimestampRef.current   = null;
+    sessionTimeRef.current    = 0;
+    setSessionTime(0);
 
     // Pre-Flight Stream Probe: verify device availability, wake up hardware, and release cleanly
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -850,10 +844,11 @@ const VoicePractice = ({ onComplete }) => {
 
   const stopVoiceSession = () => {
     setAudioErrorMessage(null);
-    accumulatedTranscriptRef.current = '';
-    sessionFinalRef.current = '';
-    sessionInterimRef.current = '';
-    transcriptRef.current = '';
+    // Record end timestamp BEFORE clearing state
+    if (!endTimestampRef.current) {
+      endTimestampRef.current = Date.now();
+    }
+    // Do NOT clear transcriptRef / accumulatedTranscriptRef here — finishLiveSession reads them
     prevIsRecordingRef.current = false;
     setIsRecording(false);
     setIsMicListening(false);
@@ -889,8 +884,12 @@ const VoicePractice = ({ onComplete }) => {
   };
 
   const handleNext = () => {
+    // Save current transcript to ref before moving
     if (transcript) {
-      analyzeReading(transcript, practiceSentences[currentTextIndex], false);
+      const newReports = { ...sentenceReportsRef.current, [currentTextIndexRef.current]: transcript };
+      sentenceReportsRef.current = newReports;
+      setSentenceReports(newReports);
+      analyzeLive(transcript, practiceSentences[currentTextIndex], false);
     }
     if (currentTextIndex < practiceSentences.length - 1) {
       changeSentence(currentTextIndex + 1);
@@ -951,50 +950,46 @@ const VoicePractice = ({ onComplete }) => {
   };
 
   const finishLiveSession = async () => {
-    // Ensure current sentence is evaluated if transcript exists
-    if (transcript && (!sentenceReports[currentTextIndex] || sentenceReports[currentTextIndex].transcript !== transcript)) {
-      analyzeReading(transcript, practiceSentences[currentTextIndex], false);
+    // Save current sentence transcript to ref BEFORE stopping
+    if (transcript) {
+      const newReports = { ...sentenceReportsRef.current, [currentTextIndexRef.current]: transcript };
+      sentenceReportsRef.current = newReports;
+      setSentenceReports(newReports);
     }
 
+    stopVoiceSession(); // records endTimestampRef
     setIsFinished(true);
-    stopVoiceSession();
 
-    let totalTargetWords = 0;
-    let totalCorrectWords = 0;
-    let allMispronounced = [];
-    let allOmitted = [];
+    // Build transcripts array from ref (stale-closure-safe)
+    const sentences      = practiceSentencesRef.current;
+    const transcriptMap  = sentenceReportsRef.current;
+    const transcripts    = sentences.map((_, idx) => transcriptMap[idx] || '');
+    const startTs        = startTimestampRef.current || (Date.now() - sessionTimeRef.current * 1000);
+    const endTs          = endTimestampRef.current   || Date.now();
 
-    practiceSentences.forEach((sent, idx) => {
-      const rep = sentenceReports[idx];
-      const targetWords = sent.split(" ");
-      totalTargetWords += targetWords.length;
-      if (rep) {
-        totalCorrectWords += rep.correctCount || 0;
-        if (rep.mispronounced) allMispronounced.push(...rep.mispronounced);
-        if (rep.omitted) allOmitted.push(...rep.omitted);
-      }
-    });
+    // ── SINGLE SOURCE OF TRUTH: one call, one result object ──
+    const report = analyzeReadingEngine(sentences, transcripts, startTs, endTs);
+    setFinalReport(report);
 
-    const overallAccuracy = totalTargetWords > 0 ? Math.round((totalCorrectWords / totalTargetWords) * 100) : 100;
-    const computedWpm = sessionTime > 0 ? Math.round((totalCorrectWords / sessionTime) * 60) : 0;
-
+    // Persist progress using real numbers from report
+    const { summary } = report;
+    const computedWpm = summary.wpm ?? 0;
     await saveTherapyProgress(
-      currentUser, 
-      'voice', 
-      Math.round(overallAccuracy * 3), 
-      overallAccuracy, 
-      `${sessionTime}s (${computedWpm} WPM)`
+      currentUser,
+      'voice',
+      Math.round(summary.accuracy * 3),
+      summary.accuracy,
+      `${summary.durationSeconds}s (${computedWpm} WPM)`
     );
   };
 
-  const currentReport = sentenceReports[currentTextIndex] || {};
-  const currentStatuses = currentReport.wordStatuses || practiceSentences[currentTextIndex].split(" ").map(w => ({ word: w, status: 'pending' }));
+  // Live display only — uses liveWordStatuses set by analyzeLive
+  const currentStatuses = liveWordStatuses.length > 0
+    ? liveWordStatuses
+    : practiceSentences[currentTextIndex].split(" ").map(w => ({ word: w, status: 'pending' }));
 
-  const totalCorrect = Object.values(sentenceReports).reduce((sum, r) => sum + (r.correctCount || 0), 0);
-  const totalMispronounced = Object.values(sentenceReports).reduce((sum, r) => sum + (r.mispronounced?.length || 0), 0);
-  const totalOmitted = Object.values(sentenceReports).reduce((sum, r) => sum + (r.omitted?.length || 0), 0);
-  const totalWords = practiceSentences.join(" ").split(" ").length;
-  const overallAcc = Math.round((totalCorrect / totalWords) * 100) || 0;
+  // For the completed report, pull everything from finalReport (single source of truth)
+  const reportReady = isFinished && finalReport !== null;
 
   return (
     <div className="exercise-session live-practice">
@@ -1101,9 +1096,9 @@ const VoicePractice = ({ onComplete }) => {
               <div className="sentence-card">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
                   <small>SENTENCE {currentTextIndex + 1}/{practiceSentences.length}</small>
-                  {currentReport.accuracy !== undefined && (
-                    <span className={`badge ${currentReport.accuracy >= 70 ? 'badge-low' : 'badge-high'}`}>
-                      {currentReport.accuracy}% Accuracy
+                  {liveAccuracy !== null && (
+                    <span className={`badge ${liveAccuracy >= 70 ? 'badge-low' : 'badge-high'}`}>
+                      {liveAccuracy}% Accuracy
                     </span>
                   )}
                 </div>
@@ -1130,12 +1125,12 @@ const VoicePractice = ({ onComplete }) => {
                   ))}
                 </div>
 
-                {currentReport.mispronounced && currentReport.mispronounced.length > 0 && (
+                {liveWordStatuses.some(w => w.status === 'mispronounced') && (
                   <div style={{ marginTop: '1rem', padding: '0.65rem', background: 'rgba(244,63,94,0.08)', borderRadius: '8px', border: '1px solid rgba(244,63,94,0.2)', fontSize: '0.8rem' }}>
                     <strong style={{ color: '#f43f5e' }}>⚠️ Mispronunciation Detected:</strong>
-                    {currentReport.mispronounced.map((m, i) => (
+                    {liveWordStatuses.filter(w => w.status === 'mispronounced').map((w, i) => (
                       <span key={i} style={{ marginLeft: '6px', fontWeight: 600 }}>
-                        Target: "<strong>{m.target}</strong>" → Spoken: "<em>{m.heard}</em>"
+                        Target: "<strong>{w.word}</strong>" → Spoken: "<em>{w.heard}</em>"
                       </span>
                     ))}
                   </div>
@@ -1157,7 +1152,7 @@ const VoicePractice = ({ onComplete }) => {
                         accumulatedTranscriptRef.current = correctSample;
                         sessionFinalRef.current = '';
                         sessionInterimRef.current = '';
-                        analyzeReading(correctSample, correctSample, false);
+                        analyzeLive(correctSample, correctSample, false);
                       }}
                       style={{ background: 'rgba(20, 184, 166, 0.1)', color: '#14b8a6', border: '1px solid rgba(20, 184, 166, 0.25)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer' }}
                     >
@@ -1184,7 +1179,7 @@ const VoicePractice = ({ onComplete }) => {
                         accumulatedTranscriptRef.current = misSample;
                         sessionFinalRef.current = '';
                         sessionInterimRef.current = '';
-                        analyzeReading(misSample, practiceSentences[currentTextIndex], false);
+                        analyzeLive(misSample, practiceSentences[currentTextIndex], false);
                       }}
                       style={{ background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', border: '1px solid rgba(244, 63, 94, 0.25)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer' }}
                     >
@@ -1204,12 +1199,12 @@ const VoicePractice = ({ onComplete }) => {
                       accumulatedTranscriptRef.current = val;
                       sessionFinalRef.current = '';
                       sessionInterimRef.current = '';
-                      analyzeReading(val, practiceSentences[currentTextIndex], true);
+                      analyzeLive(val, practiceSentences[currentTextIndex], true);
                     }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         const textToAnalyze = transcript.trim();
-                        analyzeReading(textToAnalyze, practiceSentences[currentTextIndex], false);
+                        analyzeLive(textToAnalyze, practiceSentences[currentTextIndex], false);
                       }
                     }}
                     placeholder="Speak aloud into mic (or type/click preset to test)..."
@@ -1226,7 +1221,7 @@ const VoicePractice = ({ onComplete }) => {
                   <button
                     onClick={() => {
                       const textToAnalyze = transcript.trim();
-                      analyzeReading(textToAnalyze, practiceSentences[currentTextIndex], false);
+                      analyzeLive(textToAnalyze, practiceSentences[currentTextIndex], false);
                     }}
                     style={{
                       background: 'var(--lf-primary)',
@@ -1297,87 +1292,37 @@ const VoicePractice = ({ onComplete }) => {
           </div>
 
           {/* ── SPACIOUS SENTENCE DIAGNOSTIC & DEFECT REPORT SECTION (Collapsible for zero-scroll default zoom view) ── */}
-          {sentenceReports[currentTextIndex] && (
+          {sentenceReports[currentTextIndex] !== undefined && (
             <details style={{ marginTop: '0.75rem', background: '#ffffff', padding: '0.85rem 1.25rem', borderRadius: '14px', border: '1.5px solid #e2e8f0', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
               <summary style={{ cursor: 'pointer', fontWeight: 800, fontSize: '0.92rem', color: 'var(--lf-text-primary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', userSelect: 'none' }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                  📊 Sentence Defect & Accuracy Diagnostic Analysis (Click to view details)
+                  📊 Sentence Live Analysis (Click to view)
                 </span>
-                <div style={{ display: 'inline-flex', gap: '6px' }}>
-                  <span className="badge" style={{ background: sentenceReports[currentTextIndex].passStatus === 'Pass' ? 'rgba(20, 184, 166, 0.12)' : 'rgba(244, 63, 94, 0.12)', color: sentenceReports[currentTextIndex].passStatus === 'Pass' ? '#14b8a6' : '#f43f5e', fontWeight: 800, padding: '2px 8px', fontSize: '0.75rem' }}>
-                    {sentenceReports[currentTextIndex].passStatus === 'Pass' ? '✅ PASS' : '❌ FAIL'}
+                {liveAccuracy !== null && (
+                  <span className="badge" style={{ background: liveAccuracy >= PASS_THRESHOLD ? 'rgba(20,184,166,0.12)' : 'rgba(245,158,11,0.12)', color: liveAccuracy >= PASS_THRESHOLD ? '#14b8a6' : '#f59e0b', fontWeight: 800, padding: '2px 8px', fontSize: '0.75rem' }}>
+                    {liveAccuracy}% (live)
                   </span>
-                  <span className="badge" style={{ background: (sentenceReports[currentTextIndex].accuracy || 0) >= PASS_THRESHOLD ? 'rgba(20, 184, 166, 0.12)' : 'rgba(245, 158, 11, 0.12)', color: (sentenceReports[currentTextIndex].accuracy || 0) >= PASS_THRESHOLD ? '#14b8a6' : '#f59e0b', fontWeight: 800, padding: '2px 8px', fontSize: '0.75rem' }}>
-                    {sentenceReports[currentTextIndex].accuracy || 0}% Accuracy
-                  </span>
-                </div>
+                )}
               </summary>
 
               <div style={{ marginTop: '0.85rem', paddingTop: '0.85rem', borderTop: '1px solid #f1f5f9' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '0.85rem' }}>
-                  {/* What User Told */}
                   <div style={{ background: '#f8fafc', padding: '0.85rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                    <small style={{ display: 'block', fontSize: '0.72rem', fontWeight: 800, color: 'var(--lf-primary)', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>
-                      🗣️ Spoken Voice Input (What User Said):
-                    </small>
+                    <small style={{ display: 'block', fontSize: '0.72rem', fontWeight: 800, color: 'var(--lf-primary)', textTransform: 'uppercase', marginBottom: '4px' }}>🗣️ Spoken:</small>
                     <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: 'var(--lf-text-primary)', lineHeight: '1.4' }}>
-                      "{sentenceReports[currentTextIndex].transcript || transcript || '(No speech recorded)'}"
+                      "{sentenceReports[currentTextIndex] || transcript || '(No speech recorded)'}"
                     </p>
                   </div>
-
-                  {/* Actual Expected Target Output */}
                   <div style={{ background: '#f8fafc', padding: '0.85rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                    <small style={{ display: 'block', fontSize: '0.72rem', fontWeight: 800, color: '#0d9488', textTransform: 'uppercase', marginBottom: '4px', letterSpacing: '0.05em' }}>
-                      🎯 Target Sentence (Expected Output):
-                    </small>
+                    <small style={{ display: 'block', fontSize: '0.72rem', fontWeight: 800, color: '#0d9488', textTransform: 'uppercase', marginBottom: '4px' }}>🎯 Target:</small>
                     <p style={{ margin: 0, fontSize: '0.92rem', fontWeight: 700, color: 'var(--lf-text-primary)', lineHeight: '1.4' }}>
                       "{practiceSentences[currentTextIndex]}"
                     </p>
                   </div>
                 </div>
-
-                {/* Defect Metrics & Detailed Breakdown */}
-                <div style={{ background: '#f8fafc', padding: '0.85rem 1rem', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
-                  <small style={{ display: 'block', fontSize: '0.72rem', fontWeight: 800, color: 'var(--lf-text-muted)', textTransform: 'uppercase', marginBottom: '6px', letterSpacing: '0.05em' }}>
-                    📋 Word-by-Word Defect & Fluency Metrics:
-                  </small>
-                  <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.82rem', flexWrap: 'wrap', marginBottom: '0.4rem' }}>
-                    <div>
-                      <span style={{ color: '#14b8a6', fontWeight: 700 }}>✅ Correct:</span>{' '}
-                      <strong style={{ color: '#0f766e' }}>{sentenceReports[currentTextIndex].correctCount} / {sentenceReports[currentTextIndex].totalWords} words</strong>
-                    </div>
-                    <div>
-                      <span style={{ color: '#f43f5e', fontWeight: 700 }}>❌ Mispronounced:</span>{' '}
-                      <strong style={{ color: '#be123c' }}>{sentenceReports[currentTextIndex].mispronounced?.length || 0} word(s)</strong>
-                    </div>
-                    <div>
-                      <span style={{ color: '#f59e0b', fontWeight: 700 }}>⚠️ Skipped:</span>{' '}
-                      <strong style={{ color: '#b45309' }}>{sentenceReports[currentTextIndex].omitted?.length || 0} word(s)</strong>
-                    </div>
-                  </div>
-
-                  {sentenceReports[currentTextIndex].mispronounced && sentenceReports[currentTextIndex].mispronounced.length > 0 && (
-                    <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed #cbd5e1', fontSize: '0.8rem' }}>
-                      <strong style={{ color: '#f43f5e', display: 'block', marginBottom: '3px' }}>Specific Mispronunciation Details:</strong>
-                      {sentenceReports[currentTextIndex].mispronounced.map((m, i) => (
-                        <div key={i} style={{ color: '#334155', marginTop: '2px', fontWeight: 600 }}>
-                          • Target word "<strong>{m.target}</strong>" was read as "<em>{m.heard}</em>"
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {sentenceReports[currentTextIndex].omitted && sentenceReports[currentTextIndex].omitted.length > 0 && (
-                    <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px dashed #cbd5e1', fontSize: '0.8rem' }}>
-                      <strong style={{ color: '#f59e0b', display: 'block', marginBottom: '3px' }}>Skipped / Omitted Words:</strong>
-                      {sentenceReports[currentTextIndex].omitted.map((m, i) => (
-                        <div key={i} style={{ color: '#334155', marginTop: '2px', fontWeight: 600 }}>
-                          • Target word "<strong>{m.target}</strong>" was skipped during oral reading
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--lf-text-muted)', fontStyle: 'italic' }}>
+                  Final scores will be computed when you finish the session.
+                </p>
               </div>
             </details>
           )}
@@ -1406,152 +1351,180 @@ const VoicePractice = ({ onComplete }) => {
           </div>
         </>
       ) : (
-        /* Post-Session Comprehensive Child Oral Reading & Fluency Report */
+        /* ── POST-SESSION REPORT — ALL NUMBERS FROM finalReport (single source of truth) ── */
         <div className="oral-report-container" style={{ background: '#ffffff', padding: '2rem', borderRadius: '20px', border: '2px solid var(--lf-border)', boxShadow: '0 10px 30px rgba(0,0,0,0.08)' }}>
-          <header style={{ borderBottom: '2px dashed var(--lf-border)', paddingBottom: '1.25rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <span className="badge badge-info" style={{ marginBottom: '0.4rem', fontSize: '0.85rem', padding: '4px 12px' }}>
-                🎈 Child Reading Diagnostic Report
-              </span>
-              <h2 style={{ fontSize: '1.75rem', fontWeight: 900, margin: 0, color: 'var(--lf-text-primary)' }}>
-                Oral Reading Fluency & Speech Analysis
-              </h2>
-              <small style={{ color: 'var(--lf-text-muted)', fontWeight: 600 }}>
-                Session Duration: {sessionTime} seconds | Speaker: {currentUser?.displayName || currentUser?.email?.split('@')[0] || "Learner"}
-              </small>
+          {!reportReady ? (
+            <div style={{ textAlign: 'center', padding: '3rem' }}>
+              <span style={{ fontSize: '2rem' }}>⏳</span>
+              <p style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Computing your results…</p>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: '1.5rem', marginBottom: '2px' }}>
-                {overallAcc >= 90 ? '⭐️⭐️⭐️' : overallAcc >= 70 ? '⭐️⭐️' : '⭐️'}
-              </div>
-              <div style={{ fontSize: '2rem', fontWeight: 900, color: overallAcc >= 70 ? '#14b8a6' : '#f59e0b' }}>
-                {overallAcc}%
-              </div>
-              <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Phonetic Accuracy</small>
-            </div>
-          </header>
+          ) : (() => {
+            const { sentences: sentenceResults, summary } = finalReport;
+            const acc = summary.accuracy;
+            const wpmDisplay = summary.wpm !== null ? `${summary.wpm} WPM` : '—';
 
-          {/* Child Clinical Metrics Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '1.75rem' }}>
-            <div style={{ background: 'rgba(20, 184, 166, 0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(20, 184, 166, 0.25)', textAlign: 'center' }}>
-              <span style={{ fontSize: '1.6rem' }}>✅</span>
-              <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#14b8a6' }}>{totalCorrect} / {totalWords}</strong>
-              <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Words Correct</small>
-            </div>
-
-            <div style={{ background: 'rgba(59, 130, 246, 0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(59, 130, 246, 0.25)', textAlign: 'center' }}>
-              <span style={{ fontSize: '1.6rem' }}>⏱️</span>
-              <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#3b82f6' }}>
-                {sessionTime > 0 ? Math.round((totalCorrect / sessionTime) * 60) : 0} WPM
-              </strong>
-              <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Reading Speed (WPM)</small>
-            </div>
-
-            <div style={{ background: 'rgba(244, 63, 94, 0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(244, 63, 94, 0.25)', textAlign: 'center' }}>
-              <span style={{ fontSize: '1.6rem' }}>❌</span>
-              <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#f43f5e' }}>{totalMispronounced}</strong>
-              <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Mispronounced</small>
-            </div>
-
-            <div style={{ background: 'rgba(245, 158, 11, 0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(245, 158, 11, 0.25)', textAlign: 'center' }}>
-              <span style={{ fontSize: '1.6rem' }}>⚠️</span>
-              <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#f59e0b' }}>{totalOmitted}</strong>
-              <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Skipped Words</small>
-            </div>
-          </div>
-
-          {/* Specialist Clinical Insight Card */}
-          <div style={{ background: 'linear-gradient(135deg, rgba(79, 70, 229, 0.06) 0%, rgba(13, 148, 136, 0.06) 100%)', padding: '1.25rem', borderRadius: '14px', border: '1.5px solid rgba(79, 70, 229, 0.18)', marginBottom: '1.75rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '1.2rem' }}>🔬</span>
-              <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--lf-primary)' }}>
-                Child Dyslexia Speech & Fluency Diagnostic:
-              </h4>
-            </div>
-            <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: '1.6', color: 'var(--lf-text-secondary)', fontWeight: 600 }}>
-              {overallAcc >= 90 ? (
-                "🌟 Excellent Oral Decoding: The child demonstrated high phonetic accuracy and smooth reading cadence. Grapheme-to-phoneme conversion speed is well-established."
-              ) : totalMispronounced >= totalOmitted ? (
-                "⚠️ Visual-Phonetic Substitution Pattern Detected: The child experienced hesitation on specific consonant/vowel blends. Recommended action: Engage in 5 minutes of Phoneme Matching and Morphology Builder games to reinforce decoding."
-              ) : (
-                "⚠️ Sight-Word Omission & Visual Tracking Strain Detected: The child skipped connecting sight words during sentence reading. Recommended action: Use Bionic Reader overlays and Visual Tracking practice to reduce visual crowding."
-              )}
-            </p>
-          </div>
-
-          {/* Sentence by Sentence Detailed Breakdown */}
-          <h4 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--lf-text-primary)' }}>Sentence-by-Sentence Fluency Breakdown</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
-            {practiceSentences.map((sent, idx) => {
-              const rep = sentenceReports[idx] || {};
-              const acc = rep.accuracy !== undefined ? rep.accuracy : 0;
-
-              return (
-                <div key={idx} style={{ background: '#f8fafc', padding: '1.1rem', borderRadius: '12px', border: '1px solid var(--lf-border)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                    <strong style={{ fontSize: '0.85rem', color: 'var(--lf-primary)' }}>Sentence #{idx + 1}</strong>
-                    <span className={`badge ${acc >= PASS_THRESHOLD ? 'badge-low' : 'badge-high'}`}>
-                      {acc >= PASS_THRESHOLD ? '✅ PASS' : '❌ FAIL'} ({acc}% Accuracy)
-                    </span>
+            return (
+              <>
+                <header style={{ borderBottom: '2px dashed var(--lf-border)', paddingBottom: '1.25rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <span className="badge badge-info" style={{ marginBottom: '0.4rem', fontSize: '0.85rem', padding: '4px 12px' }}>🎈 Child Reading Diagnostic Report</span>
+                    <h2 style={{ fontSize: '1.75rem', fontWeight: 900, margin: 0, color: 'var(--lf-text-primary)' }}>Oral Reading Fluency & Speech Analysis</h2>
+                    <small style={{ color: 'var(--lf-text-muted)', fontWeight: 600 }}>
+                      Session Duration: {summary.durationSeconds}s | Speaker: {currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Learner'}
+                    </small>
                   </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '1.5rem', marginBottom: '2px' }}>{acc >= 90 ? '⭐️⭐️⭐️' : acc >= 70 ? '⭐️⭐️' : '⭐️'}</div>
+                    <div style={{ fontSize: '2rem', fontWeight: 900, color: acc >= 70 ? '#14b8a6' : '#f59e0b' }}>{acc}%</div>
+                    <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Phonetic Accuracy</small>
+                  </div>
+                </header>
 
-                  <p style={{ margin: '0 0 0.5rem 0', fontSize: '1.05rem', fontWeight: 700, color: 'var(--lf-text-primary)' }}>
-                    "{sent}"
-                  </p>
-
-                  {rep.transcript && (
-                    <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.88rem', color: 'var(--lf-text-secondary)' }}>
-                      🎤 <em>Spoken Voice Transcript:</em> "{rep.transcript}"
-                    </p>
-                  )}
-
-                  {rep.mispronounced && rep.mispronounced.length > 0 && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '0.5rem' }}>
-                      {rep.mispronounced.map((m, i) => (
-                        <span key={i} style={{ background: 'rgba(244,63,94,0.12)', color: '#f43f5e', border: '1px solid rgba(244,63,94,0.3)', padding: '3px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600 }}>
-                          Target: "{m.target}" → Read as: "{m.heard}"
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {rep.omitted && rep.omitted.length > 0 && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '0.4rem' }}>
-                      {rep.omitted.map((m, i) => (
-                        <span key={i} style={{ background: 'rgba(245,158,11,0.12)', color: '#d97706', border: '1px solid rgba(245,158,11,0.3)', padding: '3px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600 }}>
-                          Skipped: "{m.target}"
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {(!rep.mispronounced || rep.mispronounced.length === 0) && (!rep.omitted || rep.omitted.length === 0) && (
-                    <small style={{ color: '#14b8a6', fontWeight: 600 }}>✓ All words in this sentence read fluently without errors!</small>
-                  )}
+                {/* ── METRICS GRID — from summary only ── */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1rem', marginBottom: '1.75rem' }}>
+                  <div style={{ background: 'rgba(20,184,166,0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(20,184,166,0.25)', textAlign: 'center' }}>
+                    <span style={{ fontSize: '1.6rem' }}>✅</span>
+                    <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#14b8a6' }}>{summary.correctWords} / {summary.totalWords}</strong>
+                    <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Words Correct</small>
+                  </div>
+                  <div style={{ background: 'rgba(59,130,246,0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(59,130,246,0.25)', textAlign: 'center' }}>
+                    <span style={{ fontSize: '1.6rem' }}>⏱️</span>
+                    <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#3b82f6' }}>{wpmDisplay}</strong>
+                    <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Reading Speed</small>
+                  </div>
+                  <div style={{ background: 'rgba(244,63,94,0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(244,63,94,0.25)', textAlign: 'center' }}>
+                    <span style={{ fontSize: '1.6rem' }}>❌</span>
+                    <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#f43f5e' }}>{summary.mispronounced}</strong>
+                    <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Mispronounced</small>
+                  </div>
+                  <div style={{ background: 'rgba(245,158,11,0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(245,158,11,0.25)', textAlign: 'center' }}>
+                    <span style={{ fontSize: '1.6rem' }}>⚠️</span>
+                    <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#f59e0b' }}>{summary.skipped}</strong>
+                    <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Skipped Words</small>
+                  </div>
+                  <div style={{ background: 'rgba(100,116,139,0.08)', padding: '1rem', borderRadius: '14px', border: '1.5px solid rgba(100,116,139,0.25)', textAlign: 'center' }}>
+                    <span style={{ fontSize: '1.6rem' }}>🕐</span>
+                    <strong style={{ display: 'block', fontSize: '1.4rem', fontWeight: 800, color: '#64748b' }}>{summary.durationSeconds}s</strong>
+                    <small style={{ color: 'var(--lf-text-muted)', fontWeight: 700 }}>Session Duration</small>
+                  </div>
                 </div>
-              );
-            })}
-          </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', flexWrap: 'wrap' }}>
-            <button 
-              className="btn-secondary" 
-              onClick={() => window.print()}
-              style={{ fontWeight: 700 }}
-            >
-              🖨️ Print Child Clinical Report
-            </button>
-            <button 
-              className="btn-secondary" 
-              onClick={() => { setPracticeSentences(getRandomSentences(4)); setIsFinished(false); setCurrentTextIndex(0); setSentenceReports({}); setSessionTime(0); setTranscript(''); }}
-              style={{ fontWeight: 700 }}
-            >
-              🔄 Practice New Sentence Set
-            </button>
-            <button className="btn-primary" style={{ padding: '0.75rem 1.75rem', fontWeight: 700 }} onClick={onComplete}>
-              Complete & View Dashboard →
-            </button>
-          </div>
+                {/* ── DIAGNOSTIC — shown only when there is real data ── */}
+                {summary.diagnostic && summary.diagnostic.type !== 'no_data' && (
+                  <div style={{ background: 'linear-gradient(135deg, rgba(79,70,229,0.06) 0%, rgba(13,148,136,0.06) 100%)', padding: '1.25rem', borderRadius: '14px', border: '1.5px solid rgba(79,70,229,0.18)', marginBottom: '1.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '0.5rem' }}>
+                      <span style={{ fontSize: '1.2rem' }}>🔬</span>
+                      <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--lf-primary)' }}>Child Dyslexia Speech & Fluency Diagnostic:</h4>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '0.92rem', lineHeight: '1.6', color: 'var(--lf-text-secondary)', fontWeight: 600 }}>
+                      {summary.diagnostic.message}
+                    </p>
+                    {summary.diagnostic.disclaimer && (
+                      <p style={{ margin: '0.75rem 0 0 0', fontSize: '0.78rem', color: 'var(--lf-text-muted)', fontStyle: 'italic' }}>
+                        {summary.diagnostic.disclaimer}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* ── SENTENCE BREAKDOWN — from sentenceResults, not sentenceReports ── */}
+                <h4 style={{ fontSize: '1.1rem', fontWeight: 800, marginBottom: '1rem', color: 'var(--lf-text-primary)' }}>Sentence-by-Sentence Fluency Breakdown</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
+                  {sentenceResults.map((sr, idx) => {
+                    const badgeStyle = sr.status === 'PASS'
+                      ? { bg: 'rgba(20,184,166,0.12)', color: '#14b8a6' }
+                      : sr.status === 'NEEDS_PRACTICE'
+                      ? { bg: 'rgba(245,158,11,0.12)', color: '#d97706' }
+                      : { bg: 'rgba(244,63,94,0.12)', color: '#f43f5e' };
+                    const statusLabel = sr.status === 'PASS' ? '✅ PASS' : sr.status === 'NEEDS_PRACTICE' ? '🟡 NEEDS PRACTICE' : '❌ FAIL';
+                    const fluent = sr.mispronouncedCount === 0 && sr.skippedCount === 0 && sr.accuracy === 100;
+
+                    return (
+                      <div key={idx} style={{ background: '#f8fafc', padding: '1.1rem', borderRadius: '12px', border: '1px solid var(--lf-border)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                          <strong style={{ fontSize: '0.85rem', color: 'var(--lf-primary)' }}>Sentence #{idx + 1}</strong>
+                          <span style={{ background: badgeStyle.bg, color: badgeStyle.color, border: `1px solid ${badgeStyle.color}`, padding: '2px 10px', borderRadius: '6px', fontWeight: 800, fontSize: '0.78rem' }}>
+                            {statusLabel} ({sr.accuracy}%)
+                          </span>
+                        </div>
+
+                        <p style={{ margin: '0 0 0.4rem 0', fontSize: '1.05rem', fontWeight: 700, color: 'var(--lf-text-primary)' }}>"{sr.referenceText}"</p>
+
+                        {/* Show spoken transcript */}
+                        {(sentenceReports[idx] || '') && (
+                          <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.88rem', color: 'var(--lf-text-secondary)' }}>
+                            🎤 <em>Spoken:</em> "{sentenceReports[idx]}"
+                          </p>
+                        )}
+
+                        {/* Metrics row */}
+                        <div style={{ display: 'flex', gap: '1.25rem', fontSize: '0.8rem', flexWrap: 'wrap', marginBottom: '0.4rem' }}>
+                          <span><strong style={{ color: '#14b8a6' }}>✅ {sr.correctCount}</strong> correct</span>
+                          <span><strong style={{ color: '#f43f5e' }}>❌ {sr.mispronouncedCount}</strong> mispronounced</span>
+                          <span><strong style={{ color: '#f59e0b' }}>⚠️ {sr.skippedCount}</strong> skipped</span>
+                          {sr.insertedCount > 0 && <span><strong style={{ color: '#6366f1' }}>➕ {sr.insertedCount}</strong> extra</span>}
+                        </div>
+
+                        {/* Mispronounced words */}
+                        {sr.mispronouncedCount > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '0.5rem' }}>
+                            {sr.words.filter(w => w.status === 'mispronounced').map((w, i) => (
+                              <span key={i} style={{ background: 'rgba(244,63,94,0.12)', color: '#f43f5e', border: '1px solid rgba(244,63,94,0.3)', padding: '3px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600 }}>
+                                "{w.expected}" → "{w.spoken}"
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Skipped words */}
+                        {sr.skippedCount > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '0.4rem' }}>
+                            {sr.words.filter(w => w.status === 'skipped').map((w, i) => (
+                              <span key={i} style={{ background: 'rgba(245,158,11,0.12)', color: '#d97706', border: '1px solid rgba(245,158,11,0.3)', padding: '3px 8px', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600 }}>
+                                Skipped: "{w.expected}"
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* "All fluent" — ONLY when accuracy IS 100% and errors ARE 0 */}
+                        {fluent && sr.noSpeech !== true && (
+                          <small style={{ color: '#14b8a6', fontWeight: 600 }}>✓ All words read fluently without errors!</small>
+                        )}
+
+                        {/* No speech case */}
+                        {sr.noSpeech && (
+                          <small style={{ color: '#f43f5e', fontWeight: 600 }}>🎤 No speech detected for this sentence.</small>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', flexWrap: 'wrap' }}>
+                  <button className="btn-secondary" onClick={() => window.print()} style={{ fontWeight: 700 }}>🖨️ Print Report</button>
+                  <button className="btn-secondary" style={{ fontWeight: 700 }} onClick={() => {
+                    setPracticeSentences(getRandomSentences(4));
+                    setIsFinished(false);
+                    setCurrentTextIndex(0);
+                    setSentenceReports({});
+                    sentenceReportsRef.current = {};
+                    setFinalReport(null);
+                    setLiveWordStatuses([]);
+                    setLiveAccuracy(null);
+                    setSessionTime(0);
+                    sessionTimeRef.current = 0;
+                    startTimestampRef.current = null;
+                    endTimestampRef.current = null;
+                    setTranscript('');
+                    transcriptRef.current = '';
+                    accumulatedTranscriptRef.current = '';
+                  }}>🔄 Practice New Sentence Set</button>
+                  <button className="btn-primary" style={{ padding: '0.75rem 1.75rem', fontWeight: 700 }} onClick={onComplete}>Complete & View Dashboard →</button>
+                </div>
+              </>
+            );
+          })()}
         </div>
       )}
     </div>

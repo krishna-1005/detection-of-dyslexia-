@@ -1,5 +1,5 @@
 /* ----------------------------------------------------------------------
-   LexiFlow Kids — Auditory Processing Suite CSS
+   Cognilex Kids — Auditory Processing Suite CSS
    Vibrant, accessible arcade styling for Sound Shield & Copy Cat Echo
    ---------------------------------------------------------------------- */
 
@@ -336,3 +336,44 @@
   margin-bottom: 1.5rem;
   font-weight: 600;
 }
+
+/* ── Mobile Responsive Adjustments ── */
+@media (max-width: 768px) {
+  .ap-game-arena {
+    padding: 0.85rem 0.65rem !important;
+    border-radius: 16px !important;
+  }
+
+  .ap-mode-tabs {
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+
+  .ap-tab-btn {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+  }
+
+  .ap-sparky-banner {
+    flex-direction: column;
+    text-align: center;
+    padding: 0.75rem 0.85rem;
+  }
+
+  .echo-answers-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .echo-answer-btn {
+    padding: 1.25rem 1rem !important;
+    font-size: 1.4rem !important;
+    border-radius: 18px !important;
+  }
+
+  .ap-summary-card {
+    padding: 1.5rem 1rem !important;
+    border-radius: 20px !important;
+  }
+}
+

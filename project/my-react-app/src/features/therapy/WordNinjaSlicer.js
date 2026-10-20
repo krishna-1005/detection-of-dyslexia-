@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { saveTherapyProgress } from './ExerciseSystem';
 import './WordNinjaSlicer.css';
@@ -310,7 +310,7 @@ const WordNinjaSlicer = ({ onComplete }) => {
       // Round Cleared!
       const stats = { round: tierKey, score, accuracy: 100, timestamp: Date.now() };
       try {
-        localStorage.setItem('lexiflow_session_history_dyseidetic', JSON.stringify(stats));
+        localStorage.setItem('cognilex_session_history_dyseidetic', JSON.stringify(stats));
         window.dispatchEvent(new Event('therapy_progress_updated'));
       } catch (e) {}
 

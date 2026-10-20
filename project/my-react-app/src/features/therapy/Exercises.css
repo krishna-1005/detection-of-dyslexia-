@@ -407,3 +407,76 @@
   letter-spacing: 0.02em;
 }
 
+/* ── Therapy Hub Page Layout ── */
+.therapy-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.therapy-welcome-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 1rem 1.5rem;
+  border: 3px solid #74b9ff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.therapy-guidance-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+  text-align: left;
+}
+
+.therapy-active-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.35rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.therapy-info-details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .therapy-page-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .therapy-page-header button {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  .therapy-guidance-grid,
+  .therapy-info-details-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  .therapy-welcome-card {
+    padding: 1.25rem 1rem !important;
+  }
+
+  .therapy-active-top-bar button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+}
+
+

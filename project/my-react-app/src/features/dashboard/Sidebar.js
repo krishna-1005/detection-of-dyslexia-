@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './Sidebar.css';
 
@@ -25,11 +25,11 @@ const Sidebar = () => {
   const [visited, setVisited] = useState({});
 
   useEffect(() => {
-    const savedVisited = JSON.parse(localStorage.getItem('lexiflow_visited') || '{}');
+    const savedVisited = JSON.parse(localStorage.getItem('cognilex_visited') || '{}');
     const currentPath = location.pathname;
     if (!savedVisited[currentPath] && currentPath !== '/') {
       savedVisited[currentPath] = true;
-      localStorage.setItem('lexiflow_visited', JSON.stringify(savedVisited));
+      localStorage.setItem('cognilex_visited', JSON.stringify(savedVisited));
     }
     setVisited(savedVisited);
   }, [location]);
@@ -54,37 +54,37 @@ const Sidebar = () => {
   const activeGuide = guides[location.pathname] || [];
   
   const [guideEnabled, setGuideEnabled] = useState(() => {
-    return localStorage.getItem('lexiflow_guide_enabled') === 'true';
+    return localStorage.getItem('cognilex_guide_enabled') === 'true';
   });
   
   const [currentStep, setCurrentStep] = useState(() => {
-    return parseInt(localStorage.getItem(`lexiflow_guide_step_${location.pathname}`) || '0');
+    return parseInt(localStorage.getItem(`cognilex_guide_step_${location.pathname}`) || '0');
   });
 
   const [completedSteps, setCompletedSteps] = useState(() => {
-    return JSON.parse(localStorage.getItem(`lexiflow_guide_completed_${location.pathname}`) || '{}');
+    return JSON.parse(localStorage.getItem(`cognilex_guide_completed_${location.pathname}`) || '{}');
   });
 
   useEffect(() => {
-    localStorage.setItem('lexiflow_guide_enabled', guideEnabled);
+    localStorage.setItem('cognilex_guide_enabled', guideEnabled);
     window.dispatchEvent(new Event('storage'));
   }, [guideEnabled]);
 
   useEffect(() => {
-    localStorage.setItem(`lexiflow_guide_step_${location.pathname}`, currentStep);
+    localStorage.setItem(`cognilex_guide_step_${location.pathname}`, currentStep);
     window.dispatchEvent(new Event('storage'));
   }, [currentStep, location.pathname]);
 
   useEffect(() => {
-    localStorage.setItem(`lexiflow_guide_completed_${location.pathname}`, JSON.stringify(completedSteps));
+    localStorage.setItem(`cognilex_guide_completed_${location.pathname}`, JSON.stringify(completedSteps));
     window.dispatchEvent(new Event('storage'));
   }, [completedSteps, location.pathname]);
 
   useEffect(() => {
     const handleStorageChange = () => {
-      const newGuideEnabled = localStorage.getItem('lexiflow_guide_enabled') === 'true';
-      const newStep = parseInt(localStorage.getItem(`lexiflow_guide_step_${location.pathname}`) || '0');
-      const newCompleted = localStorage.getItem(`lexiflow_guide_completed_${location.pathname}`) || '{}';
+      const newGuideEnabled = localStorage.getItem('cognilex_guide_enabled') === 'true';
+      const newStep = parseInt(localStorage.getItem(`cognilex_guide_step_${location.pathname}`) || '0');
+      const newCompleted = localStorage.getItem(`cognilex_guide_completed_${location.pathname}`) || '{}';
 
       setGuideEnabled(prev => prev !== newGuideEnabled ? newGuideEnabled : prev);
       setCurrentStep(prev => prev !== newStep ? newStep : prev);
@@ -98,13 +98,13 @@ const Sidebar = () => {
   }, [location.pathname]);
 
   const [isCollapsed, setIsCollapsed] = useState(() => {
-    return localStorage.getItem('lexiflow_sidebar_collapsed') === 'true';
+    return localStorage.getItem('cognilex_sidebar_collapsed') === 'true';
   });
 
   const toggleSidebar = () => {
     setIsCollapsed(prev => {
       const next = !prev;
-      localStorage.setItem('lexiflow_sidebar_collapsed', next.toString());
+      localStorage.setItem('cognilex_sidebar_collapsed', next.toString());
       return next;
     });
   };

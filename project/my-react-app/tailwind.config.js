@@ -1,4 +1,4 @@
-/** @type {import('tailwindcss').Config} */
+﻿/** @type {import('tailwindcss').Config} */
 module.exports = {
   // Only scan doctor-dashboard files — prevents Tailwind from 
   // generating classes for the rest of the app
@@ -6,7 +6,7 @@ module.exports = {
     './src/doctor-dashboard/**/*.{js,jsx}',
   ],
   // Scope all Tailwind utilities under .doctor-dashboard to prevent
-  // any style leakage into existing LexiFlow components
+  // any style leakage into existing Cognilex components
   important: '.doctor-dashboard',
   theme: {
     extend: {
@@ -85,7 +85,7 @@ module.exports = {
     },
   },
   // Disable Preflight (CSS reset) to prevent interfering with
-  // existing LexiFlow styles
+  // existing Cognilex styles
   corePlugins: {
     preflight: false,
   },

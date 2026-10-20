@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+﻿import { useState, useCallback, useRef, useEffect } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { saveTherapyProgress } from '../ExerciseSystem';
 
@@ -95,7 +95,7 @@ const useGameState = ({ onComplete } = {}) => {
   const uid = currentUser?.uid;
 
   // ── Persisted XP/Level from localStorage ──
-  const storageKey = uid ? `lexiflow_soundcannon_xp_${uid}` : 'lexiflow_soundcannon_xp';
+  const storageKey = uid ? `cognilex_soundcannon_xp_${uid}` : 'cognilex_soundcannon_xp';
 
   const loadSavedProgress = () => {
     try {

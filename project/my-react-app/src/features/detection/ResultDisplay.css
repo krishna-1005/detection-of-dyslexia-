@@ -69,3 +69,27 @@
   font-style: italic;
   line-height: 1.6;
 }
+
+@media (max-width: 600px) {
+  .result-container {
+    padding: 1.25rem 1rem !important;
+    margin: 1rem auto !important;
+    border-radius: 16px !important;
+  }
+
+  .result-container h2 {
+    font-size: 1.3rem !important;
+    margin-bottom: 12px !important;
+  }
+
+  .result-item {
+    padding: 10px 12px !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+
+  .result-value {
+    font-size: 1.1rem !important;
+  }
+}
+

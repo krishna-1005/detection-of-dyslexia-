@@ -461,3 +461,70 @@
   padding: 1rem 2rem !important;
   box-sizing: border-box !important;
 }
+
+/* Responsive Mobile Support */
+@media (max-width: 768px) {
+  .bpr-game-wrapper {
+    padding: 0.6rem 0.6rem !important;
+    border-radius: 14px !important;
+  }
+
+  .bpr-hud {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0.5rem 0.65rem !important;
+  }
+
+  .bpr-hud-title {
+    font-size: 0.95rem !important;
+  }
+
+  .bpr-hud-stats {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .bpr-stat-pill {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+  }
+
+  .bpr-speech-bubble-banner {
+    flex-direction: column;
+    text-align: center;
+    gap: 6px;
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  .bpr-target-prompt {
+    font-size: 0.95rem !important;
+    justify-content: center;
+  }
+
+  .bpr-stats-summary-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .bpr-complete-card {
+    padding: 1.25rem 0.85rem !important;
+    max-width: 100% !important;
+    border-radius: 20px !important;
+  }
+
+  .bpr-complete-btns {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .bpr-btn-again, .bpr-btn-hq {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bpr-stats-summary-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

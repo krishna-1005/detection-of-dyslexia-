@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import './GuideMe.css';
 
@@ -215,7 +215,7 @@ const GuideMe = () => {
 
   // Active Mascot state saved in localStorage
   const [selectedCharacter, setSelectedCharacter] = useState(() => {
-    return localStorage.getItem('lexiflow_mascot_character') || 'owl';
+    return localStorage.getItem('cognilex_mascot_character') || 'owl';
   });
 
   const activeMascotObj = CHARACTER_LIST.find(c => c.id === selectedCharacter) || CHARACTER_LIST[0];
@@ -223,7 +223,7 @@ const GuideMe = () => {
   // Comprehensive section guides map for all routes
   const guides = {
     '/': [
-      { title: '✨ Welcome to LexiFlow', content: 'Explore our AI-powered dyslexia detection, multi-sensory therapy arcade, and bionic reading assistance platform.' },
+      { title: '✨ Welcome to Cognilex', content: 'Explore our AI-powered dyslexia detection, multi-sensory therapy arcade, and bionic reading assistance platform.' },
       { title: '🎯 Step 1: AI Dyslexia Detection', content: 'Navigate to "Detect Dyslexia" to analyze reading speed, phonemic errors, and saccadic eye movements.' },
       { title: '📚 Step 2: Try Smart Reader', content: 'Open the Smart Reader to convert any text into OpenDyslexic font, bionic reading mode, and tinted overlays.' },
       { title: '🎮 Step 3: Kids Therapy Arcade', content: 'Play 6 fun mini-games designed to treat phonological, spatial, and surface dyslexia types.' }
@@ -272,7 +272,7 @@ const GuideMe = () => {
       { title: '📥 Step 3: Download & Print', content: 'Export clean diagnostic summaries ready for academic or medical review.' }
     ],
     '/login': [
-      { title: '🔑 Sign In to LexiFlow', content: 'Enter your credentials to access your saved reading progress, streaks, and therapy stats.' }
+      { title: '🔑 Sign In to Cognilex', content: 'Enter your credentials to access your saved reading progress, streaks, and therapy stats.' }
     ],
     '/signup': [
       { title: '✨ Create Your Account', content: 'Sign up to personalize your mascot companion, track daily streaks, and store diagnostic reports.' }
@@ -295,28 +295,28 @@ const GuideMe = () => {
   const activeGuide = getActiveGuide();
 
   const [currentStep, setCurrentStep] = useState(() => {
-    return parseInt(localStorage.getItem(`lexiflow_guide_step_${location.pathname}`) || '0', 10);
+    return parseInt(localStorage.getItem(`cognilex_guide_step_${location.pathname}`) || '0', 10);
   });
 
   const [completedSteps, setCompletedSteps] = useState(() => {
-    return JSON.parse(localStorage.getItem(`lexiflow_guide_completed_${location.pathname}`) || '{}');
+    return JSON.parse(localStorage.getItem(`cognilex_guide_completed_${location.pathname}`) || '{}');
   });
 
   useEffect(() => {
-    localStorage.setItem('lexiflow_mascot_character', selectedCharacter);
+    localStorage.setItem('cognilex_mascot_character', selectedCharacter);
   }, [selectedCharacter]);
 
   useEffect(() => {
-    const savedStep = parseInt(localStorage.getItem(`lexiflow_guide_step_${location.pathname}`) || '0', 10);
+    const savedStep = parseInt(localStorage.getItem(`cognilex_guide_step_${location.pathname}`) || '0', 10);
     setCurrentStep(savedStep < activeGuide.length ? savedStep : 0);
   }, [location.pathname, activeGuide.length]);
 
   useEffect(() => {
-    localStorage.setItem(`lexiflow_guide_step_${location.pathname}`, currentStep);
+    localStorage.setItem(`cognilex_guide_step_${location.pathname}`, currentStep);
   }, [currentStep, location.pathname]);
 
   useEffect(() => {
-    localStorage.setItem(`lexiflow_guide_completed_${location.pathname}`, JSON.stringify(completedSteps));
+    localStorage.setItem(`cognilex_guide_completed_${location.pathname}`, JSON.stringify(completedSteps));
   }, [completedSteps, location.pathname]);
 
   // Stop speech when changing routes or closing

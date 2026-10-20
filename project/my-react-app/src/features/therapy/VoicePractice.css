@@ -288,10 +288,47 @@
   max-width: 90%;
 }
 
+/* ── Reading Test Page Layout ── */
+.reading-test-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem;
+  margin-bottom: 1.1rem;
+  text-align: left;
+}
+
+.reading-test-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
 /* ── Mobile Responsive Adjustments ── */
 @media (max-width: 768px) {
   .live-practice {
-    padding: 1rem 0.5rem;
+    padding: 0.85rem 0.35rem;
+  }
+
+  .reading-test-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .reading-test-header button {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  .reading-test-steps-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  .reading-welcome-card {
+    padding: 1.25rem 1rem !important;
   }
 
   .live-practice-grid {
@@ -313,3 +350,4 @@
     grid-template-columns: 1fr !important;
   }
 }
+

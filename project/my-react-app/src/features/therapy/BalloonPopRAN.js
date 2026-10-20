@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { saveTherapyProgress } from './ExerciseSystem';
 import { speakHumanText } from './humanVoiceEngine';
@@ -206,7 +206,7 @@ const BalloonPopRAN = ({
     };
 
     try {
-      localStorage.setItem('lexiflow_session_history_ran', JSON.stringify(stats));
+      localStorage.setItem('cognilex_session_history_ran', JSON.stringify(stats));
       window.dispatchEvent(new Event('therapy_progress_updated'));
     } catch (e) {}
 

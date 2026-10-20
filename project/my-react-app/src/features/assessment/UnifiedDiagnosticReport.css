@@ -338,6 +338,48 @@
   color: #fbbf24;
 }
 
+/* ── Mobile Responsive Adjustments ── */
+@media (max-width: 768px) {
+  .udr-scroll-area {
+    padding: 1rem 0.85rem 2rem !important;
+  }
+
+  .udr-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .udr-header-actions {
+    width: 100% !important;
+  }
+
+  .udr-print-btn {
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  .udr-classification-card {
+    flex-direction: column !important;
+    text-align: center !important;
+    padding: 1.25rem 1rem !important;
+  }
+
+  .udr-metric-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+
+  .udr-actions {
+    flex-direction: column !important;
+    width: 100% !important;
+  }
+
+  .udr-action-btn {
+    width: 100% !important;
+    text-align: center !important;
+  }
+}
+
 /* ── PRINT STYLES ── */
 @media print {
   .udr-viewport {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Navbar from '../dashboard/Navbar';
 import SymptomsQuiz, { SUBTYPES } from './SymptomsQuiz';
@@ -12,7 +12,7 @@ const QuizPage = () => {
   // Load recent diagnostic report on mount if available
   useEffect(() => {
     try {
-      const reports = JSON.parse(localStorage.getItem('lexiflow_diagnostic_reports') || '[]');
+      const reports = JSON.parse(localStorage.getItem('cognilex_diagnostic_reports') || '[]');
       if (reports && reports.length > 0) {
         // Option to keep previous report if user navigates directly
       }
@@ -153,9 +153,9 @@ const QuizPage = () => {
         <div className="footer-inner">
           <div className="footer-brand">
             <div className="nav-logo-icon">L</div>
-            <span>LexiFlow</span>
+            <span>Cognilex</span>
           </div>
-          <p>© 2026 LexiFlow Clinical. Designed for educational accessibility.</p>
+          <p>© 2026 Cognilex Clinical. Designed for educational accessibility.</p>
         </div>
       </footer>
     </div>

@@ -388,3 +388,63 @@
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
 }
+
+/* Responsive Mobile Support */
+@media (max-width: 768px) {
+  .mmh-game-container {
+    height: 380px !important;
+    max-height: 380px !important;
+    padding: 0.65rem 0.75rem !important;
+    border-radius: 16px !important;
+  }
+
+  .mmh-hud-header {
+    gap: 0.5rem;
+  }
+
+  .mmh-game-logo {
+    font-size: 1.05rem !important;
+  }
+
+  .mmh-hud-stats {
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .mmh-stat-pill {
+    padding: 0.35rem 0.65rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  .mmh-target-banner {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  .mmh-target-info {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .mmh-summary-card {
+    padding: 1.5rem 1rem !important;
+    border-radius: 20px !important;
+  }
+
+  .mmh-summary-metrics {
+    grid-template-columns: 1fr !important;
+    gap: 0.6rem !important;
+  }
+
+  .mmh-summary-actions {
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .mmh-btn-again, .mmh-btn-done {
+    width: 100%;
+    min-height: 44px;
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import './Exercises.css';
 import VoicePractice from './VoicePractice';
 import SoundQuest from './SoundQuest';
@@ -56,20 +56,20 @@ export const saveTherapyProgress = async (currentUser, type, score, accuracy, ti
   // practice-mode sessions are tracked separately for personal stats only.
   try {
     if (mode === 'assessment') {
-      const uidHistKey = uid ? `lexiflow_history_${uid}` : "lexiflow_history";
+      const uidHistKey = uid ? `cognilex_history_${uid}` : "cognilex_history";
       const uidHist = JSON.parse(localStorage.getItem(uidHistKey) || "[]");
       localStorage.setItem(uidHistKey, JSON.stringify([historyItem, ...uidHist]));
 
-      const globalHist = JSON.parse(localStorage.getItem("lexiflow_history") || "[]");
-      localStorage.setItem("lexiflow_history", JSON.stringify([historyItem, ...globalHist]));
+      const globalHist = JSON.parse(localStorage.getItem("cognilex_history") || "[]");
+      localStorage.setItem("cognilex_history", JSON.stringify([historyItem, ...globalHist]));
     }
 
-    const historyKey = uid ? `lexiflow_exercise_history_${uid}` : 'lexiflow_exercise_history';
-    const lastKey = uid ? `lexiflow_last_therapy_${uid}` : 'lexiflow_last_therapy';
+    const historyKey = uid ? `cognilex_exercise_history_${uid}` : 'cognilex_exercise_history';
+    const lastKey = uid ? `cognilex_last_therapy_${uid}` : 'cognilex_last_therapy';
 
     let history = {};
     try {
-      const rawHist = localStorage.getItem(historyKey) || localStorage.getItem('lexiflow_exercise_history');
+      const rawHist = localStorage.getItem(historyKey) || localStorage.getItem('cognilex_exercise_history');
       if (rawHist) history = JSON.parse(rawHist);
     } catch (e) {
       history = {};
@@ -91,9 +91,9 @@ export const saveTherapyProgress = async (currentUser, type, score, accuracy, ti
     };
 
     localStorage.setItem(historyKey, JSON.stringify(history));
-    localStorage.setItem('lexiflow_exercise_history', JSON.stringify(history));
+    localStorage.setItem('cognilex_exercise_history', JSON.stringify(history));
     localStorage.setItem(lastKey, type);
-    localStorage.setItem('lexiflow_last_therapy', type);
+    localStorage.setItem('cognilex_last_therapy', type);
   } catch (err) {
     console.warn("Local storage save error:", err);
   }
@@ -797,7 +797,7 @@ const ExerciseSystem = ({ type, onComplete }) => {
   const [exerciseStats, setExerciseStats] = useState(null);
   const [isAdvanced, setIsAdvanced] = useState(false);
   const [sessionMode, setSessionMode] = useState(() => {
-    return localStorage.getItem('lexiflow_therapy_mode') || 'assessment';
+    return localStorage.getItem('cognilex_therapy_mode') || 'assessment';
   });
   const { currentUser } = useAuth();
 
@@ -805,8 +805,8 @@ const ExerciseSystem = ({ type, onComplete }) => {
 
   useEffect(() => {
     if (!currentUser) return;
-    const historyKey = `lexiflow_exercise_history_${currentUser.uid}`;
-    const history = JSON.parse(localStorage.getItem(historyKey) || localStorage.getItem('lexiflow_exercise_history') || '{}');
+    const historyKey = `cognilex_exercise_history_${currentUser.uid}`;
+    const history = JSON.parse(localStorage.getItem(historyKey) || localStorage.getItem('cognilex_exercise_history') || '{}');
     const typeStats = history[type] || { pb: '3020 pts', pb_val: 3020, sessions: 1, accuracy: '67%', trend: 'Stable', level: 'Intermediate', lastPlayed: 'Recent' };
     setExerciseStats(typeStats);
   }, [type, currentUser]);
@@ -928,7 +928,7 @@ const ExerciseSystem = ({ type, onComplete }) => {
                 onClick={() => {
                   const next = sessionMode === 'assessment' ? 'practice' : 'assessment';
                   setSessionMode(next);
-                  localStorage.setItem('lexiflow_therapy_mode', next);
+                  localStorage.setItem('cognilex_therapy_mode', next);
                 }}
                 style={{
                   background: sessionMode === 'assessment' ? 'rgba(20, 184, 166, 0.15)' : 'rgba(251, 191, 36, 0.15)',

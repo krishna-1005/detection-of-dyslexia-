@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { saveTherapyProgress } from './ExerciseSystem';
 import './RhythmRail.css';
@@ -515,7 +515,7 @@ export default function RhythmRail({
     };
 
     try {
-      localStorage.setItem('lexiflow_session_history_auditory', JSON.stringify(telemetryPayload));
+      localStorage.setItem('cognilex_session_history_auditory', JSON.stringify(telemetryPayload));
       window.dispatchEvent(new Event('therapy_progress_updated'));
     } catch (e) {}
 

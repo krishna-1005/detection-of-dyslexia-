@@ -318,3 +318,67 @@
   justify-content: center !important;
   padding: 1rem 2rem !important;
 }
+
+/* Responsive Mobile Support */
+@media (max-width: 768px) {
+  .msg-container {
+    padding: 0.5rem !important;
+  }
+
+  .msg-hud {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0.4rem 0.6rem !important;
+  }
+
+  .msg-hud-title {
+    font-size: 0.95rem !important;
+  }
+
+  .msg-hud-stats {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .msg-clue-row {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .msg-target-card {
+    min-width: unset !important;
+    max-width: 100% !important;
+    width: 100%;
+  }
+
+  .msg-canvas-wrap {
+    max-height: 340px;
+  }
+
+  .msg-controls-bar {
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .msg-complete-card, .msg-start-card {
+    padding: 1.25rem 0.85rem !important;
+    max-width: 100% !important;
+    border-radius: 20px !important;
+  }
+
+  .msg-complete-stats {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .msg-complete-btns {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .msg-start-btn, .msg-btn-next, .msg-btn-hq {
+    width: 100%;
+    min-height: 44px;
+  }
+}

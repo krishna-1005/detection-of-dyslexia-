@@ -96,8 +96,65 @@
   gap: 1.5rem;
 }
 
+/* ── Analytics & History Grid ── */
+.detect-analytics-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 1.5rem;
+}
+
+.detect-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.detect-actions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 /* ── Mobile Responsive Adjustments ── */
 @media (max-width: 768px) {
+  .detect-analytics-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .detect-header-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .detect-header-row button {
+    width: 100% !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+
+  .detect-actions-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .detect-actions-row > div:first-child {
+    display: flex !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+  }
+
+  .detect-actions-row .btn-gradient {
+    width: 100% !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+
   div[style*="gridTemplateColumns: 1.4fr 1fr"],
   div[style*="grid-template-columns: 1.4fr 1fr"] {
     grid-template-columns: 1fr !important;
@@ -113,3 +170,4 @@
     grid-template-columns: 1fr;
   }
 }
+

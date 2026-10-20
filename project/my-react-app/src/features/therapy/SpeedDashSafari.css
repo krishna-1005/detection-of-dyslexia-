@@ -367,3 +367,69 @@
   padding: 1rem 2rem !important;
   box-sizing: border-box !important;
 }
+
+/* Responsive Mobile Support */
+@media (max-width: 768px) {
+  .sds-container {
+    padding: 0.85rem 0.65rem !important;
+    min-height: 480px !important;
+    border-radius: 18px !important;
+  }
+
+  .sds-hud {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  .sds-hud-title {
+    font-size: 1.05rem !important;
+  }
+
+  .sds-hud-stats {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .sds-stat-pill, .sds-mic-btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .sds-target-banner {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+    padding: 0.75rem !important;
+  }
+
+  .sds-target-icon {
+    font-size: 2rem !important;
+    padding: 6px 10px !important;
+  }
+
+  .sds-target-word {
+    font-size: 1.4rem !important;
+  }
+
+  .sds-complete-card {
+    padding: 1.5rem 1rem !important;
+    max-width: 100% !important;
+    border-radius: 20px !important;
+  }
+
+  .sds-stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .sds-complete-btns {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .sds-btn-again, .sds-btn-next, .sds-btn-hq {
+    width: 100%;
+    min-height: 44px;
+  }
+}

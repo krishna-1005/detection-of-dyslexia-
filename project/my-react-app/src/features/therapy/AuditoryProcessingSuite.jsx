@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import AuditorySoundShield from './AuditorySoundShield';
 import CopyCatEcho from './CopyCatEcho';
 import { saveTherapyProgress } from './ExerciseSystem';
@@ -17,7 +17,7 @@ export default function AuditoryProcessingSuite({ onComplete }) {
 
   const { currentUser } = useAuth();
   const [sessionMode] = useState(() => {
-    return localStorage.getItem('lexiflow_therapy_mode') || 'assessment';
+    return localStorage.getItem('cognilex_therapy_mode') || 'assessment';
   });
 
   const handleRoundComplete = async (roundData) => {
@@ -51,7 +51,7 @@ export default function AuditoryProcessingSuite({ onComplete }) {
           totalReplaysUsed: newTotalReplays,
           lastRoundData: roundData
         };
-        localStorage.setItem('lexiflow_session_history_auditory', JSON.stringify(telemetryPayload));
+        localStorage.setItem('cognilex_session_history_auditory', JSON.stringify(telemetryPayload));
         window.dispatchEvent(new Event('therapy_progress_updated'));
       } catch (e) {
         console.warn('Telemetry save error:', e);

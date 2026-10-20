@@ -66,7 +66,7 @@ const VisualSaccadicSandbox = () => {
     <div className="sandbox-panel">
       <div className="sandbox-controls">
         <div className="sandbox-section-title">Therapy Simulator Toggles</div>
-        <p className="sandbox-helper">LexiFlow uses saccadic exercises to train tracking coordination. Test different tracking patterns below.</p>
+        <p className="sandbox-helper">Cognilex uses saccadic exercises to train tracking coordination. Test different tracking patterns below.</p>
         
         <div className="sandbox-group">
           <div className="sandbox-title-label">Tracking Pattern</div>
@@ -175,7 +175,7 @@ const SaccadicPage = () => {
     <div className="page-container kids-page-bg" style={{ minHeight: '100vh', background: 'radial-gradient(circle at 10% 20%, rgba(255, 242, 210, 0.5) 0%, rgba(224, 247, 250, 0.5) 50%, rgba(243, 229, 245, 0.5) 100%)', display: 'flex', flexDirection: 'column' }}>
       <Navbar />
 
-      <main style={{ flex: 1, padding: '2.5rem 1.5rem', maxWidth: '1100px', margin: '0 auto', width: '100%' }}>
+      <main className="saccadic-main-content" style={{ flex: 1, maxWidth: '1100px', margin: '0 auto', width: '100%' }}>
         <div style={{ marginBottom: '1.5rem' }}>
           <Link to="/" className="kids-btn-secondary" style={{ padding: '8px 18px', fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
             ← Back to Home 🏠
@@ -201,9 +201,9 @@ const SaccadicPage = () => {
         <div className="footer-inner">
           <div className="footer-brand">
             <div className="nav-logo-icon">L</div>
-            <span>LexiFlow</span>
+            <span>Cognilex</span>
           </div>
-          <p>© 2026 LexiFlow Clinical. Designed for educational accessibility.</p>
+          <p>© 2026 Cognilex Clinical. Designed for educational accessibility.</p>
         </div>
       </footer>
     </div>

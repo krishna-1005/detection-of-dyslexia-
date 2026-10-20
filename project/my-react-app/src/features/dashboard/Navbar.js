@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import './Navbar.css';
 import { useAuth } from '../auth/AuthContext';
@@ -52,7 +52,7 @@ const Navbar = ({ user: propUser, showDropdown, setShowDropdown }) => {
 
         <Link to="/" className="nav-brand" onClick={() => setMobileMenuOpen(false)}>
           <div className="nav-logo-icon kids-logo-rainbow">🌈</div>
-          <h2>LexiFlow <span className="nav-brand-tag title-kids-badge">Kids 🎈</span></h2>
+          <h2>Cognilex <span className="nav-brand-tag title-kids-badge">Kids 🎈</span></h2>
         </Link>
       </div>
       

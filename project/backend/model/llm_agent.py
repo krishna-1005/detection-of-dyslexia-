@@ -1,4 +1,4 @@
-from google import genai
+﻿from google import genai
 import os
 import json
 import requests
@@ -167,7 +167,7 @@ def get_local_clinical_response(user_message):
             "• **Letter Reversals**: Frequently swapping visually similar letters (e.g. 'b' vs 'd', 'p' vs 'q').\n"
             "• **Slow Reading Rate**: Hesitant visual tracking that reduces reading comprehension and causes fatigue.\n"
             "• **Spelling & Rapid Naming**: Trouble recalling letter sounds or spelling unfamiliar multi-syllable words.\n\n"
-            "💡 *Try LexiFlow's 3-minute Symptoms Assessment at `/quiz` or explore our Bionic Reader and Therapy Modules on the Dashboard!*"
+            "💡 *Try Cognilex's 3-minute Symptoms Assessment at `/quiz` or explore our Bionic Reader and Therapy Modules on the Dashboard!*"
         )
     elif "bionic" in msg or "reader" in msg or "fixation" in msg:
         return (
@@ -191,7 +191,7 @@ def get_local_clinical_response(user_message):
             "• **Multisensory Learning**: Engages visual, auditory, and kinesthetic pathways simultaneously.\n"
             "• **Structured & Sequential**: Breaks down reading into explicit, step-by-step rules from simple phonemes to complex morphology.\n"
             "• **Diagnostic & Prescriptive**: Tailors exercise difficulty dynamically based on real-time learner accuracy.\n\n"
-            "LexiFlow's 6 therapy modules are 100% aligned with OG research principles."
+            "Cognilex's 6 therapy modules are 100% aligned with OG research principles."
         )
     elif "tip" in msg or "fluency" in msg or "help" in msg or "improve" in msg:
         return (
@@ -204,7 +204,7 @@ def get_local_clinical_response(user_message):
         )
     elif "quiz" in msg or "screen" in msg or "assessment" in msg or "test" in msg:
         return (
-            "📋 **LexiFlow Dyslexia Symptoms Screening**:\n\n"
+            "📋 **Cognilex Dyslexia Symptoms Screening**:\n\n"
             "• **Quick & Non-Invasive**: Takes less than 3 minutes to evaluate 10 developmental reading indicators.\n"
             "• **Dynamic Questions**: Refresh automatically on every attempt for accurate tracking.\n"
             "• **Instant Clinical Report**: Receive immediate risk assessment metrics and tailored recommendations.\n\n"
@@ -212,7 +212,7 @@ def get_local_clinical_response(user_message):
         )
     elif "therapy" in msg or "exercise" in msg or "drill" in msg:
         return (
-            "🧠 **LexiFlow Interactive Therapy Suite**:\n\n"
+            "🧠 **Cognilex Interactive Therapy Suite**:\n\n"
             "• **Phoneme Matching**: Master sound-symbol correspondences.\n"
             "• **Morphology**: Learn prefixes, roots, and suffixes.\n"
             "• **Rapid Naming**: Boost rapid automatized naming (RAN) speed.\n"
@@ -230,7 +230,7 @@ def get_local_clinical_response(user_message):
             "• **Phoneme Matching** & Auditory Therapy\n"
             "• **Orton-Gillingham** principles\n"
             "• **Reading Fluency Tips** for home and classroom\n"
-            "• **LexiFlow Diagnostics** & Therapy Modules"
+            "• **Cognilex Diagnostics** & Therapy Modules"
         )
 
 def chat_with_gemini(user_message, history=None):
@@ -240,13 +240,13 @@ def chat_with_gemini(user_message, history=None):
     
     api_key_str = api_key.strip()
     
-    system_instruction = """You are LexiAI, an expert AI Clinical Specialist and Educational Assistant for LexiFlow.
+    system_instruction = """You are LexiAI, an expert AI Clinical Specialist and Educational Assistant for Cognilex.
 Your goal is to assist parents, educators, clinicians, and learners dealing with dyslexia, reading difficulties, and phonological challenges.
 
 Core Principles:
 1. Provide empathetic, science-backed, and clear advice based on established methods (e.g. Orton-Gillingham, multisensory learning, phonological awareness, bionic reading).
 2. Format answers with clear bullet points, short paragraphs, and high-readability spacing.
-3. If asked about LexiFlow features, explain how to use the Diagnostic Engine, Smart Bionic Reader, Therapy Suite (Phoneme Matching, Morphology, Rapid Naming, Visual Tracking, Auditory Processing, Video Practice), and Symptoms Quiz.
+3. If asked about Cognilex features, explain how to use the Diagnostic Engine, Smart Bionic Reader, Therapy Suite (Phoneme Matching, Morphology, Rapid Naming, Visual Tracking, Auditory Processing, Video Practice), and Symptoms Quiz.
 4. Always remain encouraging, warm, professional, and accessible.
 5. Keep answers concise (under 200 words)."""
 
@@ -356,12 +356,12 @@ def chat_with_groq(user_message, history=None):
         }
         
         system_instruction = (
-            "You are LexiAI, an expert AI Clinical Specialist and Educational Assistant for LexiFlow. "
+            "You are LexiAI, an expert AI Clinical Specialist and Educational Assistant for Cognilex. "
             "Your goal is to assist parents, educators, clinicians, and learners dealing with dyslexia, reading difficulties, and phonological challenges. "
             "Core Principles:\n"
             "1. Provide empathetic, science-backed, and clear advice based on established methods (e.g. Orton-Gillingham, multisensory learning, phonological awareness, bionic reading).\n"
             "2. Format answers with clear bullet points, short paragraphs, and high-readability spacing.\n"
-            "3. If asked about LexiFlow features, explain how to use the Diagnostic Engine, Smart Bionic Reader, Therapy Suite, and Symptoms Quiz.\n"
+            "3. If asked about Cognilex features, explain how to use the Diagnostic Engine, Smart Bionic Reader, Therapy Suite, and Symptoms Quiz.\n"
             "4. Keep answers concise (under 180 words)."
         )
 
@@ -433,7 +433,7 @@ def chat_with_llm(user_message, history=None):
 
 def generate_ai_phoneme_missions(focus_phoneme=None):
     """
-    Generates dynamic AI phoneme missions for LexiFlow Sound Quest.
+    Generates dynamic AI phoneme missions for Cognilex Sound Quest.
     Returns structured JSON with target phonemes, words, distractor choices, and Sparky teaching tips.
     """
     fallback_missions = [

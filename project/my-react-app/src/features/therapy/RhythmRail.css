@@ -425,3 +425,63 @@
   cursor: pointer;
   box-shadow: 0 4px 15px rgba(168, 85, 247, 0.35);
 }
+
+/* Responsive Mobile Support */
+@media (max-width: 768px) {
+  .rr-game-container {
+    height: 480px !important;
+    min-height: 480px !important;
+    padding: 0.75rem !important;
+    border-radius: 16px !important;
+  }
+
+  .rr-hud-header {
+    gap: 0.5rem;
+  }
+
+  .rr-game-logo {
+    font-size: 1.05rem !important;
+  }
+
+  .rr-hud-stats {
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  .rr-stat-pill {
+    padding: 0.35rem 0.65rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  .rr-target-banner {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  .rr-target-info {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .rr-summary-card {
+    padding: 1.5rem 1rem !important;
+    border-radius: 20px !important;
+  }
+
+  .rr-summary-metrics {
+    grid-template-columns: 1fr !important;
+    gap: 0.6rem !important;
+  }
+
+  .rr-summary-actions {
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .rr-btn-again, .rr-btn-done {
+    width: 100%;
+    min-height: 44px;
+  }
+}

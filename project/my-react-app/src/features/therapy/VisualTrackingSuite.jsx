@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import LetterTwinsHunt from './LetterTwinsHunt';
 import WordJumbleNinja from './WordJumbleNinja';
 import { saveTherapyProgress } from './ExerciseSystem';
@@ -18,7 +18,7 @@ export default function VisualTrackingSuite({ onComplete }) {
 
   const { currentUser } = useAuth();
   const [sessionMode] = useState(() => {
-    return localStorage.getItem('lexiflow_therapy_mode') || 'assessment';
+    return localStorage.getItem('cognilex_therapy_mode') || 'assessment';
   });
 
   const handleRoundComplete = async (roundData) => {
@@ -50,7 +50,7 @@ export default function VisualTrackingSuite({ onComplete }) {
           migrationMistakes: newMigrationMistakes,
           lastRoundData: roundData
         };
-        localStorage.setItem('lexiflow_session_history_visual', JSON.stringify(telemetryPayload));
+        localStorage.setItem('cognilex_session_history_visual', JSON.stringify(telemetryPayload));
         window.dispatchEvent(new Event('therapy_progress_updated'));
       } catch (e) {
         console.warn('Telemetry save error:', e);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { saveTherapyProgress } from './ExerciseSystem';
 import { speakHumanText, VoiceSelectorChip } from './humanVoiceEngine';
@@ -523,7 +523,7 @@ const MarioPhonemeJumper = ({ onComplete, assessmentMode = false, targetCount = 
     };
 
     try {
-      localStorage.setItem('lexiflow_mario_progress', JSON.stringify(stats));
+      localStorage.setItem('cognilex_mario_progress', JSON.stringify(stats));
       window.dispatchEvent(new Event('therapy_progress_updated'));
     } catch (e) {}
 

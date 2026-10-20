@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import './ReportGenerator.css';
 
 const ReportGenerator = ({ result, user }) => {
@@ -13,7 +13,7 @@ const ReportGenerator = ({ result, user }) => {
     <div className="report-generator">
       <div className="clinical-header">
         <div className="hospital-branding">
-          <h2>LEXIFLOW CLINICAL REPORT</h2>
+          <h2>COGNILEX CLINICAL REPORT</h2>
           <p>Cognitive Diagnostics Division</p>
         </div>
         <div className="patient-meta">

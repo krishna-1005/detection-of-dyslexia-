@@ -1,7 +1,7 @@
-/**
- * LexiFlow IEEE Telemetry Engine
+﻿/**
+ * Cognilex IEEE Telemetry Engine
  * Standardized high-resolution interaction telemetry and feature vector extraction
- * for "LexiFlow for Kids" diagnostic & therapy performance auditing.
+ * for "Cognilex for Kids" diagnostic & therapy performance auditing.
  * 
  * Normalized Feature Vector: [T_task, T_hesitate, REI, J_click, A_raw]
  * - T_task: Task Latency (ms) measured via window.performance.now()

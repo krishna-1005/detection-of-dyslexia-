@@ -415,3 +415,75 @@
   justify-content: center !important;
   padding: 1rem 2rem !important;
 }
+
+/* Responsive Mobile Support */
+@media (max-width: 768px) {
+  .mba-container {
+    padding: 0.5rem !important;
+  }
+
+  .mba-hud {
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0.4rem 0.6rem !important;
+  }
+
+  .mba-hud-title {
+    font-size: 0.95rem !important;
+  }
+
+  .mba-hud-stats {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .mba-clue-row {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .mba-sparky-card {
+    min-width: unset !important;
+    max-width: 100% !important;
+    width: 100%;
+  }
+
+  .mba-robot-chest {
+    min-width: unset !important;
+    width: 100% !important;
+    max-width: 320px;
+    padding: 0.65rem 0.85rem !important;
+  }
+
+  .mba-slots-row {
+    gap: 6px;
+  }
+
+  .mba-power-slot {
+    width: auto !important;
+    min-width: 70px !important;
+    max-width: 90px !important;
+    height: 46px !important;
+  }
+
+  .mba-complete-card, .mba-start-card {
+    padding: 1.25rem 0.85rem !important;
+    max-width: 100% !important;
+    border-radius: 20px !important;
+  }
+
+  .mba-complete-stats {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .mba-complete-btns {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .mba-start-btn, .mba-btn-next, .mba-btn-hq {
+    width: 100%;
+    min-height: 44px;
+  }
+}

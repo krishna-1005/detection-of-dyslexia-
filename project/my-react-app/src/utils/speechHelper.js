@@ -1,5 +1,5 @@
-/**
- * Natural Human Voice Helper & Tactile Sound FX Engine for LexiFlow Kids
+﻿/**
+ * Natural Human Voice Helper & Tactile Sound FX Engine for Cognilex Kids
  * Selects ultra-realistic neural/natural human voices from Web Speech API
  * and plays tactile click sound effects on all button/interactive element clicks.
  */

@@ -349,3 +349,59 @@
   padding: 1rem 2rem !important;
   box-sizing: border-box !important;
 }
+
+/* Responsive Mobile Support */
+@media (max-width: 768px) {
+  .mpj-container {
+    padding: 0.6rem 0.6rem !important;
+    border-radius: 14px !important;
+  }
+
+  .mpj-hud {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0.5rem 0.65rem !important;
+  }
+
+  .mpj-hud-title {
+    font-size: 0.95rem !important;
+  }
+
+  .mpj-hud-stats {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .mpj-stat-pill {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+  }
+
+  .mpj-speech-bubble-banner {
+    flex-direction: column;
+    text-align: center;
+    gap: 6px;
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  .mpj-complete-card {
+    padding: 1.25rem 0.85rem !important;
+    max-width: 100% !important;
+    border-radius: 20px !important;
+  }
+
+  .mpj-stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .mpj-complete-btns {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .mpj-btn-again, .mpj-btn-next, .mpj-btn-hq {
+    width: 100%;
+    min-height: 44px;
+  }
+}

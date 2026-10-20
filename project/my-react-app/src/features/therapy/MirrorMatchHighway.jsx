@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+﻿import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { saveTherapyProgress } from './ExerciseSystem';
 import './MirrorMatchHighway.css';
@@ -510,7 +510,7 @@ export default function MirrorMatchHighway({
     };
 
     try {
-      localStorage.setItem('lexiflow_session_history_visual', JSON.stringify(telemetryPayload));
+      localStorage.setItem('cognilex_session_history_visual', JSON.stringify(telemetryPayload));
       window.dispatchEvent(new Event('therapy_progress_updated'));
     } catch (e) {}
 

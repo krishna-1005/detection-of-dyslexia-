@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+﻿import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './UnifiedDiagnosticReport.css';
 
@@ -120,7 +120,7 @@ export default function UnifiedDiagnosticReport({ results, totalDurationMs }) {
     };
 
     try {
-      localStorage.setItem('lexiflow_universal_battery_report', JSON.stringify(reportPayload));
+      localStorage.setItem('cognilex_universal_battery_report', JSON.stringify(reportPayload));
       window.dispatchEvent(new Event('diagnostic_completed'));
     } catch (e) {
       console.warn('Report save error:', e);

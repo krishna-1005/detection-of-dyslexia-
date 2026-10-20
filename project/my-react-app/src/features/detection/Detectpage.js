@@ -99,12 +99,12 @@ const DetectPage = () => {
         console.warn("Could not post history to backend:", err);
       }
 
-      const uidKey = currentUser?.uid ? `lexiflow_history_${currentUser.uid}` : "lexiflow_history";
+      const uidKey = currentUser?.uid ? `cognilex_history_${currentUser.uid}` : "cognilex_history";
       const uidHist = JSON.parse(localStorage.getItem(uidKey) || "[]");
       localStorage.setItem(uidKey, JSON.stringify([newEntry, ...uidHist]));
 
-      const globalHist = JSON.parse(localStorage.getItem("lexiflow_history") || "[]");
-      localStorage.setItem("lexiflow_history", JSON.stringify([newEntry, ...globalHist]));
+      const globalHist = JSON.parse(localStorage.getItem("cognilex_history") || "[]");
+      localStorage.setItem("cognilex_history", JSON.stringify([newEntry, ...globalHist]));
     } catch (error) {
       alert("Error contacting diagnostic engine.");
     } finally {
@@ -112,8 +112,8 @@ const DetectPage = () => {
     }
   };
 
-  const storageKey = currentUser?.uid ? `lexiflow_history_${currentUser.uid}` : "lexiflow_history";
-  const history = JSON.parse(localStorage.getItem(storageKey) || localStorage.getItem("lexiflow_history") || "[]");
+  const storageKey = currentUser?.uid ? `cognilex_history_${currentUser.uid}` : "cognilex_history";
+  const history = JSON.parse(localStorage.getItem(storageKey) || localStorage.getItem("cognilex_history") || "[]");
 
   return (
     <div className={`page-container kids-page-bg ${isDyslexiaFriendly ? "dyslexia-friendly" : ""}`} style={{ minHeight: '100vh', background: 'radial-gradient(circle at 10% 20%, rgba(255, 242, 210, 0.5) 0%, rgba(224, 247, 250, 0.5) 50%, rgba(243, 229, 245, 0.5) 100%)' }}>
@@ -123,7 +123,7 @@ const DetectPage = () => {
       <div className="dashboard-layout" style={{ display: 'flex' }}>
         <Sidebar />
 
-        <main className="main-content" style={{ flex: 1, padding: '2.5rem' }}>
+        <main className="main-content" style={{ flex: 1 }}>
           <header className="medical-header" style={{ marginBottom: '2rem' }}>
             <span className="title-kids-badge" style={{ fontSize: '0.85rem', padding: '4px 12px', marginBottom: '0.4rem', display: 'inline-block' }}>✨ Spelling Pattern Quest</span>
             <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#2f3542', margin: 0, fontFamily: 'var(--kids-font-display, "Fredoka", sans-serif)' }}>
@@ -138,7 +138,7 @@ const DetectPage = () => {
           </header>
 
           <section className="medical-card" style={{ marginBottom: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+            <div className="detect-header-row">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--lf-text-primary)' }}>Session Clinical Sample</h3>
                 <span className="badge badge-info">{text.split(/\s+/).filter(Boolean).length} words</span>
@@ -161,7 +161,7 @@ const DetectPage = () => {
               }}
             />
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
+            <div className="detect-actions-row">
               <div style={{ display: 'flex', gap: '2rem' }}>
                 <div className="medical-stat">
                   <small className="medical-label">Character Count</small>
@@ -181,7 +181,7 @@ const DetectPage = () => {
             </div>
           </section>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '1.5rem' }}>
+          <div className="detect-analytics-grid">
             {/* Analytics Trends */}
             <section className="medical-card">
               <h3 style={{ marginBottom: '1.25rem', fontSize: '1.05rem', fontWeight: 700, color: 'var(--lf-text-primary)' }}>

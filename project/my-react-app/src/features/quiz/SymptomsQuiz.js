@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { saveTherapyProgress } from '../therapy/ExerciseSystem';
 import './SymptomsQuiz.css';
@@ -329,10 +329,10 @@ const SymptomsQuiz = ({ onQuizComplete }) => {
       answers
     };
 
-    // Save to lexiflow_diagnostic_reports
+    // Save to cognilex_diagnostic_reports
     try {
-      const existingReports = JSON.parse(localStorage.getItem('lexiflow_diagnostic_reports') || '[]');
-      localStorage.setItem('lexiflow_diagnostic_reports', JSON.stringify([report, ...existingReports]));
+      const existingReports = JSON.parse(localStorage.getItem('cognilex_diagnostic_reports') || '[]');
+      localStorage.setItem('cognilex_diagnostic_reports', JSON.stringify([report, ...existingReports]));
     } catch (e) {
       console.warn('LocalStorage save report error:', e);
     }

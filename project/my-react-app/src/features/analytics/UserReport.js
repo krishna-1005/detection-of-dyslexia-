@@ -13,15 +13,15 @@ const UserReport = () => {
 
   useEffect(() => {
     const uid = currentUser?.uid;
-    const historyKey = uid ? `lexiflow_history_${uid}` : "lexiflow_history";
-    const exHistoryKey = uid ? `lexiflow_exercise_history_${uid}` : 'lexiflow_exercise_history';
+    const historyKey = uid ? `cognilex_history_${uid}` : "cognilex_history";
+    const exHistoryKey = uid ? `cognilex_exercise_history_${uid}` : 'cognilex_exercise_history';
 
     const historyUid = JSON.parse(localStorage.getItem(historyKey) || "[]");
-    const historyGlobal = JSON.parse(localStorage.getItem("lexiflow_history") || "[]");
+    const historyGlobal = JSON.parse(localStorage.getItem("cognilex_history") || "[]");
     const history = [...historyUid, ...historyGlobal];
 
     const exHistoryUid = JSON.parse(localStorage.getItem(exHistoryKey) || "{}");
-    const exHistoryGlobal = JSON.parse(localStorage.getItem("lexiflow_exercise_history") || "{}");
+    const exHistoryGlobal = JSON.parse(localStorage.getItem("cognilex_exercise_history") || "{}");
     const exHistory = { ...exHistoryGlobal, ...exHistoryUid };
     
     if (history.length === 0 && Object.keys(exHistory).length === 0) {
@@ -119,8 +119,8 @@ const UserReport = () => {
       <Navbar user={user} />
       <div className="dashboard-layout" style={{ display: 'flex' }}>
         <Sidebar />
-        <main className="main-content" style={{ flex: 1, padding: '2.5rem' }}>
-          <header className="medical-header" style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <main className="main-content" style={{ flex: 1 }}>
+          <header className="medical-header user-report-header" style={{ marginBottom: '2rem' }}>
             <div>
               <span className="title-kids-badge" style={{ fontSize: '0.85rem', padding: '4px 12px', marginBottom: '0.4rem', display: 'inline-block' }}>📊 Kids Therapy Analysis 🎈</span>
               <h1 style={{ fontSize: '2.2rem', fontWeight: 900, color: '#2f3542', margin: 0, fontFamily: 'var(--kids-font-display, "Fredoka", sans-serif)' }}>
@@ -135,7 +135,7 @@ const UserReport = () => {
             </button>
           </header>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+          <div className="user-report-grid">
             {/* Module Performance */}
             <div className="medical-card">
               <h3 style={{ marginBottom: '1.5rem', fontSize: '1.05rem', fontWeight: 700, color: 'var(--lf-text-primary)' }}>Module Performance</h3>
@@ -174,7 +174,7 @@ const UserReport = () => {
             </div>
 
             {/* SoundQuest Telemetry & Mistake Analytics Card */}
-            <div className="medical-card" style={{ gridColumn: 'span 2' }}>
+            <div className="medical-card user-report-span-all">
               <h3 style={{ marginBottom: '1.5rem', fontSize: '1.1rem', fontWeight: 800, color: 'var(--lf-text-primary)' }}>
                 🎮 SoundQuest Phoneme Telemetry & Section Breakdown
               </h3>
@@ -197,7 +197,7 @@ const UserReport = () => {
 
                 return (
                   <div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.25rem' }}>
+                    <div className="telemetry-speed-grid">
                       <div style={{ padding: '0.85rem', background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: '14px', textAlign: 'center' }}>
                         <span style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#15803d' }}>🟢 Easy Level Time</span>
                         <strong style={{ fontSize: '1.4rem', color: '#14532d' }}>{easySec}s</strong>
@@ -241,7 +241,7 @@ const UserReport = () => {
             </div>
 
             {/* Clinical Insights */}
-            <div className="medical-card" style={{ gridColumn: 'span 2' }}>
+            <div className="medical-card user-report-span-all">
               <h3 style={{ marginBottom: '1.5rem', fontSize: '1.05rem', fontWeight: 700, color: 'var(--lf-text-primary)' }}>Specialist Analysis & ML Classifier Attribution</h3>
               
               {/* Random Forest Model Badge */}

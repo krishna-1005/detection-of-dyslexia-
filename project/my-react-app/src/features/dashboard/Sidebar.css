@@ -149,7 +149,8 @@
 }
 
 @media (max-width: 768px) {
-  .sidebar {
+  .sidebar,
+  .sidebar-floating-expand-btn {
     display: none !important;
   }
 }

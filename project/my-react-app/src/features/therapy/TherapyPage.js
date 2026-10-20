@@ -83,11 +83,11 @@ const TherapyPage = () => {
             <Navbar user={user} />
             <div className="dashboard-layout" style={{ display: 'flex' }}>
                 <Sidebar />
-                <main className="main-content" style={{ flex: 1, padding: '0.65rem 1.25rem' }}>
+                <main className="main-content" style={{ flex: 1 }}>
                     {!gameStarted ? (
                         /* ── OPENING / WELCOME INSTRUCTIONS CARD VIEW ── */
                         <>
-                            <header className="medical-header" style={{ marginBottom: '0.65rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <header className="medical-header therapy-page-header" style={{ marginBottom: '0.65rem' }}>
                                 <div>
                                     <span className="title-kids-badge" style={{ fontSize: '0.75rem', padding: '2px 10px', marginBottom: '0.2rem', display: 'inline-block' }}>🎈 Kids DysTherapy Arcade</span>
                                     <h1 style={{ fontSize: '1.4rem', fontWeight: 900, color: '#2f3542', margin: 0, fontFamily: 'var(--kids-font-display, "Fredoka", sans-serif)' }}>
@@ -110,16 +110,7 @@ const TherapyPage = () => {
                                 </button>
                             </header>
 
-                            <div style={{
-                                background: '#ffffff',
-                                borderRadius: '20px',
-                                padding: '1rem 1.5rem',
-                                border: '3px solid #74b9ff',
-                                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.06)',
-                                maxWidth: '800px',
-                                margin: '0 auto',
-                                textAlign: 'center'
-                            }}>
+                            <div className="therapy-welcome-card">
                                 <div style={{ fontSize: '2.2rem', marginBottom: '0.1rem' }}>{gameIcon} 🎈</div>
                                 <span className="title-kids-badge" style={{ fontSize: '0.75rem', padding: '3px 12px', marginBottom: '0.25rem', display: 'inline-block' }}>
                                     ✨ GET READY TO PLAY ✨
@@ -132,7 +123,7 @@ const TherapyPage = () => {
                                 </p>
 
                                 {/* 3 Step Guidance Cards */}
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginBottom: '0.85rem', textAlign: 'left' }}>
+                                <div className="therapy-guidance-grid">
                                     <div style={{ background: '#f8fafc', padding: '0.65rem 0.85rem', borderRadius: '14px', border: '1.5px solid #ffeaa7' }}>
                                         <div style={{ fontSize: '1.2rem', marginBottom: '0.15rem' }}>🔬</div>
                                         <strong style={{ display: 'block', fontSize: '0.82rem', color: '#2f3542', marginBottom: '2px' }}>1. The Science</strong>
@@ -181,7 +172,7 @@ const TherapyPage = () => {
                     ) : (
                         /* ── ACTIVE GAME CANVAS VIEW (ZERO-SCROLL VIEWPORT) ── */
                         <div style={{ width: '100%' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                            <div className="therapy-active-top-bar">
                                 <span className="title-kids-badge" style={{ fontSize: '0.75rem', padding: '2px 10px' }}>
                                     🎮 Active Game: {gameTitle}
                                 </span>
@@ -212,7 +203,7 @@ const TherapyPage = () => {
                                     <summary style={{ cursor: 'pointer', fontWeight: 800, color: '#2f3542', fontSize: '0.82rem', userSelect: 'none' }}>
                                         🔬 View Clinical Science & Instructions (Click to expand)
                                     </summary>
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginTop: '0.75rem' }}>
+                                    <div className="therapy-info-details-grid">
                                         <section className="medical-card" style={{ background: '#ffffff', borderRadius: '16px', border: '2px solid #ffeaa7', padding: '1rem' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
                                                 <span className="title-kids-badge" style={{ background: 'linear-gradient(135deg, #70a1ff, #1e90ff)', fontSize: '0.75rem' }}>🔬 The Science</span>

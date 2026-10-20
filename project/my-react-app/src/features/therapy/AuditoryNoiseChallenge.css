@@ -286,3 +286,47 @@
   background: rgba(255, 255, 255, 0.05);
   border-color: var(--anc-neon-cyan);
 }
+
+/* Responsive Mobile Support */
+@media (max-width: 768px) {
+  .anc-container {
+    padding: 1.25rem 0.85rem !important;
+    border-radius: 18px !important;
+  }
+
+  .anc-title {
+    font-size: 1.35rem !important;
+  }
+
+  .anc-controls-panel {
+    padding: 1rem !important;
+    gap: 1rem !important;
+  }
+
+  .anc-control-group {
+    min-width: 100% !important;
+  }
+
+  .anc-stage-card {
+    padding: 1.25rem 0.85rem !important;
+  }
+
+  .anc-match-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  .anc-completion-card {
+    padding: 2rem 1rem !important;
+  }
+
+  .anc-completion-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .anc-btn-secondary, .anc-btn-primary {
+    width: 100%;
+    min-height: 44px;
+  }
+}

@@ -1,7 +1,7 @@
-# Project Report: LexiFlow AI – Advanced Dyslexia Diagnostic & Support Platform
+﻿# Project Report: Cognilex AI – Advanced Dyslexia Diagnostic & Support Platform
 
 ## 1. Executive Summary
-**LexiFlow AI** is a comprehensive digital health platform designed to assist in the early detection and support of individuals with dyslexia. By leveraging Artificial Intelligence (LLMs) and specialized linguistic algorithms, the project provides a seamless bridge between clinical diagnosis and daily academic support. It is built to empower students, teachers, and clinicians with data-driven insights and accessibility tools.
+**Cognilex AI** is a comprehensive digital health platform designed to assist in the early detection and support of individuals with dyslexia. By leveraging Artificial Intelligence (LLMs) and specialized linguistic algorithms, the project provides a seamless bridge between clinical diagnosis and daily academic support. It is built to empower students, teachers, and clinicians with data-driven insights and accessibility tools.
 
 ---
 

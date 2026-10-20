@@ -150,7 +150,7 @@ const BionicReaderSandbox = () => {
               letterSpacing: dyslexicFont ? '0.04em' : 'normal',
               lineHeight: 1.85
             }}>
-              <small style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#079992', textTransform: 'uppercase', marginBottom: '8px' }}>✨ LexiFlow Magic Reader</small>
+              <small style={{ display: 'block', fontSize: '0.75rem', fontWeight: 800, color: '#079992', textTransform: 'uppercase', marginBottom: '8px' }}>✨ Cognilex Magic Reader</small>
               <p style={{ fontSize: fontSize, color: '#1e272e', margin: 0 }}>
                 {bionicActive ? formatBionicText(inputText) : inputText}
               </p>
@@ -280,7 +280,7 @@ const HeroKidsArcadeShowcase = () => {
         <div className="mock-app-navbar kids-top-bar">
           <div className="mock-app-brand">
             <div className="kids-logo-badge">🌈</div>
-            <span style={{ fontWeight: 900, color: '#2f3542', fontSize: '1rem' }}>LexiFlow Kids Arcade</span>
+            <span style={{ fontWeight: 900, color: '#2f3542', fontSize: '1rem' }}>Cognilex Kids Arcade</span>
           </div>
           <div className="kids-streak-pill">
             <span>⭐ 450 Stars</span>
@@ -347,6 +347,7 @@ const HeroKidsArcadeShowcase = () => {
 const Home = () => {
   const { currentUser, logout } = useAuth();
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -368,10 +369,20 @@ const Home = () => {
     <div className="home-container kids-home-theme">
       {/* Navbar */}
       <nav className={`home-navbar kids-navbar ${scrolled ? 'navbar-kids-scrolled' : ''}`}>
-        <Link to="/" className="nav-brand">
-          <div className="nav-logo-icon kids-logo-rainbow">🌈</div>
-          <h2 className="kids-brand-title">LexiFlow <span className="title-kids-badge">Kids 🎈</span></h2>
-        </Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <button 
+            className="home-mobile-hamburger-btn"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? '✕' : '☰'}
+          </button>
+          <Link to="/" className="nav-brand" onClick={() => setMobileMenuOpen(false)}>
+            <div className="nav-logo-icon kids-logo-rainbow">🌈</div>
+            <h2 className="kids-brand-title">Cognilex <span className="title-kids-badge">Kids 🎈</span></h2>
+          </Link>
+        </div>
+
         <div className="nav-links">
           <Link to="/simulator" className="nav-item kids-nav-item">🎯 Tracking Practice</Link>
           <Link to="/therapy/phoneme" className="nav-item kids-nav-item">🎮 Therapy Games</Link>
@@ -393,6 +404,51 @@ const Home = () => {
             </>
           )}
         </div>
+
+        {/* Mobile Slide-Down Drawer */}
+        {mobileMenuOpen && (
+          <div className="home-mobile-drawer">
+            <Link to="/simulator" className="home-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+              🎯 Tracking Practice Simulator
+            </Link>
+            <Link to="/therapy/phoneme" className="home-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+              🎮 Therapy Games & Arcades
+            </Link>
+            <Link to="/quiz" className="home-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+              📋 Quick Symptoms Quiz
+            </Link>
+            <Link to="/reading-test" className="home-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+              🎤 Oral Reading Test
+            </Link>
+            <Link to="/reader" className="home-mobile-link" onClick={() => setMobileMenuOpen(false)}>
+              ✨ Smart Bionic Reader
+            </Link>
+            <div style={{ height: '1px', background: '#e2e8f0', margin: '0.5rem 0' }} />
+            {currentUser ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                <Link to="/dashboard" className="home-cta-btn kids-cta-btn" style={{ justifyContent: 'center', width: '100%' }} onClick={() => setMobileMenuOpen(false)}>
+                  Kid Dashboard 🚀
+                </Link>
+                <button 
+                  onClick={() => { handleLogout(); setMobileMenuOpen(false); }} 
+                  className="kids-logout-btn"
+                  style={{ width: '100%', justifyContent: 'center' }}
+                >
+                  🚪 Sign Out
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                <Link to="/login" className="kids-nav-item kids-login-btn" style={{ justifyContent: 'center', textAlign: 'center' }} onClick={() => setMobileMenuOpen(false)}>
+                  Login
+                </Link>
+                <Link to="/signup" className="home-cta-btn kids-cta-btn" style={{ justifyContent: 'center', width: '100%' }} onClick={() => setMobileMenuOpen(false)}>
+                  Start Adventure 🚀
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
       </nav>
 
       <main>
@@ -483,7 +539,7 @@ const Home = () => {
           <div className="features-header">
             <span className="section-badge kids-badge-pill">🗺️ Your Reading Quest</span>
             <h2 className="section-title kids-section-title">Your Reading Adventure in 4 Easy Steps!</h2>
-            <p className="section-subtitle">Discover how LexiFlow transforms reading practice into an exciting, reward-filled quest!</p>
+            <p className="section-subtitle">Discover how Cognilex transforms reading practice into an exciting, reward-filled quest!</p>
           </div>
 
           <div className="kids-roadmap-grid">
@@ -621,9 +677,9 @@ const Home = () => {
         <div className="footer-inner">
           <div className="footer-brand">
             <div className="nav-logo-icon kids-logo-rainbow">🌈</div>
-            <span style={{ fontWeight: 900, fontSize: '1.2rem', color: '#2f3542' }}>LexiFlow Kids</span>
+            <span style={{ fontWeight: 900, fontSize: '1.2rem', color: '#2f3542' }}>Cognilex Kids</span>
           </div>
-          <p>© 2026 LexiFlow Kids • Making Reading a Magical Adventure for Everyone! 🚀</p>
+          <p>© 2026 Cognilex Kids • Making Reading a Magical Adventure for Everyone! 🚀</p>
           <div className="footer-links">
             <a href="#">Privacy Policy</a>
             <a href="#">Terms of Service</a>

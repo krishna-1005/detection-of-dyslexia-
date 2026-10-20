@@ -16,11 +16,11 @@ const ReadingTestPage = () => {
       <Navbar user={user} />
       <div className="dashboard-layout" style={{ display: 'flex' }}>
         <Sidebar />
-        <main className="main-content" style={{ flex: 1, padding: '1rem 1.75rem' }}>
+        <main className="main-content" style={{ flex: 1 }}>
           {!testStarted ? (
             /* ── OPENING / WELCOME INSTRUCTIONS CARD VIEW ── */
             <>
-              <header className="medical-header" style={{ marginBottom: '0.85rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <header className="medical-header reading-test-header" style={{ marginBottom: '0.85rem' }}>
                 <div>
                   <span className="title-kids-badge" style={{ fontSize: '0.75rem', padding: '2px 10px', marginBottom: '0.2rem', display: 'inline-block' }}>
                     🎤 Live Reading Diagnostic Test
@@ -48,7 +48,7 @@ const ReadingTestPage = () => {
                 </button>
               </header>
 
-              <div style={{
+              <div className="reading-welcome-card" style={{
                 background: '#ffffff',
                 borderRadius: '20px',
                 padding: '1.25rem 1.75rem',
@@ -70,7 +70,7 @@ const ReadingTestPage = () => {
                 </p>
 
                 {/* 3 Step Instructions */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.85rem', marginBottom: '1.1rem', textAlign: 'left' }}>
+                <div className="reading-test-steps-grid">
                   <div style={{ background: '#f8fafc', padding: '0.75rem 0.9rem', borderRadius: '14px', border: '1.5px solid #e2e8f0' }}>
                     <div style={{ fontSize: '1.3rem', marginBottom: '0.2rem' }}>🎧</div>
                     <strong style={{ display: 'block', fontSize: '0.85rem', color: '#2f3542', marginBottom: '2px' }}>1. Quiet Room</strong>

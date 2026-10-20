@@ -197,3 +197,26 @@
   margin-bottom: 1rem;
   border: 1px solid rgba(225, 29, 72, 0.2);
 }
+
+@media (max-width: 480px) {
+  .auth-container {
+    padding: 0.75rem !important;
+  }
+
+  .auth-card {
+    padding: 1.25rem 1rem !important;
+    border-radius: 18px !important;
+  }
+
+  .form-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .btn-auth {
+    min-height: 44px;
+    font-size: 0.95rem;
+  }
+}
+

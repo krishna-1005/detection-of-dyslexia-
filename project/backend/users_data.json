@@ -13,6 +13,146 @@
       },
       "history": [
         {
+          "id": 1792515278508,
+          "date": "10/20/2026 10:24 PM",
+          "isoDate": "2026-10-20T16:54:38.508Z",
+          "type": "Therapy: Phoneme Matching",
+          "score": 100,
+          "riskLevel": "Low",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "phoneme",
+            "score": 315,
+            "accuracy": 100,
+            "timeTaken": "Round: medium",
+            "mode": "assessment",
+            "date": "10/20/2026 10:24 PM",
+            "timestamp": 1792515278508
+          },
+          "timestamp": "b0233f16"
+        },
+        {
+          "id": 1792515258152,
+          "date": "10/20/2026 10:24 PM",
+          "isoDate": "2026-10-20T16:54:18.150Z",
+          "type": "Therapy: Phoneme Matching",
+          "score": 100,
+          "riskLevel": "Low",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "phoneme",
+            "score": 165,
+            "accuracy": 100,
+            "timeTaken": "Round: easy",
+            "mode": "assessment",
+            "date": "10/20/2026 10:24 PM",
+            "timestamp": 1792515258150
+          },
+          "timestamp": "579299a5"
+        },
+        {
+          "id": 1791975842630,
+          "date": "10/14/2026 04:34 PM",
+          "isoDate": "2026-10-14T11:04:02.629Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 0,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 0,
+            "accuracy": 0,
+            "timeTaken": "320.3s (0 WPM)",
+            "mode": "assessment",
+            "date": "10/14/2026 04:34 PM",
+            "timestamp": 1791975842629
+          },
+          "timestamp": "d6f0c3ae"
+        },
+        {
+          "id": 1791975763914,
+          "date": "10/14/2026 04:32 PM",
+          "isoDate": "2026-10-14T11:02:43.902Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 53.8,
+          "riskLevel": "Moderate",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 161,
+            "accuracy": 53.8,
+            "timeTaken": "61s (13.8 WPM)",
+            "mode": "assessment",
+            "date": "10/14/2026 04:32 PM",
+            "timestamp": 1791975763902
+          },
+          "timestamp": "0e7f0ee3"
+        },
+        {
+          "id": 1791974558121,
+          "date": "10/14/2026 04:12 PM",
+          "isoDate": "2026-10-14T10:42:38.112Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 0,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 0,
+            "accuracy": 0,
+            "timeTaken": "0s (0 WPM)",
+            "mode": "assessment",
+            "date": "10/14/2026 04:12 PM",
+            "timestamp": 1791974558112
+          },
+          "timestamp": "002be78b"
+        },
+        {
+          "id": 1791748662475,
+          "date": "10/12/2026 01:27 AM",
+          "isoDate": "2026-10-11T19:57:42.465Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 81,
+          "riskLevel": "Low",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 243,
+            "accuracy": 81,
+            "timeTaken": "29s (46 WPM)",
+            "mode": "assessment",
+            "date": "10/12/2026 01:27 AM",
+            "timestamp": 1791748662465
+          },
+          "timestamp": "f8e33d5b"
+        },
+        {
+          "id": 1791748591916,
+          "date": "10/12/2026 01:26 AM",
+          "isoDate": "2026-10-11T19:56:31.916Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 79,
+          "riskLevel": "Low",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 237,
+            "accuracy": 79,
+            "timeTaken": "32s (41 WPM)",
+            "mode": "assessment",
+            "date": "10/12/2026 01:26 AM",
+            "timestamp": 1791748591916
+          },
+          "timestamp": "ca7e0699"
+        },
+        {
           "id": 1791748533475,
           "date": "10/12/2026 01:25 AM",
           "isoDate": "2026-10-11T19:55:33.464Z",
@@ -3650,6 +3790,60 @@
       "reading_progress": {},
       "therapy_sessions": [
         {
+          "id": "ae7c5fcc-a9f5-46a7-b1e5-7caf9225a1d2",
+          "type": "phoneme",
+          "score": 315,
+          "accuracy": 100,
+          "date": "10/20/2026 10:24 PM",
+          "timeTaken": "Round: medium",
+          "status": "Completed"
+        },
+        {
+          "id": "cc265a9f-3b30-407b-ab54-635fdb996387",
+          "type": "phoneme",
+          "score": 165,
+          "accuracy": 100,
+          "date": "10/20/2026 10:24 PM",
+          "timeTaken": "Round: easy",
+          "status": "Completed"
+        },
+        {
+          "id": "a9f2bdd3-49bc-4211-aad7-af2e5ab0a0ff",
+          "type": "voice",
+          "score": 0,
+          "accuracy": 0,
+          "date": "10/14/2026 04:34 PM",
+          "timeTaken": "320.3s (0 WPM)",
+          "status": "Completed"
+        },
+        {
+          "id": "7477650b-a73d-4953-b7b2-056c067e7af6",
+          "type": "voice",
+          "score": 161,
+          "accuracy": 53.8,
+          "date": "10/14/2026 04:32 PM",
+          "timeTaken": "61s (13.8 WPM)",
+          "status": "Completed"
+        },
+        {
+          "id": "17d3d9ec-2486-4704-8e63-1a090cb9618b",
+          "type": "voice",
+          "score": 0,
+          "accuracy": 0,
+          "date": "10/14/2026 04:12 PM",
+          "timeTaken": "0s (0 WPM)",
+          "status": "Completed"
+        },
+        {
+          "id": "ccbc2681-ad3a-46e8-b38a-8a221ebebbd0",
+          "type": "voice",
+          "score": 243,
+          "accuracy": 81,
+          "date": "10/12/2026 01:27 AM",
+          "timeTaken": "29s (46 WPM)",
+          "status": "Completed"
+        },
+        {
           "id": "85ad0fd5-f766-485b-a0d2-61ca70ed39f6",
           "type": "voice",
           "score": 237,
@@ -5557,11 +5751,11 @@
       "therapy_progress": {
         "phoneme": {
           "type": "phoneme",
-          "sessions": 82,
+          "sessions": 84,
           "accuracy": "100%",
           "pb": "3020 pts",
           "pb_val": 3020,
-          "lastPlayed": "10/7/2026 01:18 AM",
+          "lastPlayed": "10/20/2026 10:24 PM",
           "trend": "Improving"
         },
         "morphology": {
@@ -5620,15 +5814,35 @@
         },
         "voice": {
           "type": "voice",
-          "sessions": 6,
-          "accuracy": "79%",
+          "sessions": 10,
+          "accuracy": "0%",
           "pb": "258 pts",
           "pb_val": 258,
-          "lastPlayed": "10/12/2026 01:26 AM",
-          "trend": "Stable"
+          "lastPlayed": "10/14/2026 04:34 PM",
+          "trend": "Needs Practice"
         }
       },
-      "last_played_module": "voice"
+      "last_played_module": "phoneme"
+    },
+    "ITkMwuSTFBbyIcWodBqX76hMVqL2": {
+      "profile": {
+        "uid": "ITkMwuSTFBbyIcWodBqX76hMVqL2",
+        "email": "test@example.com",
+        "name": "test",
+        "patientId": "LX-ITKMW",
+        "created_at": "af5eed0d",
+        "lastAssessment": "No Data",
+        "riskLevel": "None",
+        "progress": 0
+      },
+      "history": [],
+      "reading_progress": {},
+      "therapy_sessions": [],
+      "recommendations": [
+        "Complete initial diagnostic text analysis",
+        "Practice Phoneme Matching exercise daily",
+        "Utilize Smart AI Reader for complex documents"
+      ]
     }
   }
 }

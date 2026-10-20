@@ -237,3 +237,63 @@
   50% { transform: scale(1.08); }
   100% { transform: scale(1); }
 }
+
+/* Responsive Mobile Support */
+@media (max-width: 768px) {
+  .mario-game-container {
+    padding: 0.75rem !important;
+    border-radius: 18px !important;
+  }
+
+  .mario-hud {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  .mario-hud-title {
+    font-size: 1.05rem !important;
+  }
+
+  .mario-hud-stats {
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .mario-stat-badge {
+    padding: 4px 10px !important;
+    font-size: 0.78rem !important;
+  }
+
+  .mario-touch-controls {
+    margin-top: 0.75rem;
+    padding: 0;
+  }
+
+  .mario-ctrl-btn {
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 1.2rem !important;
+  }
+
+  .mario-jump-btn {
+    width: 60px !important;
+    height: 60px !important;
+    font-size: 1.35rem !important;
+  }
+
+  .mario-question-card {
+    padding: 1.25rem 0.85rem !important;
+    border-radius: 18px !important;
+  }
+
+  .mario-question-choices {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .mario-choice-btn {
+    padding: 0.75rem 0.5rem !important;
+    font-size: 0.95rem !important;
+  }
+}
