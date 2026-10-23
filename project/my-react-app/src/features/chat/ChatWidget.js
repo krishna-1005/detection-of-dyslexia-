@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import './ChatWidget.css';
 
 const API_BASE_URL = "http://localhost:5000";
@@ -11,6 +12,7 @@ const quickPrompts = [
 ];
 
 const ChatWidget = () => {
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
@@ -130,6 +132,10 @@ const ChatWidget = () => {
       );
     });
   };
+
+  if (location.pathname === '/login' || location.pathname === '/signup') {
+    return null;
+  }
 
   return (
     <div className="lexi-chat-container">

@@ -3,10 +3,11 @@ import {
   onAuthStateChanged, 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
+  signInWithPopup,
   signOut, 
   updateProfile 
 } from 'firebase/auth';
-import { auth } from '../../firebase';
+import { auth, googleProvider } from '../../firebase';
 import { getDoctorProfile } from '../../services/doctorDataService';
 
 const AuthContext = createContext();
@@ -96,13 +97,31 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password, role = null) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const emailKey = email.toLowerCase().trim();
-    const existingRole = 
+    // The explicitly-selected role (from the login tab) always takes priority.
+    // Only fall back to localStorage if no role was passed at all.
+    const determinedRole = role || 
       localStorage.getItem(`cognilex_user_role_${userCredential.user.uid}`) ||
-      localStorage.getItem(`cognilex_user_role_${emailKey}`);
-    const determinedRole = existingRole || role || 'patient';
+      localStorage.getItem(`cognilex_user_role_${emailKey}`) || 
+      'patient';
     localStorage.setItem(`cognilex_user_role_${userCredential.user.uid}`, determinedRole);
     localStorage.setItem(`cognilex_user_role_${emailKey}`, determinedRole);
     return userCredential;
+  };
+
+  const loginWithGoogle = async (role = 'patient') => {
+    const result = await signInWithPopup(auth, googleProvider);
+    const user = result.user;
+    const emailKey = (user.email || '').toLowerCase().trim();
+    // Use the explicitly-selected role from the tab
+    const determinedRole = role || 
+      localStorage.getItem(`cognilex_user_role_${user.uid}`) ||
+      localStorage.getItem(`cognilex_user_role_${emailKey}`) || 
+      'patient';
+    localStorage.setItem(`cognilex_user_role_${user.uid}`, determinedRole);
+    if (emailKey) {
+      localStorage.setItem(`cognilex_user_role_${emailKey}`, determinedRole);
+    }
+    return result;
   };
 
   const logout = () => {
@@ -160,6 +179,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     signup,
     login,
+    loginWithGoogle,
     logout,
     loginAsDemoDoctor,
     loginAsDemoPatient,

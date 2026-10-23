@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import './GuideMe.css';
 
@@ -373,6 +373,10 @@ const GuideMe = () => {
   };
 
   const currentStepData = activeGuide[currentStep] || activeGuide[0];
+
+  if (location.pathname === '/login' || location.pathname === '/signup') {
+    return null;
+  }
 
   return (
     <div className={`guide-me-wrapper ${isOpen ? 'is-open' : ''}`}>

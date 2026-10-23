@@ -51,7 +51,7 @@ const Navbar = ({ user: propUser, showDropdown, setShowDropdown }) => {
           {mobileMenuOpen ? '✕' : '☰'}
         </button>
 
-        <Link to={isDoctor ? "/doctor/dashboard" : "/"} className="nav-brand" onClick={() => setMobileMenuOpen(false)}>
+        <Link to="/" className="nav-brand" onClick={() => setMobileMenuOpen(false)}>
           <div className="nav-logo-icon kids-logo-rainbow">{isDoctor ? '🩺' : '🌈'}</div>
           <h2>Cognilex <span className={`nav-brand-tag ${isDoctor ? 'title-doctor-badge' : 'title-kids-badge'}`}>{isDoctor ? 'Clinical Suite 🩺' : 'Kids 🎈'}</span></h2>
         </Link>

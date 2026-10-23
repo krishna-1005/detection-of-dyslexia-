@@ -6755,6 +6755,26 @@
         "Practice Phoneme Matching exercise daily",
         "Utilize Smart AI Reader for complex documents"
       ]
+    },
+    "mCqYmHqYlaZvlWBG04tj17DeVHd2": {
+      "profile": {
+        "uid": "mCqYmHqYlaZvlWBG04tj17DeVHd2",
+        "email": "1rn23ci081krishna@gmail.com",
+        "name": "1rn23ci081krishna",
+        "patientId": "LX-MCQYM",
+        "created_at": "f61e7c4d",
+        "lastAssessment": "No Data",
+        "riskLevel": "None",
+        "progress": 0
+      },
+      "history": [],
+      "reading_progress": {},
+      "therapy_sessions": [],
+      "recommendations": [
+        "Complete initial diagnostic text analysis",
+        "Practice Phoneme Matching exercise daily",
+        "Utilize Smart AI Reader for complex documents"
+      ]
     }
   }
 }
