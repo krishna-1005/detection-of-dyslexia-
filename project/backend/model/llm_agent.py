@@ -1,4 +1,4 @@
-﻿from google import genai
+from google import genai
 import os
 import json
 import requests
@@ -144,13 +144,26 @@ def simplify_for_dyslexia(text):
         Return ONLY the simplified text.
         """
 
-        # Using a reliable model
-        response = client.models.generate_content(
-            model="gemini-1.5-flash",
-            contents=prompt
-        )
+        candidate_models = [
+            "gemini-flash-lite-latest",
+            "gemini-2.5-flash",
+            "gemini-2.0-flash",
+            "gemini-3.1-flash-lite"
+        ]
         
-        return {"simplified_text": response.text.strip()}
+        last_err = None
+        for model_name in candidate_models:
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=prompt
+                )
+                return {"simplified_text": response.text.strip()}
+            except Exception as me:
+                last_err = str(me)
+                continue
+                
+        return {"error": f"Model generation failed: {last_err}"}
         
     except Exception as e:
         return {"error": str(e)}
@@ -308,15 +321,12 @@ Core Principles:
     try:
         client = genai.Client(api_key=api_key_str)
         candidate_models = [
-            "models/gemini-1.5-flash",
-            "gemini-1.5-flash",
-            "models/gemini-1.5-flash-8b",
-            "gemini-1.5-flash-8b",
-            "models/gemini-1.5-pro",
-            "gemini-1.5-pro",
-            "models/gemini-2.0-flash",
+            "gemini-flash-lite-latest",
+            "gemini-2.5-flash",
             "gemini-2.0-flash",
-            "gemini-2.5-flash"
+            "gemini-3.1-flash-lite",
+            "models/gemini-2.0-flash",
+            "models/gemini-2.5-flash"
         ]
         
         last_error = None

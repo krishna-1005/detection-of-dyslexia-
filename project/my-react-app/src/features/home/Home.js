@@ -389,7 +389,15 @@ const Home = () => {
           <Link to="/quiz" className="nav-item kids-nav-item">📋 Quick Quiz</Link>
           {currentUser ? (
             <>
-              <Link to="/dashboard" className="home-cta-btn kids-cta-btn">Kid Dashboard 🚀</Link>
+              {currentUser.role === 'doctor' ? (
+                <Link to="/doctor/dashboard" className="home-cta-btn" style={{ background: '#0f766e', color: '#ffffff', border: 'none', fontWeight: 800 }}>
+                  🩺 Doctor Dashboard
+                </Link>
+              ) : (
+                <Link to="/dashboard" className="home-cta-btn kids-cta-btn">
+                  Kid Dashboard 🚀
+                </Link>
+              )}
               <button 
                 onClick={handleLogout} 
                 className="kids-logout-btn"
@@ -426,9 +434,15 @@ const Home = () => {
             <div style={{ height: '1px', background: '#e2e8f0', margin: '0.5rem 0' }} />
             {currentUser ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
-                <Link to="/dashboard" className="home-cta-btn kids-cta-btn" style={{ justifyContent: 'center', width: '100%' }} onClick={() => setMobileMenuOpen(false)}>
-                  Kid Dashboard 🚀
-                </Link>
+                {currentUser.role === 'doctor' ? (
+                  <Link to="/doctor/dashboard" className="home-cta-btn" style={{ background: '#0f766e', color: '#ffffff', justifyContent: 'center', width: '100%', border: 'none', fontWeight: 800 }} onClick={() => setMobileMenuOpen(false)}>
+                    🩺 Doctor Dashboard
+                  </Link>
+                ) : (
+                  <Link to="/dashboard" className="home-cta-btn kids-cta-btn" style={{ justifyContent: 'center', width: '100%' }} onClick={() => setMobileMenuOpen(false)}>
+                    Kid Dashboard 🚀
+                  </Link>
+                )}
                 <button 
                   onClick={() => { handleLogout(); setMobileMenuOpen(false); }} 
                   className="kids-logout-btn"

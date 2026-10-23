@@ -220,3 +220,150 @@
   }
 }
 
+/* ═══════════════════════════════════════════════════════
+   Role Selector Tabs (Patient vs Doctor)
+   ═══════════════════════════════════════════════════════ */
+.auth-role-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  background: #f1f5f9;
+  padding: 5px;
+  border-radius: 14px;
+  margin-bottom: 1.25rem;
+  border: 1px solid #e2e8f0;
+}
+
+.auth-role-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+}
+
+.auth-role-tab .role-emoji {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.auth-role-tab .role-tab-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-role-tab .role-tab-text strong {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #475569;
+  line-height: 1.2;
+}
+
+.auth-role-tab .role-tab-text small {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.auth-role-tab.active-patient {
+  background: #ffffff;
+  box-shadow: 0 3px 10px rgba(79, 70, 229, 0.15);
+  border: 1.5px solid #4f46e5;
+}
+
+.auth-role-tab.active-patient .role-tab-text strong {
+  color: #4f46e5;
+}
+
+.auth-role-tab.active-doctor {
+  background: #ffffff;
+  box-shadow: 0 3px 10px rgba(15, 118, 110, 0.2);
+  border: 1.5px solid #0f766e;
+}
+
+.auth-role-tab.active-doctor .role-tab-text strong {
+  color: #0f766e;
+}
+
+.btn-auth.btn-doctor {
+  background: linear-gradient(135deg, #0f766e 0%, #0d9488 100%) !important;
+  box-shadow: 0 4px 14px rgba(15, 118, 110, 0.35) !important;
+}
+
+.btn-auth.btn-doctor:hover {
+  background: linear-gradient(135deg, #115e59 0%, #0f766e 100%) !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Quick Demo Login Buttons
+   ═══════════════════════════════════════════════════════ */
+.auth-quick-demos {
+  margin-top: 1.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.quick-demo-divider {
+  text-align: center;
+  margin-bottom: 0.65rem;
+}
+
+.quick-demo-divider span {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  background: #ffffff;
+  padding: 0 6px;
+  text-transform: uppercase;
+}
+
+.quick-demo-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.quick-demo-btn {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 0.76rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.quick-demo-btn.doctor {
+  background: rgba(15, 118, 110, 0.08);
+  color: #0f766e;
+  border-color: rgba(15, 118, 110, 0.25);
+}
+
+.quick-demo-btn.doctor:hover {
+  background: rgba(15, 118, 110, 0.16);
+  transform: translateY(-1px);
+}
+
+.quick-demo-btn.patient {
+  background: rgba(79, 70, 229, 0.08);
+  color: #4f46e5;
+  border-color: rgba(79, 70, 229, 0.25);
+}
+
+.quick-demo-btn.patient:hover {
+  background: rgba(79, 70, 229, 0.16);
+  transform: translateY(-1px);
+}
+
+

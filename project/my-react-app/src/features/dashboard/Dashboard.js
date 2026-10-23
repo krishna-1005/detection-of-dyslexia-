@@ -152,9 +152,9 @@ const Dashboard = () => {
             if (data.profile) {
               setProfile(prev => ({
                 ...prev,
-                name: data.profile.name || prev.name,
-                email: data.profile.email || prev.email,
-                patientId: data.profile.patientId || prev.patientId
+                name: currentUser?.displayName || currentUser?.email?.split('@')[0] || data.profile.name || prev.name,
+                email: currentUser?.email || data.profile.email || prev.email,
+                patientId: currentUser?.patientId || data.profile.patientId || prev.patientId
               }));
             }
           }
@@ -179,6 +179,17 @@ const Dashboard = () => {
     };
 
     loadDashboardData();
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (currentUser) {
+      setProfile(prev => ({
+        ...prev,
+        name: currentUser.displayName || currentUser.email?.split('@')[0] || "Learner",
+        email: currentUser.email || prev.email,
+        patientId: currentUser.patientId || ("LX-" + (currentUser.uid?.slice(0, 5) || "GUEST").toUpperCase())
+      }));
+    }
   }, [currentUser]);
 
   // Total Diagnostics & Scores
@@ -266,6 +277,12 @@ const Dashboard = () => {
     (t.details && t.details.primarySubtype)
   );
 
+  // 5. Ocular Motility & Eye-Tracking
+  const eyeTrackingTest = allTests.find(t => 
+    (t.type && (t.type.toLowerCase().includes("eye-tracking") || t.type.toLowerCase().includes("ocular"))) ||
+    (t.details && (t.details.odriScore !== undefined || t.details.regressionRatePercent !== undefined))
+  );
+
   // Filtered History
   const filteredTests = allTests.filter(t => {
     const typeStr = (t.type || "").toLowerCase();
@@ -276,6 +293,8 @@ const Dashboard = () => {
       matchesType = typeStr.includes("battery");
     } else if (historyFilter === "voice") {
       matchesType = typeStr.includes("voice") || typeStr.includes("oral reading");
+    } else if (historyFilter === "eye") {
+      matchesType = typeStr.includes("eye-tracking") || typeStr.includes("ocular");
     } else if (historyFilter === "quiz") {
       matchesType = typeStr.includes("quiz") || typeStr.includes("symptoms");
     } else if (historyFilter === "therapy") {
@@ -331,26 +350,26 @@ const Dashboard = () => {
             <div className="dash-header-title-group">
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                 <span className="dash-system-pill">
-                  <span className="dash-system-pill-dot" /> Live Clinical Engine Active
+                  <span className="dash-system-pill-dot" /> ✨ Active Learning Quest
                 </span>
                 <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 700 }}>
                   ID: <strong style={{ color: '#4f46e5' }}>{profile.patientId}</strong>
                 </span>
               </div>
               <h1>
-                📊 Clinical Analytics & Therapy Quest
+                🚀 Kid's Dashboard & Reading Adventure
               </h1>
             </div>
 
             <div className="dash-header-actions">
               <button className="dash-btn-secondary" onClick={() => setShowReportModal(true)}>
-                📄 Clinical PDF Report
+                📄 My Progress Report
               </button>
               <Link to="/detect" className="dash-btn-primary">
-                🚀 New Diagnostic Test
+                🚀 Fun Reading Test
               </Link>
               <button className="dash-btn-arcade" onClick={() => navigate(`/therapy/${lastPlayedModule || 'phoneme'}`)}>
-                🎮 Play Therapy Suite
+                🎮 Play Therapy Games
               </button>
             </div>
           </div>
@@ -363,7 +382,7 @@ const Dashboard = () => {
               </div>
               <div className="user-banner-details">
                 <h2>{profile.name}</h2>
-                <p>📧 {profile.email} • 🆔 <strong>{profile.patientId}</strong> • Registered Clinical Record</p>
+                <p>📧 {profile.email} • 🆔 <strong>{profile.patientId}</strong> • 🌟 Personal Learner Record</p>
               </div>
             </div>
 
@@ -927,6 +946,60 @@ const Dashboard = () => {
                     </button>
                     <button className="domain-btn-run" onClick={() => navigate('/quiz')}>
                       🚀 Take Quiz
+                    </button>
+                  </div>
+                </div>
+
+                {/* 5. Ocular Motility & Webcam Eye-Tracking */}
+                <div className="analysis-domain-card" style={{ '--domain-bg': '#ede9fe', '--domain-color': '#7c3aed' }}>
+                  <div>
+                    <div className="domain-card-header">
+                      <div className="domain-badge-group">
+                        <div className="domain-icon">👁️</div>
+                        <div className="domain-title-area">
+                          <h3>Ocular Motility & Eye-Tracking</h3>
+                          <small>Saccadic Regressions & Fixation Duration</small>
+                        </div>
+                      </div>
+                      <span className={`domain-status-tag ${eyeTrackingTest ? 'active' : 'pending'}`}>
+                        {eyeTrackingTest ? 'Completed • Valid' : 'Webcam Diagnostic Ready'}
+                      </span>
+                    </div>
+
+                    <div className="domain-metrics-row">
+                      <div className="domain-metric-item">
+                        <small>Regression Rate</small>
+                        <strong style={{ color: '#7c3aed' }}>
+                          {eyeTrackingTest?.details?.regressionRatePercent ? `${eyeTrackingTest.details.regressionRatePercent}%` : '14%'}
+                        </strong>
+                      </div>
+                      <div className="domain-metric-item">
+                        <small>Mean Fixation</small>
+                        <strong>{eyeTrackingTest?.details?.meanFixationDurationMs ? `${eyeTrackingTest.details.meanFixationDurationMs}ms` : '230ms'}</strong>
+                      </div>
+                      <div className="domain-metric-item">
+                        <small>ODRI Index</small>
+                        <strong style={{ color: '#10b981' }}>
+                          {eyeTrackingTest?.details?.odriScore !== undefined ? `${eyeTrackingTest.details.odriScore}/100` : '18/100'}
+                        </strong>
+                      </div>
+                    </div>
+
+                    <div className="domain-insight-box">
+                      <strong>💡 Ocular Biomarker Diagnostic: </strong>
+                      Tracks real-time gaze scanpaths during paragraph reading, isolating leftward regressions and phonological fixation bottlenecks.
+                    </div>
+                  </div>
+
+                  <div className="domain-actions-row">
+                    <button 
+                      className="domain-btn-view"
+                      onClick={() => navigate('/eye-tracking')}
+                    >
+                      🔍 Inspect Scanpath Map
+                    </button>
+                    <button className="domain-btn-run" onClick={() => navigate('/eye-tracking')}>
+                      🚀 Launch Eye Tracker
                     </button>
                   </div>
                 </div>

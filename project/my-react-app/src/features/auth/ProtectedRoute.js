@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, allowedRole = null }) => {
   const { currentUser, loading } = useAuth();
 
   if (loading) {
@@ -11,7 +11,6 @@ const ProtectedRoute = ({ children }) => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyInhalt: 'center',
         justifyContent: 'center',
         height: '100vh',
         background: '#0d0b14',
@@ -34,6 +33,17 @@ const ProtectedRoute = ({ children }) => {
 
   if (!currentUser) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Strict role enforcement:
+  // If route is restricted to doctors and current user is not a doctor, redirect to patient dashboard
+  if (allowedRole === 'doctor' && currentUser.role !== 'doctor') {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // If route is restricted to patients/clients and current user is a doctor, redirect to doctor dashboard
+  if (allowedRole === 'patient' && currentUser.role === 'doctor') {
+    return <Navigate to="/doctor/dashboard" replace />;
   }
 
   return children;

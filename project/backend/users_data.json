@@ -13,6 +13,478 @@
       },
       "history": [
         {
+          "id": 1792653469219,
+          "date": "10/22/2026 12:47 PM",
+          "isoDate": "2026-10-22T07:17:49.219Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 6.9,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 21,
+            "accuracy": 6.9,
+            "timeTaken": "40.9s (2.9 WPM)",
+            "mode": "assessment",
+            "date": "10/22/2026 12:47 PM",
+            "timestamp": 1792653469219
+          },
+          "timestamp": "e50bd7b5"
+        },
+        {
+          "id": 1792652630453,
+          "date": "10/22/2026 12:33 PM",
+          "isoDate": "2026-10-22T07:03:50.453Z",
+          "type": "Linguistic Text Analysis",
+          "score": 67,
+          "riskLevel": "High",
+          "status": "Completed",
+          "details": {
+            "analysis_feedback": "The input exhibits classic dyslexic writing patterns, specifically letter transpositions, internal vowel omissions, and visual letter confusions (such as b/d reversals).",
+            "classifier_model": "Random Forest Ensemble - 100 Trees",
+            "confidence_score": 88.8,
+            "corrected_sentence": "The quick brown fox jumps over the lazy dog.",
+            "linguistic_patterns": [
+              {
+                "category": "Transposition",
+                "example": "Teh -> The, borwn -> brown",
+                "level": "High"
+              },
+              {
+                "category": "Omission",
+                "example": "jmps -> jumps, ovr -> over",
+                "level": "High"
+              },
+              {
+                "category": "Visual/Phonetic Substitution",
+                "example": "lasy -> lazy, bog -> dog, qwuick -> quick",
+                "level": "Med"
+              }
+            ],
+            "misspelled_count": 6,
+            "misspelled_words": [
+              {
+                "original": "Teh",
+                "reason": "Adjacent letters 'h' and 'e' are swapped.",
+                "suggested": "The",
+                "type": "Transposition"
+              },
+              {
+                "original": "qwuick",
+                "reason": "Unnecessary 'w' inserted due to phonetic blending.",
+                "suggested": "quick",
+                "type": "Intrusive letter / Phonetic spelling"
+              },
+              {
+                "original": "borwn",
+                "reason": "Internal letters 'r' and 'w' are swapped.",
+                "suggested": "brown",
+                "type": "Transposition"
+              },
+              {
+                "original": "jmps",
+                "reason": "Vowel 'u' omitted from the middle of the word.",
+                "suggested": "jumps",
+                "type": "Omission"
+              },
+              {
+                "original": "ovr",
+                "reason": "Vowel 'e' omitted from the end of the word.",
+                "suggested": "over",
+                "type": "Omission"
+              },
+              {
+                "original": "lasy",
+                "reason": "Substitution of 's' for 'z'.",
+                "suggested": "lazy",
+                "type": "Visual/Phonetic substitution"
+              },
+              {
+                "original": "bog",
+                "reason": "Reversal of letter shape between 'b' and 'd'.",
+                "suggested": "dog",
+                "type": "Visual reversal"
+              }
+            ],
+            "model_used": "Random Forest Ensemble - 100 Trees",
+            "polarity": 0,
+            "risk_score": 0.67,
+            "subjectivity": 0,
+            "suggestions_for_improvement": [
+              "Use spell-checking tools that account for phonetic variations.",
+              "Take extra time to proofread for letter reversals and transpositions."
+            ],
+            "telemetry": {
+              "accuracy_raw": 33.3,
+              "feature_vector": [
+                5220,
+                7500,
+                0,
+                370,
+                33.3
+              ],
+              "jitter_px": 370,
+              "rei_percent": 0,
+              "t_hesitate_ms": 7500,
+              "t_task_ms": 5220
+            },
+            "total_words": 9
+          },
+          "timestamp": "4b22380d"
+        },
+        {
+          "id": 1792652531080,
+          "date": "10/22/2026 12:32 PM",
+          "isoDate": "2026-10-22T07:02:11.080Z",
+          "type": "Linguistic Text Analysis",
+          "score": 57,
+          "riskLevel": "Moderate",
+          "status": "Completed",
+          "details": {
+            "analysis_feedback": "The text displays classic dyslexic patterns including high frequencies of letter transpositions, phonetic misspellings, and vowel omissions.",
+            "classifier_model": "Random Forest Ensemble - 100 Trees",
+            "confidence_score": 89.6,
+            "corrected_sentence": "The quick brown fox jumps over the lazy dog. On Sunday I went to the park with my brother. We played soccer and had ice cream. It was very fun.",
+            "linguistic_patterns": [
+              {
+                "category": "Transposition",
+                "example": "Teh -> The",
+                "level": "High"
+              },
+              {
+                "category": "Omission of vowels",
+                "example": "jmps -> jumps",
+                "level": "High"
+              },
+              {
+                "category": "Phonetic substitution",
+                "example": "lasy -> lazy",
+                "level": "Med"
+              },
+              {
+                "category": "Visual confusion",
+                "example": "bog -> dog",
+                "level": "Med"
+              }
+            ],
+            "misspelled_count": 16,
+            "misspelled_words": [
+              {
+                "original": "Teh",
+                "reason": "Letter swapping",
+                "suggested": "The",
+                "type": "Transposition"
+              },
+              {
+                "original": "qwuick",
+                "reason": "Extra vowel",
+                "suggested": "quick",
+                "type": "Insertion"
+              },
+              {
+                "original": "borwn",
+                "reason": "Letter order error",
+                "suggested": "brown",
+                "type": "Transposition"
+              },
+              {
+                "original": "jmps",
+                "reason": "Missing vowel",
+                "suggested": "jumps",
+                "type": "Omission"
+              },
+              {
+                "original": "ovr",
+                "reason": "Missing vowel",
+                "suggested": "over",
+                "type": "Omission"
+              },
+              {
+                "original": "lasy",
+                "reason": "Phonetic similarity",
+                "suggested": "lazy",
+                "type": "Substitution"
+              },
+              {
+                "original": "bog",
+                "reason": "Visual confusion",
+                "suggested": "dog",
+                "type": "Substitution"
+              },
+              {
+                "original": "sduany",
+                "reason": "Complex letter ordering",
+                "suggested": "Sunday",
+                "type": "Transposition/Omission"
+              },
+              {
+                "original": "wetn",
+                "reason": "Letter swapping",
+                "suggested": "went",
+                "type": "Transposition"
+              },
+              {
+                "original": "pakr",
+                "reason": "Letter swapping",
+                "suggested": "park",
+                "type": "Transposition"
+              },
+              {
+                "original": "wtih",
+                "reason": "Letter swapping",
+                "suggested": "with",
+                "type": "Transposition"
+              },
+              {
+                "original": "bruthr",
+                "reason": "Missing vowels",
+                "suggested": "brother",
+                "type": "Omission"
+              },
+              {
+                "original": "palyd",
+                "reason": "Letter sequence error",
+                "suggested": "played",
+                "type": "Transposition/Omission"
+              },
+              {
+                "original": "scocr",
+                "reason": "Phonetic misspelling",
+                "suggested": "soccer",
+                "type": "Substitution/Omission"
+              },
+              {
+                "original": "isce crm",
+                "reason": "Missing letters",
+                "suggested": "ice cream",
+                "type": "Transposition/Omission"
+              },
+              {
+                "original": "vry fn",
+                "reason": "Missing vowels",
+                "suggested": "very fun",
+                "type": "Omission"
+              }
+            ],
+            "model_used": "Random Forest Ensemble - 100 Trees",
+            "polarity": 0,
+            "risk_score": 0.57,
+            "subjectivity": 0,
+            "suggestions_for_improvement": [
+              "Practice visualizing the letter sequence of high-frequency words.",
+              "Utilize text-to-speech tools to auditory check word structures.",
+              "Use color-coded vowel highlighting to assist with omission errors."
+            ],
+            "telemetry": {
+              "accuracy_raw": 42.9,
+              "feature_vector": [
+                14340,
+                20000,
+                0,
+                770,
+                42.9
+              ],
+              "jitter_px": 770,
+              "rei_percent": 0,
+              "t_hesitate_ms": 20000,
+              "t_task_ms": 14340
+            },
+            "total_words": 28
+          },
+          "timestamp": "e537c5bf"
+        },
+        {
+          "id": 1792652343709,
+          "date": "10/22/2026 12:29 PM",
+          "isoDate": "2026-10-22T06:59:03.708Z",
+          "type": "Linguistic Text Analysis",
+          "score": 67,
+          "riskLevel": "High",
+          "status": "Completed",
+          "details": {
+            "analysis_feedback": "The input exhibits classic dyslexic writing patterns, including frequent letter transpositions, vowel omissions, and phonetic approximations.",
+            "classifier_model": "Random Forest Ensemble - 100 Trees",
+            "confidence_score": 88.8,
+            "corrected_sentence": "The quick brown fox jumps over the lazy dog.",
+            "linguistic_patterns": [
+              {
+                "category": "Letter Transposition",
+                "example": "Teh -> The",
+                "level": "High"
+              },
+              {
+                "category": "Letter Transposition",
+                "example": "borwn -> brown",
+                "level": "High"
+              },
+              {
+                "category": "Vowel Omission",
+                "example": "jmps -> jumps",
+                "level": "High"
+              },
+              {
+                "category": "Vowel Omission",
+                "example": "ovr -> over",
+                "level": "High"
+              },
+              {
+                "category": "Phonetic Addition/Substitution",
+                "example": "qwuick -> quick",
+                "level": "Med"
+              },
+              {
+                "category": "Consonant Substitution",
+                "example": "lasy -> lazy",
+                "level": "Med"
+              }
+            ],
+            "misspelled_count": 6,
+            "misspelled_words": [
+              {
+                "original": "Teh",
+                "reason": "Reversal of adjacent letters 'h' and 'e'.",
+                "suggested": "The",
+                "type": "Transposition"
+              },
+              {
+                "original": "qwuick",
+                "reason": "Insertion of extra 'w' and phonetic spelling.",
+                "suggested": "quick",
+                "type": "Addition / Substitution"
+              },
+              {
+                "original": "borwn",
+                "reason": "Reversal of adjacent letters 'r' and 'w'.",
+                "suggested": "brown",
+                "type": "Transposition"
+              },
+              {
+                "original": "jmps",
+                "reason": "Omission of vowel 'u'.",
+                "suggested": "jumps",
+                "type": "Omission"
+              },
+              {
+                "original": "ovr",
+                "reason": "Omission of vowel 'e'.",
+                "suggested": "over",
+                "type": "Omission"
+              },
+              {
+                "original": "lasy",
+                "reason": "Visual/auditory confusion between 's' and 'z'.",
+                "suggested": "lazy",
+                "type": "Substitution"
+              }
+            ],
+            "model_used": "Random Forest Ensemble - 100 Trees",
+            "polarity": 0,
+            "risk_score": 0.67,
+            "subjectivity": 0,
+            "suggestions_for_improvement": [
+              "Use spell-check tools that account for phonetic spelling and letter reversals.",
+              "Practice proofreading specifically for vowel retention in short words."
+            ],
+            "telemetry": {
+              "accuracy_raw": 33.3,
+              "feature_vector": [
+                5220,
+                7500,
+                0,
+                370,
+                33.3
+              ],
+              "jitter_px": 370,
+              "rei_percent": 0,
+              "t_hesitate_ms": 7500,
+              "t_task_ms": 5220
+            },
+            "total_words": 9
+          },
+          "timestamp": "9a42f056"
+        },
+        {
+          "id": 1792651398523,
+          "date": "10/22/2026 12:13 PM",
+          "isoDate": "2026-10-22T06:43:18.522Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 0,
+          "riskLevel": "High",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 0,
+            "accuracy": 0,
+            "timeTaken": "0s (0 WPM)",
+            "mode": "assessment",
+            "date": "10/22/2026 12:13 PM",
+            "timestamp": 1792651398522
+          },
+          "timestamp": "dd9a8234"
+        },
+        {
+          "id": 1792651253866,
+          "date": "10/22/2026 12:10 PM",
+          "isoDate": "2026-10-22T06:40:53.843Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 66.7,
+          "riskLevel": "Moderate",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 200,
+            "accuracy": 66.7,
+            "timeTaken": "33.8s (32 WPM)",
+            "mode": "assessment",
+            "date": "10/22/2026 12:10 PM",
+            "timestamp": 1792651253843
+          },
+          "timestamp": "dbfd06e4"
+        },
+        {
+          "id": 1792584158596,
+          "date": "10/21/2026 05:32 PM",
+          "isoDate": "2026-10-21T12:02:38.582Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 57.7,
+          "riskLevel": "Moderate",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 173,
+            "accuracy": 57.7,
+            "timeTaken": "44.5s (20.2 WPM)",
+            "mode": "assessment",
+            "date": "10/21/2026 05:32 PM",
+            "timestamp": 1792584158582
+          },
+          "timestamp": "38753c00"
+        },
+        {
+          "id": 1792569313414,
+          "date": "10/21/2026 01:25 PM",
+          "isoDate": "2026-10-21T07:55:13.404Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 70.4,
+          "riskLevel": "Low",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 211,
+            "accuracy": 70.4,
+            "timeTaken": "274.4s (4.2 WPM)",
+            "mode": "assessment",
+            "date": "10/21/2026 01:25 PM",
+            "timestamp": 1792569313404
+          },
+          "timestamp": "b98bdf4c"
+        },
+        {
           "id": 1792515278508,
           "date": "10/20/2026 10:24 PM",
           "isoDate": "2026-10-20T16:54:38.508Z",
@@ -3790,6 +4262,51 @@
       "reading_progress": {},
       "therapy_sessions": [
         {
+          "id": "8a1c44e6-6cc8-4032-b8e8-fc2ccf924efa",
+          "type": "voice",
+          "score": 21,
+          "accuracy": 6.9,
+          "date": "10/22/2026 12:47 PM",
+          "timeTaken": "40.9s (2.9 WPM)",
+          "status": "Completed"
+        },
+        {
+          "id": "3e039be8-efe6-4bf3-8163-3d614fee99cc",
+          "type": "voice",
+          "score": 0,
+          "accuracy": 0,
+          "date": "10/22/2026 12:13 PM",
+          "timeTaken": "0s (0 WPM)",
+          "status": "Completed"
+        },
+        {
+          "id": "ab02869d-d2cf-4b6c-b05e-e45b46650fe1",
+          "type": "voice",
+          "score": 200,
+          "accuracy": 66.7,
+          "date": "10/22/2026 12:10 PM",
+          "timeTaken": "33.8s (32 WPM)",
+          "status": "Completed"
+        },
+        {
+          "id": "7c789783-f847-4346-9b73-e73bbc5e0f51",
+          "type": "voice",
+          "score": 173,
+          "accuracy": 57.7,
+          "date": "10/21/2026 05:32 PM",
+          "timeTaken": "44.5s (20.2 WPM)",
+          "status": "Completed"
+        },
+        {
+          "id": "7d930c6c-beec-4728-81b9-7190e4b1e95e",
+          "type": "voice",
+          "score": 211,
+          "accuracy": 70.4,
+          "date": "10/21/2026 01:25 PM",
+          "timeTaken": "274.4s (4.2 WPM)",
+          "status": "Completed"
+        },
+        {
           "id": "ae7c5fcc-a9f5-46a7-b1e5-7caf9225a1d2",
           "type": "phoneme",
           "score": 315,
@@ -5814,15 +6331,15 @@
         },
         "voice": {
           "type": "voice",
-          "sessions": 10,
-          "accuracy": "0%",
+          "sessions": 15,
+          "accuracy": "6.9%",
           "pb": "258 pts",
           "pb_val": 258,
-          "lastPlayed": "10/14/2026 04:34 PM",
+          "lastPlayed": "10/22/2026 12:47 PM",
           "trend": "Needs Practice"
         }
       },
-      "last_played_module": "phoneme"
+      "last_played_module": "voice"
     },
     "ITkMwuSTFBbyIcWodBqX76hMVqL2": {
       "profile": {
@@ -5836,6 +6353,126 @@
         "progress": 0
       },
       "history": [
+        {
+          "id": 1792572659003,
+          "date": "10/21/2026 02:20 PM",
+          "isoDate": "2026-10-21T08:50:59.003Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 51.7,
+          "riskLevel": "Moderate",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 155,
+            "accuracy": 51.7,
+            "timeTaken": "71.6s (12.6 WPM)",
+            "mode": "assessment",
+            "date": "10/21/2026 02:20 PM",
+            "timestamp": 1792572659003
+          },
+          "timestamp": "5d9ffbd5"
+        },
+        {
+          "id": 1792572187811,
+          "date": "10/21/2026 02:13 PM",
+          "isoDate": "2026-10-21T08:43:07.810Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 96.2,
+          "riskLevel": "Low",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 289,
+            "accuracy": 96.2,
+            "timeTaken": "0s (0 WPM)",
+            "mode": "assessment",
+            "date": "10/21/2026 02:13 PM",
+            "timestamp": 1792572187810
+          },
+          "timestamp": "30f01364"
+        },
+        {
+          "id": 1792571939122,
+          "date": "10/21/2026 02:08 PM",
+          "isoDate": "2026-10-21T08:38:59.121Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 96.2,
+          "riskLevel": "Low",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 289,
+            "accuracy": 96.2,
+            "timeTaken": "140.7s (10.7 WPM)",
+            "mode": "assessment",
+            "date": "10/21/2026 02:08 PM",
+            "timestamp": 1792571939121
+          },
+          "timestamp": "7499bbca"
+        },
+        {
+          "id": 1792571577182,
+          "date": "10/21/2026 02:02 PM",
+          "isoDate": "2026-10-21T08:32:57.181Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 76,
+          "riskLevel": "Low",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 228,
+            "accuracy": 76,
+            "timeTaken": "81.7s (14 WPM)",
+            "mode": "assessment",
+            "date": "10/21/2026 02:02 PM",
+            "timestamp": 1792571577181
+          },
+          "timestamp": "a237a3a8"
+        },
+        {
+          "id": 1792570320735,
+          "date": "10/21/2026 01:42 PM",
+          "isoDate": "2026-10-21T08:12:00.734Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 81.5,
+          "riskLevel": "Low",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 245,
+            "accuracy": 81.5,
+            "timeTaken": "64.5s (20.5 WPM)",
+            "mode": "assessment",
+            "date": "10/21/2026 01:42 PM",
+            "timestamp": 1792570320734
+          },
+          "timestamp": "83908b8a"
+        },
+        {
+          "id": 1792570150221,
+          "date": "10/21/2026 01:39 PM",
+          "isoDate": "2026-10-21T08:09:10.180Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 76.9,
+          "riskLevel": "Low",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 231,
+            "accuracy": 76.9,
+            "timeTaken": "106.5s (11.3 WPM)",
+            "mode": "assessment",
+            "date": "10/21/2026 01:39 PM",
+            "timestamp": 1792570150180
+          },
+          "timestamp": "0992952b"
+        },
         {
           "id": 1792518859262,
           "date": "10/20/2026 11:24 PM",
@@ -5920,6 +6557,60 @@
       "reading_progress": {},
       "therapy_sessions": [
         {
+          "id": "daad4b45-da86-4496-a4ca-df9f3a20efb2",
+          "type": "voice",
+          "score": 155,
+          "accuracy": 51.7,
+          "date": "10/21/2026 02:20 PM",
+          "timeTaken": "71.6s (12.6 WPM)",
+          "status": "Completed"
+        },
+        {
+          "id": "3c622b2c-f1dd-48fc-a705-68012bf62ed8",
+          "type": "voice",
+          "score": 289,
+          "accuracy": 96.2,
+          "date": "10/21/2026 02:13 PM",
+          "timeTaken": "0s (0 WPM)",
+          "status": "Completed"
+        },
+        {
+          "id": "b9d34b84-3d28-4bfc-b9aa-77b66014b716",
+          "type": "voice",
+          "score": 289,
+          "accuracy": 96.2,
+          "date": "10/21/2026 02:08 PM",
+          "timeTaken": "140.7s (10.7 WPM)",
+          "status": "Completed"
+        },
+        {
+          "id": "0cc50f47-da5c-4a36-91b4-665415e8d8dc",
+          "type": "voice",
+          "score": 228,
+          "accuracy": 76,
+          "date": "10/21/2026 02:02 PM",
+          "timeTaken": "81.7s (14 WPM)",
+          "status": "Completed"
+        },
+        {
+          "id": "9f52880a-fe6a-47d0-9681-1f1a49f73ed2",
+          "type": "voice",
+          "score": 245,
+          "accuracy": 81.5,
+          "date": "10/21/2026 01:42 PM",
+          "timeTaken": "64.5s (20.5 WPM)",
+          "status": "Completed"
+        },
+        {
+          "id": "0c22011a-649c-470d-a894-661f01f03fa8",
+          "type": "voice",
+          "score": 231,
+          "accuracy": 76.9,
+          "date": "10/21/2026 01:39 PM",
+          "timeTaken": "106.5s (11.3 WPM)",
+          "status": "Completed"
+        },
+        {
           "id": "03532c77-4dc7-4f29-8484-a64dd067b6be",
           "type": "voice",
           "score": 222,
@@ -5964,15 +6655,106 @@
       "therapy_progress": {
         "voice": {
           "type": "voice",
-          "sessions": 4,
-          "accuracy": "74.1%",
+          "sessions": 10,
+          "accuracy": "51.7%",
           "pb": "289 pts",
           "pb_val": 289,
-          "lastPlayed": "10/20/2026 11:24 PM",
+          "lastPlayed": "10/21/2026 02:20 PM",
           "trend": "Stable"
         }
       },
       "last_played_module": "voice"
+    },
+    "test_user_alex": {
+      "profile": {
+        "uid": "test_user_alex",
+        "email": "alex@cognilex.ai",
+        "name": "Alex Johnson",
+        "patientId": "LX-TEST_",
+        "created_at": "dab03748",
+        "lastAssessment": "No Data",
+        "riskLevel": "None",
+        "progress": 0,
+        "age": "12"
+      },
+      "history": [
+        {
+          "score": 25,
+          "type": "Diagnostic Assessment",
+          "date": "Today",
+          "id": "b7985231-8a89-4966-9e6a-e785b0b8ef9d",
+          "timestamp": "de6164b8"
+        }
+      ],
+      "reading_progress": {},
+      "therapy_sessions": [
+        {
+          "id": "d6b992aa-ba37-43ad-911f-44b188a6a6b9",
+          "type": "phoneme",
+          "score": 90,
+          "accuracy": 95,
+          "date": "f407ff67",
+          "timeTaken": "N/A",
+          "status": "Completed"
+        }
+      ],
+      "recommendations": [
+        "Complete initial diagnostic text analysis",
+        "Practice Phoneme Matching exercise daily",
+        "Utilize Smart AI Reader for complex documents"
+      ],
+      "therapy_progress": {
+        "phoneme": {
+          "type": "phoneme",
+          "sessions": 1,
+          "accuracy": "95%",
+          "pb": "90 pts",
+          "pb_val": 90,
+          "lastPlayed": "f407ff67",
+          "trend": "Improving"
+        }
+      },
+      "last_played_module": "phoneme"
+    },
+    "eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJ1aWQiOiAiZGVtb19wYXRpZW50X2FsZXgiLCAidXNlcl9pZCI6ICJkZW1vX3BhdGllbnRfYWxleCIsICJlbWFpbCI6ICJhbGV4LmpvaG5zb25AY29nbmlsZXguYWkiLCAibmFtZSI6ICJBbGV4IEpvaG5zb24iLCAicm9sZSI6ICJwYXRpZW50In0=.dev_signature": {
+      "profile": {
+        "uid": "eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJ1aWQiOiAiZGVtb19wYXRpZW50X2FsZXgiLCAidXNlcl9pZCI6ICJkZW1vX3BhdGllbnRfYWxleCIsICJlbWFpbCI6ICJhbGV4LmpvaG5zb25AY29nbmlsZXguYWkiLCAibmFtZSI6ICJBbGV4IEpvaG5zb24iLCAicm9sZSI6ICJwYXRpZW50In0=.dev_signature",
+        "email": "eyJhbGciOiAiSFMyNTYiLCAidHlwIjogIkpXVCJ9.eyJ1aWQiOiAiZGVtb19wYXRpZW50X2FsZXgiLCAidXNlcl9pZCI6ICJkZW1vX3BhdGllbnRfYWxleCIsICJlbWFpbCI6ICJhbGV4LmpvaG5zb25AY29nbmlsZXguYWkiLCAibmFtZSI6ICJBbGV4IEpvaG5zb24iLCAicm9sZSI6ICJwYXRpZW50In0=.dev_signature@cognilex.ai",
+        "name": "Demo User",
+        "patientId": "LX-EYJHB",
+        "created_at": "0cfeb31c",
+        "lastAssessment": "No Data",
+        "riskLevel": "None",
+        "progress": 0
+      },
+      "history": [],
+      "reading_progress": {},
+      "therapy_sessions": [],
+      "recommendations": [
+        "Complete initial diagnostic text analysis",
+        "Practice Phoneme Matching exercise daily",
+        "Utilize Smart AI Reader for complex documents"
+      ]
+    },
+    "demo_patient_alex": {
+      "profile": {
+        "uid": "demo_patient_alex",
+        "email": "alex.johnson@cognilex.ai",
+        "name": "Alex Johnson",
+        "patientId": "LX-DEMO_",
+        "created_at": "91dee82b",
+        "lastAssessment": "No Data",
+        "riskLevel": "None",
+        "progress": 0
+      },
+      "history": [],
+      "reading_progress": {},
+      "therapy_sessions": [],
+      "recommendations": [
+        "Complete initial diagnostic text analysis",
+        "Practice Phoneme Matching exercise daily",
+        "Utilize Smart AI Reader for complex documents"
+      ]
     }
   }
 }

@@ -8,7 +8,7 @@ therapy_bp = Blueprint('therapy', __name__)
 
 @therapy_bp.route("/api/therapy/ai-phoneme-mission", methods=["GET", "POST"])
 def get_ai_phoneme_mission():
-    data = request.get_json() if request.is_json else {}
+    data = request.get_json(silent=True) or {}
     focus = data.get("phoneme") or request.args.get("phoneme")
     result = generate_ai_phoneme_missions(focus_phoneme=focus)
     return jsonify(result)

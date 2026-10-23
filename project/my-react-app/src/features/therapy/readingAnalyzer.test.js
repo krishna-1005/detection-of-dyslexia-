@@ -5,7 +5,16 @@
  * Run with: npx jest readingAnalyzer.test.js
  */
 
-import { analyzeReading, normalizeWord, tokenize } from './readingAnalyzer';
+import {
+  analyzeReading,
+  normalizeWord,
+  tokenize,
+  countSyllables,
+  analyzeSpeechCadenceAndProlongation,
+  collapseRepeatedChars,
+  isProlongationMatch
+} from './readingAnalyzer';
+
 
 // ---------------------------------------------------------------------------
 // Helper: build a simple session result for a set of sentences
@@ -279,3 +288,268 @@ describe('tokenize', () => {
   test('handles null', () =>
     expect(tokenize(null)).toEqual([]));
 });
+
+// ---------------------------------------------------------------------------
+// TEST 9 — Spoken wrong word (substitution / mispronunciation) reflects in report
+// ---------------------------------------------------------------------------
+test('TEST 9: Wrong word spoken (sun -> moon) reflects as mispronounced in sentence and report', () => {
+  const sentence = 'The sun is bright and warm today'; // 7 words
+  const spoken   = 'The moon is bright and warm today'; // "moon" instead of "sun"
+
+  const result = run([sentence], [spoken], 10000);
+  const { sentences, summary } = result;
+  const s = sentences[0];
+
+  expect(s.totalWords).toBe(7);
+  expect(s.correctCount).toBe(6);
+  expect(s.mispronouncedCount).toBe(1);
+  expect(s.skippedCount).toBe(0);
+  expect(s.accuracy).toBeCloseTo(85.7, 1);
+
+  // The mispronounced word should be "sun" with spoken "moon"
+  const mispWord = s.words.find(w => w.status === 'mispronounced');
+  expect(mispWord).toBeDefined();
+  expect(normalizeWord(mispWord.expected)).toBe('sun');
+  expect(mispWord.spoken).toBe('moon');
+  expect(mispWord.miscue?.type).toBe('lexical_substitution');
+
+  // Summary reflections
+  expect(summary.correctWords).toBe(6);
+  expect(summary.mispronounced).toBe(1);
+  expect(summary.skipped).toBe(0);
+  expect(summary.accuracy).toBeCloseTo(85.7, 1);
+
+  // Clinical Diagnostics & Doctor Suite reflection
+  expect(summary.clinicalDiagnostics).toBeDefined();
+  expect(summary.clinicalDiagnostics.totalMiscues).toBe(1);
+  expect(summary.clinicalDiagnostics.allWordMiscues.length).toBe(1);
+  expect(summary.clinicalDiagnostics.allWordMiscues[0].expected).toBe('sun');
+  expect(summary.clinicalDiagnostics.allWordMiscues[0].spoken).toBe('moon');
+  expect(summary.clinicalDiagnostics.miscueCounts.phonologicalSubs).toBe(1);
+});
+
+// ---------------------------------------------------------------------------
+// TEST 10 — Phonological mispronunciation (sun -> fun) reflects in report
+// ---------------------------------------------------------------------------
+test('TEST 10: Phonological mispronunciation (sun -> fun) reflects as mispronounced', () => {
+  const sentence = 'The sun is bright and warm today';
+  const spoken   = 'The fun is bright and warm today';
+
+  const result = run([sentence], [spoken], 10000);
+  const { sentences, summary } = result;
+  const s = sentences[0];
+
+  expect(s.correctCount).toBe(6);
+  expect(s.mispronouncedCount).toBe(1);
+  expect(s.skippedCount).toBe(0);
+
+  const mispWord = s.words.find(w => w.status === 'mispronounced');
+  expect(mispWord).toBeDefined();
+  expect(normalizeWord(mispWord.expected)).toBe('sun');
+  expect(mispWord.spoken).toBe('fun');
+
+  expect(summary.mispronounced).toBe(1);
+  expect(summary.clinicalDiagnostics.allWordMiscues.length).toBe(1);
+});
+
+// ---------------------------------------------------------------------------
+// TEST 11 — countSyllables estimator
+// ---------------------------------------------------------------------------
+describe('countSyllables', () => {
+  test('estimates monosyllabic and polysyllabic words accurately', () => {
+    expect(countSyllables('the')).toBe(1);
+    expect(countSyllables('sun')).toBe(1);
+    expect(countSyllables('bright')).toBe(1);
+    expect(countSyllables('reading')).toBe(2);
+    expect(countSyllables('happy')).toBe(2);
+    expect(countSyllables('discovery')).toBe(4);
+    expect(countSyllables('curiosity')).toBe(5);
+    expect(countSyllables('aaaaamerica')).toBeGreaterThanOrEqual(3);
+    expect(countSyllables('')).toBe(0);
+    expect(countSyllables(null)).toBe(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// TEST 12 — analyzeSpeechCadenceAndProlongation metrics & severity
+// ---------------------------------------------------------------------------
+describe('analyzeSpeechCadenceAndProlongation', () => {
+  test('evaluates normal fluency when 0 drags occur', () => {
+    const res = analyzeSpeechCadenceAndProlongation({
+      durationSec: 10,
+      totalWords: 15,
+      prolongationsList: [],
+      allSpokenWords: ['The', 'sun', 'is', 'bright', 'and', 'warm', 'today']
+    });
+
+    expect(res.wpm).toBe(90);
+    expect(res.totalDrags).toBe(0);
+    expect(res.severity).toBe('Normal Fluency');
+    expect(res.cadenceCategory).toBe('Fluent');
+    expect(res.prolongationIndex).toBe(0);
+    expect(res.childView.badge).toContain('Steady Pacing Star');
+  });
+
+  test('stratifies mild hesitation for 1-2 drags', () => {
+    const res = analyzeSpeechCadenceAndProlongation({
+      durationSec: 15,
+      totalWords: 12,
+      prolongationsList: [
+        { word: 'sun', durationMs: 720, type: 'Acoustic Prolongation' }
+      ],
+      allSpokenWords: ['The', 'sun', 'is', 'bright']
+    });
+
+    expect(res.totalDrags).toBe(1);
+    expect(res.severity).toBe('Mild Hesitation / Continuant Lengthening');
+    expect(res.prolongationIndex).toBeCloseTo(8.3, 1);
+  });
+
+  test('stratifies marked phonetic prolongation for 3+ drags', () => {
+    const res = analyzeSpeechCadenceAndProlongation({
+      durationSec: 20,
+      totalWords: 10,
+      prolongationsList: [
+        { word: 'ssssun', durationMs: 750, type: 'Graphemic Repetition' },
+        { word: 'bright', durationMs: 820, type: 'Acoustic Prolongation' },
+        { word: 'space', durationMs: 910, type: 'Acoustic Prolongation' }
+      ]
+    });
+
+    expect(res.totalDrags).toBe(3);
+    expect(res.severity).toBe('Marked Phonetic Prolongation (Dysfluency / Phonological Decoding Strain)');
+    expect(res.prolongationIndex).toBe(30);
+    expect(res.clinicalRationale).toContain('compensatory decoding delay');
+    expect(res.childView.title).toContain('Thoughtful Sound Explorer');
+  });
+
+  test('correctly classifies bradylexic vs rushed cadence categories', () => {
+    const slow = analyzeSpeechCadenceAndProlongation({
+      durationSec: 20,
+      totalWords: 10 // 30 WPM
+    });
+    expect(slow.cadenceCategory).toBe('Bradylexic');
+
+    const rushed = analyzeSpeechCadenceAndProlongation({
+      durationSec: 5,
+      totalWords: 15 // 180 WPM
+    });
+    expect(rushed.cadenceCategory).toBe('Rushed');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// TEST 13 — Layer B Textual Grapheme Elongation Scanning
+// ---------------------------------------------------------------------------
+test('TEST 13: Detects Layer B textual graphemic repetitions (aaaaamerica, ssssun) in analyzeReading', () => {
+  const sentence = 'I like to read books about space';
+  const spoken   = 'I like to read books about sssspace';
+
+  const result = run([sentence], [spoken], 8000);
+  const { summary } = result;
+
+  expect(summary.cadenceAndProlongation).toBeDefined();
+  expect(summary.cadenceAndProlongation.totalDrags).toBeGreaterThanOrEqual(1);
+  const drag = summary.cadenceAndProlongation.prolongationsList.find(d => d.type === 'Graphemic Repetition');
+  expect(drag).toBeDefined();
+  expect(drag.word).toBe('sssspace');
+});
+
+// ---------------------------------------------------------------------------
+// TEST 14 — Factor acoustic prolongations into clinical diagnostics
+// ---------------------------------------------------------------------------
+test('TEST 14: Factors acoustic prolongations into clinical diagnostics and SLP recommendations', () => {
+  const acousticEvents = [
+    { word: 'sun', durationMs: 850, type: 'Acoustic Prolongation', sentenceIndex: 0 },
+    { word: 'warm', durationMs: 780, type: 'Acoustic Prolongation', sentenceIndex: 0 },
+    { word: 'today', durationMs: 920, type: 'Acoustic Prolongation', sentenceIndex: 0 },
+  ];
+
+  const result = analyzeReading(
+    ['The sun is bright and warm today'],
+    ['The sun is bright and warm today'],
+    1000000,
+    1015000,
+    {},
+    acousticEvents
+  );
+
+  const { summary } = result;
+  expect(summary.cadenceAndProlongation.totalDrags).toBe(3);
+  expect(summary.cadenceAndProlongation.severity).toContain('Marked Phonetic Prolongation');
+  expect(summary.clinicalDiagnostics.subtypes.fluencyRan.totalProlongations).toBe(3);
+
+  // Recommendations should include continuous phonation / metronome-paced pacing
+  const rec = summary.clinicalDiagnostics.recommendations.find(r => r.domain.includes('Fluency'));
+  expect(rec).toBeDefined();
+  expect(rec.action).toContain('Continuous Phonation');
+});
+
+// ---------------------------------------------------------------------------
+// TEST 15 — Prolonged / dragged words ("aaaaaaa", "ssssun") are recognized as correct readings ("read that as well")
+// ---------------------------------------------------------------------------
+describe('TEST 15: Prolonged / Dragged Words Recognized as Correct Reading', () => {
+  test('collapseRepeatedChars correctly reduces dragged vowels and consonants', () => {
+    expect(collapseRepeatedChars('aaaaaaa')).toBe('a');
+    expect(collapseRepeatedChars('ssssun')).toBe('sun');
+    expect(collapseRepeatedChars('caaaat')).toBe('cat');
+    expect(collapseRepeatedChars('theeeee')).toBe('the');
+    expect(collapseRepeatedChars('booooook')).toBe('bok');
+  });
+
+  test('isProlongationMatch accurately identifies phonetic dragging', () => {
+    expect(isProlongationMatch('a', 'aaaaaaa')).toBe(true);
+    expect(isProlongationMatch('sun', 'ssssun')).toBe(true);
+    expect(isProlongationMatch('cat', 'caaaat')).toBe(true);
+    expect(isProlongationMatch('space', 'sssspace')).toBe(true);
+    // Non-matches / different words should not match
+    expect(isProlongationMatch('sun', 'moon')).toBe(false);
+    expect(isProlongationMatch('a', 'the')).toBe(false);
+    expect(isProlongationMatch('cat', 'dog')).toBe(false);
+  });
+
+  test('analyzeReading reads prolonged words as correct while logging prolongation metrics', () => {
+    const sentence = 'The sun is a bright star';
+    // Spoken with vowel drag on "a" -> "aaaaaaa" and consonant drag on "sun" -> "sssssun"
+    const spoken   = 'The sssssun is aaaaaaa bright star';
+
+    const result = run([sentence], [spoken], 10000);
+    const { sentences, summary } = result;
+    const s = sentences[0];
+
+    // Total words: 6. All 6 words should be READ AND MATCHED AS CORRECT!
+    expect(s.totalWords).toBe(6);
+    expect(s.correctCount).toBe(6);
+    expect(s.mispronouncedCount).toBe(0);
+    expect(s.skippedCount).toBe(0);
+    expect(s.accuracy).toBe(100);
+
+    // Summary matches
+    expect(summary.totalWords).toBe(6);
+    expect(summary.correctWords).toBe(6);
+    expect(summary.mispronounced).toBe(0);
+    expect(summary.accuracy).toBe(100);
+
+    // Invariant: correct + mispronounced + skipped === totalWords
+    expect(s.correctCount + s.mispronouncedCount + s.skippedCount).toBe(s.totalWords);
+
+    // Words "sun" and "a" should have prolongation flagged
+    const sunWord = s.words.find(w => w.expected.toLowerCase() === 'sun');
+    const aWord = s.words.find(w => w.expected.toLowerCase() === 'a');
+    expect(sunWord?.status).toBe('correct');
+    expect(sunWord?.prolongation).toBe(true);
+    expect(sunWord?.miscue?.type).toBe('prolonged_reading');
+    expect(sunWord?.miscue?.label).toBe('Decoded with Phonetic Prolongation');
+
+    expect(aWord?.status).toBe('correct');
+    expect(aWord?.prolongation).toBe(true);
+    expect(aWord?.miscue?.type).toBe('prolonged_reading');
+
+    // Layer B prolongation detection logged them in cadenceAndProlongation
+    expect(summary.cadenceAndProlongation).toBeDefined();
+    expect(summary.cadenceAndProlongation.totalDrags).toBeGreaterThanOrEqual(2);
+  });
+});
+
+
+

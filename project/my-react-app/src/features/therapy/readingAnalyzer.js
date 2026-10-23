@@ -98,13 +98,31 @@ const isPhoneticMatch = (a, b) => {
 };
 
 // ---------------------------------------------------------------------------
+// Phonetic Prolongation & Sound Dragging Matchers
+// Collapses duplicate letters (e.g. "aaaaaaa" -> "a", "ssssun" -> "sun", "theeee" -> "the", "caaaat" -> "cat")
+// ---------------------------------------------------------------------------
+export const collapseRepeatedChars = (w) => {
+  if (!w) return '';
+  return w.toLowerCase().replace(/[^a-z]/g, '').replace(/(.)\1+/g, '$1');
+};
+
+export const isProlongationMatch = (ref, spoken) => {
+  if (!ref || !spoken) return false;
+  const r = ref.toLowerCase().replace(/[^a-z]/g, '');
+  const s = spoken.toLowerCase().replace(/[^a-z]/g, '');
+  if (r === s) return false;
+  const hasRepeat = /(.)\1+/i.test(s);
+  if (!hasRepeat) return false;
+  return collapseRepeatedChars(r) === collapseRepeatedChars(s);
+};
+
+// ---------------------------------------------------------------------------
 // Word-level Needleman-Wunsch sequence alignment
 // Returns alignment array: { refWord, spokenWord|null, status }[]
 // ---------------------------------------------------------------------------
 const MATCH     =  4;
 const MISSPRON  =  1;   // similar but not exact
 const GAP       = -2;   // skip ref (→ skipped) or skip spoken (→ inserted)
-const MISMATCH  = -5;
 
 const alignWords = (refTokens, spokenTokens) => {
   const n = refTokens.length;
@@ -113,8 +131,13 @@ const alignWords = (refTokens, spokenTokens) => {
   // Score function for a ref/spoken pair
   const pairScore = (r, s) => {
     if (r === s) return MATCH;
+    if (isProlongationMatch(r, s)) return MATCH;
     if (charSimilarity(r, s) >= 0.75 || isPhoneticMatch(r, s)) return MISSPRON;
-    return MISMATCH;
+    // If spoken word s matches another ref token in this sentence, penalize heavily so s aligns with its true ref token
+    if (refTokens.includes(s)) return -6;
+    // Otherwise, s is a wrong spoken attempt for r (substitution / mispronunciation)
+    // A substitution score of -1 beats 2 gaps (-4) so the aligner correctly registers the user's spoken attempt!
+    return -1;
   };
 
   // DP table
@@ -180,13 +203,16 @@ const classifyPair = (ref, spoken, wordConfidence) => {
   }
 
   // Both ref and spoken are present → user ATTEMPTED this word
-  if (ref === spoken) {
-    // Exact normalised match — check ASR confidence if available
+  const isExact = ref === spoken;
+  const isProlonged = !isExact && isProlongationMatch(ref, spoken);
+
+  if (isExact || isProlonged) {
+    // Exact normalised match or prolonged phonetic match (e.g. "aaaaaaa" -> "a", "ssssun" -> "sun", "theeee" -> "the")
     const conf = wordConfidence?.[spoken];
     if (conf !== undefined && conf < 0.5) {
-      return { expected: ref, spoken, status: 'mispronounced' };
+      return { expected: ref, spoken, status: 'mispronounced', prolongation: isProlonged };
     }
-    return { expected: ref, spoken, status: 'correct' };
+    return { expected: ref, spoken, status: 'correct', prolongation: isProlonged };
   }
 
   // Any non-exact match where the user said something is mispronounced.
@@ -234,14 +260,15 @@ const hasSubstitutionPattern = (expected, spoken) => {
 /**
  * Detailed Clinical Miscue Diagnoser for doctor review
  */
-export const diagnoseWordMiscue = (expected, spoken, status) => {
+export const diagnoseWordMiscue = (expected, spoken, status, hasExplicitProlongation = false) => {
   if (status === 'correct') {
+    const isProlonged = hasExplicitProlongation || isProlongationMatch(expected, spoken);
     return {
-      type: 'correct',
-      label: 'Accurate Phonemic Decoding',
-      severity: 'none',
-      pathway: 'Integrated Dual-Route Phonics',
-      details: null
+      type: isProlonged ? 'prolonged_reading' : 'correct',
+      label: isProlonged ? 'Decoded with Phonetic Prolongation' : 'Accurate Phonemic Decoding',
+      severity: isProlonged ? 'mild' : 'none',
+      pathway: isProlonged ? 'Dorsal Phonics (Compensatory Articulatory Elongation)' : 'Integrated Dual-Route Phonics',
+      details: isProlonged ? `Word "${expected}" was correctly identified and read, spoken with elongated sound ("${spoken || expected}").` : null
     };
   }
 
@@ -345,7 +372,20 @@ export const diagnoseWordMiscue = (expected, spoken, status) => {
     };
   }
 
-  // 6. General Phonemic Decoding Miscue
+  // 6. Lexical Word Substitution Miscue (arbitrary or semantic word substitution)
+  const dist = levenshteinChar(expNorm, spkNorm);
+  if (dist > 2) {
+    return {
+      type: 'lexical_substitution',
+      label: 'Lexical Word Substitution Miscue',
+      severity: 'moderate',
+      pathway: 'Ventral/Lexical Retrieval & Sight-Vocabulary',
+      pattern: 'Word Substitution',
+      details: `Target "${expected}" read aloud as substituted word "${spoken}". Common in contextual guessing.`
+    };
+  }
+
+  // 7. General Phonemic Decoding Miscue
   return {
     type: 'phonological_miscue',
     label: 'Grapheme-Phoneme Decoding Miscue',
@@ -359,7 +399,7 @@ export const diagnoseWordMiscue = (expected, spoken, status) => {
 // ---------------------------------------------------------------------------
 // Analyse a single sentence
 // ---------------------------------------------------------------------------
-const analyzeSentence = (index, referenceText, spokenText, wordConfidence) => {
+const analyzeSentence = (index, referenceText, spokenText, wordConfidence, sentenceProlongations = []) => {
   const refWords     = referenceText.split(' ').filter(Boolean); // original casing
   const refTokens    = refWords.map(normalizeWord);
   const spokenTokens = tokenize(spokenText || '');
@@ -401,7 +441,15 @@ const analyzeSentence = (index, referenceText, spokenText, wordConfidence) => {
     const classified = classifyPair(pair.ref, pair.spoken, wordConfidence);
     // Override expected with original-case version
     if (originalRef) classified.expected = originalRef;
-    classified.miscue = diagnoseWordMiscue(classified.expected, classified.spoken, classified.status);
+
+    // Check if this word was flagged by acoustic or textual prolongation
+    const isAcousticDrag = (sentenceProlongations || []).some(
+      (p) => collapseRepeatedChars(p.word) === collapseRepeatedChars(classified.expected)
+    );
+    if (isAcousticDrag) {
+      classified.prolongation = true;
+    }
+    classified.miscue = diagnoseWordMiscue(classified.expected, classified.spoken, classified.status, classified.prolongation);
 
     switch (classified.status) {
       case 'correct':      correctCount++;      break;
@@ -460,13 +508,154 @@ const analyzeSentence = (index, referenceText, spokenText, wordConfidence) => {
  * }}
  */
 // ---------------------------------------------------------------------------
+// Speech Cadence & Syllable Estimator Helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Lightweight vowel nucleus estimator to calculate syllable counts for English words.
+ *
+ * @param {string} word - Token to estimate syllables for
+ * @returns {number} Estimated syllables count (min 1 for non-empty alphanumeric tokens)
+ */
+export const countSyllables = (word) => {
+  if (!word) return 0;
+  const w = word.toLowerCase().replace(/[^a-z]/g, '').trim();
+  if (!w) return 0;
+  if (w.length <= 3) return 1;
+
+  // Strip common trailing silent letters/inflections (e.g., -e, -ed, -es)
+  let clean = w.replace(/(?:[^laeiouy]|ed|es|e)$/, '');
+  if (!clean) return 1;
+
+  // Split vowel hiatus pairs that form separate syllable nuclei (e.g. io in curiosity, ia in media)
+  const expanded = clean
+    .replace(/([aeiouy])(ia|io|eo|ua|ue|ui)/g, '$1 $2')
+    .replace(/(i)(o|a)/g, '$1 $2');
+
+  // Match vowel groups (including y as vowel nucleus)
+  const vowelMatches = expanded.match(/[aeiouy]{1,2}/g);
+  const count = vowelMatches ? vowelMatches.length : 1;
+  return Math.max(1, count);
+};
+
+
+/**
+ * Evaluates real-time speech cadence, syllables per second, and phonetic prolongation severity.
+ *
+ * @param {Object} params
+ * @param {number} params.durationSec - Elapsed oral reading duration in seconds
+ * @param {number} params.totalWords - Total decodable words spoken/attempted
+ * @param {Array} params.prolongationsList - Array of logged prolongation events
+ * @param {Array<string>} [params.allSpokenWords] - Array of all spoken token strings for syllable aggregation
+ * @returns {Object} Comprehensive cadence and prosodic prolongation evaluation
+ */
+export const analyzeSpeechCadenceAndProlongation = ({
+  durationSec = 0,
+  totalWords = 0,
+  prolongationsList = [],
+  allSpokenWords = []
+}) => {
+  const elapsed = Math.max(0, parseFloat(durationSec) || 0);
+  const words = Math.max(0, parseInt(totalWords, 10) || 0);
+  const drags = Array.isArray(prolongationsList) ? prolongationsList : [];
+  const totalDrags = drags.length;
+
+  // Calculate total syllables across spoken tokens
+  let totalSyllables = 0;
+  if (Array.isArray(allSpokenWords) && allSpokenWords.length > 0) {
+    totalSyllables = allSpokenWords.reduce((sum, w) => sum + countSyllables(w), 0);
+  } else {
+    // Standard clinical approximation ~1.3 syllables per word if token array is empty
+    totalSyllables = Math.round(words * 1.3);
+  }
+
+  // WPM and Syllables Per Second (SPS)
+  const wpm = elapsed >= 1 && words > 0 ? parseFloat(((words / elapsed) * 60).toFixed(1)) : 0;
+  const sps = elapsed >= 1 && totalSyllables > 0 ? parseFloat((totalSyllables / elapsed).toFixed(2)) : 0;
+
+  // Severity Stratification:
+  // 0 drags: "Normal Fluency"
+  // 1–2 drags: "Mild Hesitation / Continuant Lengthening"
+  // 3+ drags: "Marked Phonetic Prolongation (Dysfluency / Phonological Decoding Strain)"
+  let severity = 'Normal Fluency';
+  if (totalDrags >= 3) {
+    severity = 'Marked Phonetic Prolongation (Dysfluency / Phonological Decoding Strain)';
+  } else if (totalDrags >= 1) {
+    severity = 'Mild Hesitation / Continuant Lengthening';
+  }
+
+  // Cadence Category (Bradylexic / Hesitant / Fluent / Rushed)
+  let cadenceCategory = 'Fluent';
+  let cadenceDescription = 'Normative reading tempo within standard conversational parameters.';
+  if (wpm < 45) {
+    cadenceCategory = 'Bradylexic';
+    cadenceDescription = 'Severe oral reading latency characterized by prolonged decoding pauses and sluggish articulatory transitions.';
+  } else if (wpm < 70) {
+    cadenceCategory = 'Hesitant';
+    cadenceDescription = 'Sub-standard reading rate indicating elevated cognitive decoding load and cautious phonetic sounding-out.';
+  } else if (wpm <= 130) {
+    cadenceCategory = 'Fluent';
+    cadenceDescription = 'Age-appropriate, fluid oral reading cadence with stable inter-word rhythm.';
+  } else {
+    cadenceCategory = 'Rushed';
+    cadenceDescription = 'Accelerated cadence (tachylexia) with risk of articulatory slurring or omitted word endings.';
+  }
+
+  // Prolongation Index (% of words elongated)
+  const prolongationIndex = words > 0 ? parseFloat(((totalDrags / words) * 100).toFixed(1)) : 0;
+
+  // Clinical Rationale Note
+  let clinicalRationale = '';
+  if (totalDrags > 0) {
+    clinicalRationale = `Acoustic and textual sound prolongations identified (${totalDrags} event${totalDrags > 1 ? 's' : ''}, ${prolongationIndex}% prolongation index). Sound elongation in oral reading typically reflects compensatory decoding delay—wherein the student sustains the initial continuant phoneme or vowel to maintain vocal continuity while visually scanning subsequent graphemes—or motor-speech dysfluency under phonological processing strain.`;
+  } else {
+    clinicalRationale = 'No sound elongation or phonetic dragging observed. Speech cadence and articulatory transitions remained continuous and fluent without signs of phonological hold-stalls.';
+  }
+
+  // Child / Patient Friendly View metrics (Non-stigmatizing, motivating framing)
+  let childPacingBadge = 'Steady Pacing Star ⭐️⭐️⭐️';
+  let childPacingTitle = 'Super Smooth Reader! 🚀';
+  let childPacingMessage = 'Your speech flowed smoothly like a calm river with great pace!';
+  if (totalDrags >= 3) {
+    childPacingBadge = 'Patient Thinker Star ⭐️';
+    childPacingTitle = 'Thoughtful Sound Explorer! 💡';
+    childPacingMessage = 'You took your time stretching out sounds to figure out tricky words. Fantastic perseverance!';
+  } else if (totalDrags >= 1) {
+    childPacingBadge = 'Steady Pacing Star ⭐️⭐️';
+    childPacingTitle = 'Steady & Careful Reader! 🌟';
+    childPacingMessage = 'Good pace! Just a couple of stretched sounds while thinking through the sentence.';
+  }
+
+  return {
+    durationSec: elapsed,
+    totalWords: words,
+    totalSyllables,
+    wpm,
+    sps,
+    totalDrags,
+    prolongationIndex,
+    severity,
+    cadenceCategory,
+    cadenceDescription,
+    clinicalRationale,
+    prolongationsList: drags,
+    childView: {
+      badge: childPacingBadge,
+      title: childPacingTitle,
+      message: childPacingMessage,
+      meterScore: Math.max(10, Math.round(100 - (totalDrags * 12))),
+    }
+  };
+};
+
+// ---------------------------------------------------------------------------
 // Clinical Diagnostic & Doctor Subtype Risk Profiler
 // ---------------------------------------------------------------------------
-export const computeClinicalDiagnostics = (sentences, summary) => {
+export const computeClinicalDiagnostics = (sentences, summary, cadenceAndProlongation = null) => {
   const allWordMiscues = [];
   sentences.forEach((s) => {
     (s.words || []).forEach((w) => {
-      if (w.status !== 'correct') {
+      if (w.status !== 'correct' || w.prolongation || w.miscue?.type === 'prolonged_reading') {
         allWordMiscues.push(w);
       }
     });
@@ -479,7 +668,8 @@ export const computeClinicalDiagnostics = (sentences, summary) => {
     (w) =>
       w.miscue?.type === 'phonological_substitution' ||
       w.miscue?.type === 'blend_reduction' ||
-      w.miscue?.type === 'phonological_miscue'
+      w.miscue?.type === 'phonological_miscue' ||
+      w.miscue?.type === 'lexical_substitution'
   );
   const morphologicalErrors = allWordMiscues.filter(
     (w) => w.miscue?.type === 'morphological_inflection'
@@ -498,6 +688,9 @@ export const computeClinicalDiagnostics = (sentences, summary) => {
   else if (summary.accuracy < 85) phonoScore += 25;
   else if (summary.accuracy < 92) phonoScore += 10;
   phonoScore += phonologicalSubs.length * 20;
+  if (cadenceAndProlongation && cadenceAndProlongation.totalDrags >= 2) {
+    phonoScore += 10; // Dragging/prolongation indicates phonemic decoding strain
+  }
   phonoScore = Math.min(100, phonoScore);
 
   const phonoRisk =
@@ -533,6 +726,14 @@ export const computeClinicalDiagnostics = (sentences, summary) => {
     } else {
       fluencyRisk = 'Optimal Fluency Cadence';
       fluencyScore = 15;
+    }
+  }
+
+  // Elevate fluency score if severe prolongations are documented
+  if (cadenceAndProlongation && cadenceAndProlongation.totalDrags >= 3) {
+    fluencyScore = Math.min(100, fluencyScore + 20);
+    if (!fluencyRisk.includes('Elevated')) {
+      fluencyRisk = 'Moderate Risk (Phonetic Prolongations & Fluency Stalls)';
     }
   }
 
@@ -585,12 +786,12 @@ export const computeClinicalDiagnostics = (sentences, summary) => {
         'Target inflectional morphemes (-ed, -ing, -s, -ly) through morphology puzzles and prefix/suffix identification.'
     });
   }
-  if (fluencyScore >= 45) {
+  if (fluencyScore >= 45 || (cadenceAndProlongation && cadenceAndProlongation.totalDrags >= 2)) {
     recommendations.push({
-      domain: 'Fluency & RAN',
-      action: 'Paired Echo-Reading & Rapid Automatized Naming',
+      domain: 'Fluency, Prosody & RAN',
+      action: 'Paired Echo-Reading & Metronome-Paced Continuous Phonation',
       detail:
-        'Practice repeated oral reading of familiar decodable texts with adult modeled cadence to strengthen automatic retrieval.'
+        'Practice repeated oral reading of familiar decodable texts with adult modeled cadence to strengthen automatic retrieval and diminish compensatory vowel dragging.'
     });
   }
   if (recommendations.length === 0) {
@@ -630,6 +831,10 @@ export const computeClinicalDiagnostics = (sentences, summary) => {
         risk: fluencyRisk,
         score: fluencyScore,
         wpm: summary.wpm,
+        sps: cadenceAndProlongation?.sps ?? null,
+        totalProlongations: cadenceAndProlongation?.totalDrags ?? 0,
+        prolongationIndex: cadenceAndProlongation?.prolongationIndex ?? 0,
+        cadenceCategory: cadenceAndProlongation?.cadenceCategory ?? 'Fluent',
         pathway: 'Cerebellar / Rapid Retrieval Network'
       }
     },
@@ -680,16 +885,18 @@ export const analyzeReading = (
   transcriptsBySentence,
   startTimestamp,
   endTimestamp,
-  wordConfidenceMap = {}
+  wordConfidenceMap = {},
+  prolongationsList = []
 ) => {
   if (!referenceSentences || referenceSentences.length === 0) {
     return { sentences: [], summary: emptySummary(0) };
   }
 
   // Analyse each sentence
-  const sentences = referenceSentences.map((ref, i) =>
-    analyzeSentence(i, ref, transcriptsBySentence?.[i] || '', wordConfidenceMap)
-  );
+  const sentences = referenceSentences.map((ref, i) => {
+    const sentProlongs = (prolongationsList || []).filter((p) => p.sentenceIndex === i);
+    return analyzeSentence(i, ref, transcriptsBySentence?.[i] || '', wordConfidenceMap, sentProlongs);
+  });
 
   // Summary = sums of per-sentence values (single source of truth)
   const totalWords        = sentences.reduce((s, r) => s + r.totalWords,        0);
@@ -720,6 +927,41 @@ export const analyzeReading = (
     );
   }
 
+  // Layer B textual check across transcripts for graphemic elongation /(.)\1{2,}/i
+  const textDrags = [];
+  (transcriptsBySentence || []).forEach((transcript, sentIdx) => {
+    const tokens = (transcript || '').split(/\s+/).filter(Boolean);
+    tokens.forEach((tok) => {
+      const clean = tok.toLowerCase().replace(/[^a-z-]/g, '');
+      if (/(.)\1{2,}/i.test(clean) || (clean.length >= 2 && /^(.)\1+$/.test(clean))) {
+        // Prevent duplicate logging if already recorded in prolongationsList
+        const already = (prolongationsList || []).some(
+          (p) => p.sentenceIndex === sentIdx && p.word && p.word.toLowerCase() === tok.toLowerCase()
+        );
+        if (!already) {
+          textDrags.push({
+            word: tok,
+            durationMs: 750,
+            type: 'Graphemic Repetition',
+            timestamp: Date.now(),
+            sentenceIndex: sentIdx
+          });
+        }
+      }
+    });
+  });
+
+  const combinedProlongations = [...(prolongationsList || []), ...textDrags];
+  const allSpokenTokens = (transcriptsBySentence || []).flatMap((t) => (t || '').split(/\s+/).filter(Boolean));
+
+  // Speech cadence & phonetic prolongation analytics
+  const cadenceAndProlongation = analyzeSpeechCadenceAndProlongation({
+    durationSec: durationSeconds,
+    totalWords: correctWords + mispronounced,
+    prolongationsList: combinedProlongations,
+    allSpokenWords: allSpokenTokens
+  });
+
   // Diagnostic message — data-driven, only shown when there is data
   const allNoSpeech = sentences.every((s) => s.noSpeech);
   const diagnostic  = buildDiagnostic(sentences, accuracy, allNoSpeech, mispronounced, skipped);
@@ -735,7 +977,7 @@ export const analyzeReading = (
     durationSeconds,
     wpm,
     noSpeech: allNoSpeech
-  });
+  }, cadenceAndProlongation);
 
   return {
     sentences,
@@ -752,6 +994,7 @@ export const analyzeReading = (
       noSpeech: allNoSpeech,
       diagnostic,
       clinicalDiagnostics,
+      cadenceAndProlongation,
     },
   };
 };
@@ -856,4 +1099,6 @@ const emptySummary = (totalWords) => ({
   noSpeech: true,
   diagnostic: { type: 'no_data', message: 'No data available.', disclaimer: null },
   clinicalDiagnostics: null,
+  cadenceAndProlongation: analyzeSpeechCadenceAndProlongation({ durationSec: 0, totalWords, prolongationsList: [] }),
 });
+

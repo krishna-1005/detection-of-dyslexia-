@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import './VoicePractice.css';
 import { useAuth } from '../auth/AuthContext';
 import { saveTherapyProgress } from './ExerciseSystem';
-import { analyzeReading as analyzeReadingEngine } from './readingAnalyzer';
+import { analyzeReading as analyzeReadingEngine, countSyllables, isProlongationMatch, collapseRepeatedChars } from './readingAnalyzer';
 
 const masterPracticeSentencesPool = [
   "The sun is bright and warm today.",
@@ -138,34 +138,7 @@ const HOMOPHONE_DICTIONARY = {
   "you're": ['your'],
   i: ['eye', 'aye'],
   eye: ['i'],
-  book: ['books'],
-  books: ['book'],
-  space: ['spaces'],
-  spaces: ['space'],
-  dog: ['dogs'],
-  dogs: ['dog'],
-  lake: ['lakes'],
-  lakes: ['lake'],
-  step: ['steps'],
-  steps: ['step'],
-  light: ['lights', 'lite'],
-  lights: ['light'],
-  word: ['words'],
-  words: ['word'],
-  bring: ['brings'],
-  brings: ['bring'],
-  lead: ['leads', 'led'],
-  leads: ['lead'],
-  spread: ['spreads'],
-  spreads: ['spread'],
-  open: ['opens'],
-  opens: ['open'],
-  take: ['takes'],
-  takes: ['take'],
-  fox: ['foxes'],
-  foxes: ['fox'],
-  jump: ['jumps', 'jumped'],
-  jumps: ['jump', 'jumped'],
+  light: ['lite'],
   whole: ['hole'],
   hole: ['whole'],
   blue: ['blew'],
@@ -178,33 +151,9 @@ const HOMOPHONE_DICTIONARY = {
   heir: ['air'],
   practice: ['practise'],
   practise: ['practice'],
-  day: ['days'],
-  days: ['day'],
   morning: ['mourning'],
-  mourning: ['morning'],
-  things: ['thing'],
-  thing: ['things'],
-  makes: ['make'],
-  make: ['makes'],
-  helps: ['help'],
-  help: ['helps'],
-  fills: ['fill'],
-  fill: ['fills'],
-  boost: ['boosts'],
-  boosts: ['boost'],
-  challenges: ['challenge'],
-  challenge: ['challenges'],
-  reflect: ['reflects'],
-  reflects: ['reflect'],
-  doors: ['door'],
-  door: ['doors'],
-  adventures: ['adventure'],
-  adventure: ['adventures'],
-  focus: ['focuses'],
-  focuses: ['focus']
+  mourning: ['morning']
 };
-
-const stripSuffix = (w) => (w || '').toLowerCase().replace(/(es|s|ed|ing|ly|'s)$/gi, '');
 
 // Phonetic normalizer to handle silent letters, digraphs, and common oral variations
 const normalizePhonetic = (word) => {
@@ -218,7 +167,6 @@ const normalizePhonetic = (word) => {
   w = w.replace(/ight/g, 'ite'); // night -> nite, bright -> brite
   w = w.replace(/ph/g, 'f');
   w = w.replace(/([b-df-hj-np-tv-z])\1+/g, '$1'); // collapse duplicate consonants
-  w = w.replace(/(es|s|ed|ing|ly|'s)$/g, '');     // strip suffixes
   return w;
 };
 
@@ -229,54 +177,44 @@ const isPhoneticMatch = (cleanTarget, hw) => {
   const h = hw.toLowerCase();
   if (t === h) return true;
 
-  // 1. Homophone dictionary check
+  // 0. Phonetic prolongation match (dragged sound: "aaaaaaa" for "a", "ssssun" for "sun", "soooo" for "so")
+  if (isProlongationMatch(t, h)) return true;
+
+  // 1. Homophone dictionary check (words that sound identical)
   if (HOMOPHONE_DICTIONARY[t]?.includes(h) || HOMOPHONE_DICTIONARY[h]?.includes(t)) return true;
 
-  // 2. Stem match & stem homophone check (e.g. night vs knights, brightly vs bright)
-  const tStem = stripSuffix(t);
-  const hStem = stripSuffix(h);
-  if (tStem && hStem) {
-    if (tStem === hStem) return true;
-    if (HOMOPHONE_DICTIONARY[tStem]?.includes(hStem) || HOMOPHONE_DICTIONARY[hStem]?.includes(tStem)) return true;
-    if (HOMOPHONE_DICTIONARY[tStem]?.includes(h) || HOMOPHONE_DICTIONARY[t]?.includes(hStem)) return true;
-  }
-
-  // 3. Phonetic normalization match (silent letters, digraphs, suffix stripping)
+  // 2. Phonetic normalization match (silent letters, digraphs like bright/brite, knight/night)
   const tNorm = normalizePhonetic(t);
   const hNorm = normalizePhonetic(h);
-  if (tNorm && hNorm && tNorm === hNorm) return true;
-
-  // 4. Minor typo / ASR artifact: edit distance <= 1 on longer words only (length >= 6)
-  const dist = getEditDistance(t, h);
-  if (dist <= 1 && t.length >= 6 && h.length >= 6) return true;
-
-  // 5. Prefix match for long words (length >= 5) with max 1 char difference
-  if ((t.length >= 5 && h.length >= 5) && (t.startsWith(h) || h.startsWith(t)) && Math.abs(t.length - h.length) <= 2) {
-    return true;
-  }
+  if (tNorm && hNorm && (tNorm === hNorm || isProlongationMatch(tNorm, hNorm))) return true;
 
   return false;
 };
 
 // Identify genuine mispronunciations without greedily stealing other target words
-const isCandidateMispronunciation = (cleanTarget, hw, allCleanTargets) => {
+const isCandidateMispronunciation = (cleanTarget, hw, allCleanTargetsOrMatched) => {
   if (!cleanTarget || !hw) return false;
   const t = cleanTarget.toLowerCase();
   const h = hw.toLowerCase();
   if (t === h) return false;
 
-  // CRUCIAL: If the spoken word matches ANY target word in the sentence, it is NEVER a mispronunciation of this word!
-  if (allCleanTargets.some(otherTarget => isPhoneticMatch(otherTarget, h))) {
-    return false;
-  }
+  // If boolean precomputed, use it directly; otherwise do fallback check
+  const matchesOther = typeof allCleanTargetsOrMatched === 'boolean'
+    ? allCleanTargetsOrMatched
+    : allCleanTargetsOrMatched.some(otherTarget => isPhoneticMatch(otherTarget, h));
 
-  // Small words (<= 3 chars like 'in', 'the', 'a', 'to') cannot be fuzzy matched to arbitrary words
-  if (t.length <= 3 || h.length <= 3) {
+  if (matchesOther) {
     return false;
   }
 
   const dist = getEditDistance(t, h);
   const lenDiff = Math.abs(t.length - h.length);
+
+  // Words length <= 3 (e.g. 'sun' vs 'son'/'fun', 'dog' vs 'log', 'cat' vs 'bat'):
+  // edit distance must be 1 and length diff at most 1
+  if (t.length <= 3) {
+    return dist === 1 && lenDiff <= 1;
+  }
 
   // Words length 4-5: edit distance must be 1 (e.g. 'dark' vs 'bark', 'glow' vs 'blow')
   if (t.length <= 5) {
@@ -292,7 +230,7 @@ const isCandidateMispronunciation = (cleanTarget, hw, allCleanTargets) => {
 };
 
 // Global sequence alignment (Needleman-Wunsch DP) to align target sentence with spoken transcript
-const alignTranscriptToTarget = (cleanTargetWords, cleanHeardWords, originalTargetWords, isSessionActive = true) => {
+const alignTranscriptToTarget = (cleanTargetWords, cleanHeardWords, originalTargetWords, isSessionActive = true, prolongedList = []) => {
   const n = cleanTargetWords.length;
   const m = cleanHeardWords.length;
 
@@ -307,6 +245,9 @@ const alignTranscriptToTarget = (cleanTargetWords, cleanHeardWords, originalTarg
     const omittedList = isSessionActive ? [] : originalTargetWords.map((orig, idx) => ({ target: orig, index: idx }));
     return { wordStatuses, correctCount: 0, mispronouncedList: [], omittedList };
   }
+
+  // Pre-calculate whether each heard word matches ANY target word once (O(M*N) before loop instead of inside O(M*N*N))
+  const heardMatchesAnyTarget = cleanHeardWords.map(h => cleanTargetWords.some(t => isPhoneticMatch(t, h)));
 
   const MATCH_SCORE = 10;
   const MISPRONOUNCE_SCORE = 2;
@@ -336,10 +277,19 @@ const alignTranscriptToTarget = (cleanTargetWords, cleanHeardWords, originalTarg
       if (isPhoneticMatch(t, h)) {
         diagScore = dp[i - 1][j - 1] + MATCH_SCORE;
         diagType = 'match';
-      } else if (isCandidateMispronunciation(t, h, cleanTargetWords)) {
+      } else if (isCandidateMispronunciation(t, h, heardMatchesAnyTarget[j - 1])) {
         diagScore = dp[i - 1][j - 1] + MISPRONOUNCE_SCORE;
         diagType = 'mispronounce';
+      } else if (!heardMatchesAnyTarget[j - 1]) {
+        // Spoken word h does NOT match any other target word in the sentence.
+        // It was spoken at position i as a wrong attempt (mispronunciation / word substitution).
+        // A substitution score of -1 beats skip_target (-2) + extra_spoken (-1) = -3,
+        // so the aligner correctly registers the user's spoken attempt as a wrong word!
+        diagScore = dp[i - 1][j - 1] - 1;
+        diagType = 'mispronounce';
       } else {
+        // Spoken word h matches another target word later in the sentence.
+        // Penalize heavily so h can align with its true target word instead of prematurely consuming t.
         diagScore = dp[i - 1][j - 1] + MISMATCH_PENALTY;
         diagType = 'mismatch';
       }
@@ -391,7 +341,7 @@ const alignTranscriptToTarget = (cleanTargetWords, cleanHeardWords, originalTarg
 
   let maxMatchedTargetIdx = -1;
   alignment.forEach((item) => {
-    if (item.type === 'match' || item.type === 'mispronounce') {
+    if (item.type === 'match' || item.type === 'mispronounce' || item.type === 'mismatch') {
       if (item.targetIdx > maxMatchedTargetIdx) maxMatchedTargetIdx = item.targetIdx;
     }
   });
@@ -409,10 +359,23 @@ const alignTranscriptToTarget = (cleanTargetWords, cleanHeardWords, originalTarg
 
     if (alignedItem.type === 'match') {
       correctCount++;
-      return { word: orig, status: 'correct', heard: cleanHeardWords[alignedItem.heardIdx] };
+      const heardWord = cleanHeardWords[alignedItem.heardIdx] || '';
+      const isTextDrag = isProlongationMatch(orig, heardWord);
+      const isLoggedDrag = (prolongedList || []).some((p) => {
+        if (!p || !p.word) return false;
+        const pWord = p.word.toLowerCase().replace(/[^a-z]/g, '');
+        const targetClean = orig.toLowerCase().replace(/[^a-z]/g, '');
+        return pWord === targetClean || collapseRepeatedChars(pWord) === collapseRepeatedChars(targetClean);
+      });
+      return {
+        word: orig,
+        status: 'correct',
+        heard: heardWord,
+        isProlonged: isTextDrag || isLoggedDrag
+      };
     }
 
-    if (alignedItem.type === 'mispronounce') {
+    if (alignedItem.type === 'mispronounce' || alignedItem.type === 'mismatch') {
       const heardWord = cleanHeardWords[alignedItem.heardIdx];
       mispronouncedList.push({ target: orig, heard: heardWord, index: idx });
       return { word: orig, status: 'mispronounced', heard: heardWord };
@@ -439,18 +402,37 @@ const VoicePractice = ({ onComplete }) => {
   const [sentenceReports, setSentenceReports] = useState({});  // { [idx]: string transcript }
   const [finalReport, setFinalReport] = useState(null);        // analyzeReading() result (single source of truth)
   const [isMicListening, setIsMicListening] = useState(false);
-  const [micVolume, setMicVolume] = useState(0);
   const [audioErrorMessage, setAudioErrorMessage] = useState(null);
 
   // Live display state (separate from scoring)
   const [liveWordStatuses, setLiveWordStatuses] = useState([]);
   const [liveAccuracy, setLiveAccuracy]         = useState(null);
 
+  // Speech Cadence & Prolongation (Prosodic Dragging) States
+  const [liveCadence, setLiveCadence] = useState({ wpm: null, sps: null });
+  const [activeProlongationWarning, setActiveProlongationWarning] = useState(null);
+  const prolongationsListRef = useRef([]); // [{ word, durationMs, type, timestamp, sentenceIndex }]
+  const loggedTextDragsRef = useRef(new Set()); // Layer B deduplication set
+
+  // Web Audio API refs for Layer A acoustic vowel/continuant dragging detection
+  const audioCtxRef = useRef(null);
+  const analyserRef = useRef(null);
+  const sourceRef = useRef(null);
+  const micStreamRef = useRef(null);
+  const animFrameRef = useRef(null);
+  const voicedOnsetRef = useRef(null);
+  const hasFlaggedCurrentHoldRef = useRef(false);
+  const unvoicedFramesCountRef = useRef(0);
+  const warningTimeoutRef = useRef(null);
+  const liveWordStatusesRef = useRef([]);
+  const isAcousticMonitoringActiveRef = useRef(false);
+
   // Auto-advance mechanism for seamless progression between sentences
   const [autoAdvanceCountdown, setAutoAdvanceCountdown] = useState(null);
   const [autoAdvanceEnabled, setAutoAdvanceEnabled]     = useState(true);
   const autoAdvanceIntervalRef = useRef(null);
   const handleNextRef          = useRef(null);
+
 
   // Doctor & Clinician Diagnostic Suite state
   const [reportViewMode, setReportViewMode] = useState('clinical'); // 'clinical' (Doctor View) | 'patient' (Parent/Child View)
@@ -490,6 +472,10 @@ const VoicePractice = ({ onComplete }) => {
   const sessionFinalRef = useRef('');
   const sessionInterimRef = useRef('');
 
+  // Continuous speech tracking across sentence transitions without teardown delay
+  const sentenceBaseResultIndexRef = useRef(0);
+  const lastResultCountRef = useRef(0);
+
   const isRecordingRef = useRef(isRecording);
   const currentTextIndexRef = useRef(currentTextIndex);
   const isFinishedRef = useRef(isFinished);
@@ -503,14 +489,14 @@ const VoicePractice = ({ onComplete }) => {
     setAutoAdvanceCountdown(null);
   }, []);
 
-  const triggerAutoAdvance = useCallback((seconds = 2) => {
+  const triggerAutoAdvance = useCallback((seconds = 1.5) => {
     if (!autoAdvanceEnabled || isFinishedRef.current) return;
     if (autoAdvanceIntervalRef.current) {
       clearInterval(autoAdvanceIntervalRef.current);
       autoAdvanceIntervalRef.current = null;
     }
 
-    let remaining = Math.round(seconds);
+    let remaining = Math.max(1, Math.round(seconds));
     setAutoAdvanceCountdown(remaining);
 
     autoAdvanceIntervalRef.current = setInterval(() => {
@@ -552,24 +538,82 @@ const VoicePractice = ({ onComplete }) => {
     transcriptRef.current = transcript;
   }, [transcript]);
 
+  useEffect(() => {
+    liveWordStatusesRef.current = liveWordStatuses;
+  }, [liveWordStatuses]);
+
+  // Live running oral reading cadence (WPM & Syllables Per Second)
+  useEffect(() => {
+    if (!isRecording) {
+      setLiveCadence({ wpm: null, sps: null });
+      return;
+    }
+    const elapsed = sessionTime || 0;
+    if (elapsed < 2) return;
+
+    const tokens = (transcript || '').split(/\s+/).filter(Boolean);
+    const wordsCount = tokens.length;
+    if (wordsCount === 0) {
+      setLiveCadence({ wpm: null, sps: null });
+      return;
+    }
+
+    const runningWpm = Math.round((wordsCount / elapsed) * 60);
+    const totalSyllables = tokens.reduce((acc, w) => acc + countSyllables(w), 0);
+    const runningSps = parseFloat((totalSyllables / elapsed).toFixed(1));
+
+    setLiveCadence({ wpm: runningWpm, sps: runningSps });
+  }, [sessionTime, transcript, isRecording]);
+
+  // ── Layer B: Textual Grapheme Elongation Scanner (regex: 3+ identical consecutive characters e.g. "sooo", "aaaaamerica", "aaaaaaa") ──
+  const scanForTextProlongations = useCallback((transcriptText, sentenceIndex) => {
+    if (!transcriptText) return;
+    const textTokens = transcriptText.split(/\s+/).filter(Boolean);
+    const targetWords = (practiceSentencesRef.current[sentenceIndex] || '').split(/\s+/).filter(Boolean);
+
+    textTokens.forEach((tok) => {
+      const cleanTok = tok.toLowerCase().replace(/[^a-z-]/g, '');
+      const isWordMatchProlong = targetWords.some((t) => isProlongationMatch(t, tok));
+      if (isWordMatchProlong || /(.)\1{2,}/i.test(cleanTok) || (cleanTok.length >= 2 && /^(.)\1+$/.test(cleanTok))) {
+        const key = `${sentenceIndex}_${cleanTok}`;
+        if (!loggedTextDragsRef.current.has(key)) {
+          loggedTextDragsRef.current.add(key);
+          const event = {
+            word: tok,
+            durationMs: 750,
+            type: 'Graphemic Repetition',
+            timestamp: Date.now(),
+            sentenceIndex: sentenceIndex
+          };
+          prolongationsListRef.current.push(event);
+          setActiveProlongationWarning({
+            word: tok,
+            durationMs: event.durationMs,
+            type: 'Graphemic Repetition'
+          });
+          if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
+          warningTimeoutRef.current = setTimeout(() => {
+            setActiveProlongationWarning(null);
+          }, 3500);
+        }
+      }
+    });
+  }, []);
+
   // ─── Live per-sentence analysis (for word-coloring during recording) ────────
-  // Stores only the transcript string per sentence; final scoring runs
+  // Stores transcript string in sentenceReportsRef; final scoring runs
   // via analyzeReadingEngine in finishLiveSession.
   const analyzeLive = useCallback((heardText, targetSentence, isSessionActive = true) => {
     if (!targetSentence) return;
+    scanForTextProlongations(heardText, currentTextIndexRef.current);
     const targetWords = targetSentence.split(" ").filter(Boolean);
     const cleanTargetWords = targetWords.map(w => w.toLowerCase().replace(/[^\w]/g, ''));
     const cleanHeardWords = (heardText || '').toLowerCase().replace(/[^\w\s]/g, '').split(/\s+/).filter(Boolean);
 
-    // Save transcript string for final scoring (ref is stale-closure-safe)
-    const newReports = {
-      ...sentenceReportsRef.current,
-      [currentTextIndexRef.current]: heardText || ''
-    };
-    sentenceReportsRef.current = newReports;
-    setSentenceReports(newReports);
+    // Save transcript string for final scoring in ref (avoiding heavy state re-renders on interim speech)
+    sentenceReportsRef.current[currentTextIndexRef.current] = heardText || '';
 
-    // Live word coloring via existing DP alignment (kept for UX only, not scoring)
+    // Live word coloring via optimized DP alignment
     if (cleanHeardWords.length === 0) {
       const wordStatuses = targetWords.map(w => ({ word: w, status: isSessionActive ? 'pending' : 'omitted', heard: '-' }));
       setLiveWordStatuses(wordStatuses);
@@ -583,14 +627,36 @@ const VoicePractice = ({ onComplete }) => {
     }
 
     const { wordStatuses, correctCount, mispronouncedList } = alignTranscriptToTarget(
-      cleanTargetWords, cleanHeardWords, targetWords, isSessionActive
+      cleanTargetWords, cleanHeardWords, targetWords, isSessionActive, prolongationsListRef.current
     );
     const accuracyScore = Math.round((correctCount / targetWords.length) * 100);
     setLiveWordStatuses(wordStatuses);
     setLiveAccuracy(accuracyScore);
 
-    if (accuracyScore >= PASS_THRESHOLD) {
-      setFeedback({ text: `✅ PASS — ${accuracyScore}% word accuracy (${correctCount}/${targetWords.length} words correct)!`, type: 'success' });
+    const prolongedWords = wordStatuses.filter((w) => w.isProlonged);
+
+    if (prolongedWords.length > 0) {
+      const names = prolongedWords.map((w) => `"${w.word}"`).join(', ');
+      setFeedback({
+        text: `⚠️ Sound Prolongation: Spoke ${names} with elongated sound hold • ${accuracyScore}% accuracy (${correctCount}/${targetWords.length} words correct)`,
+        type: 'progress'
+      });
+    } else if (accuracyScore >= PASS_THRESHOLD) {
+      if (mispronouncedList && mispronouncedList.length > 0) {
+        const lastMis = mispronouncedList[mispronouncedList.length - 1];
+        setFeedback({
+          text: `⚠️ Spoke "${lastMis.heard}" instead of "${lastMis.target}" • ${accuracyScore}% accuracy (${correctCount}/${targetWords.length} words correct)`,
+          type: 'progress'
+        });
+      } else {
+        setFeedback({ text: `✅ PASS — ${accuracyScore}% word accuracy (${correctCount}/${targetWords.length} words correct)!`, type: 'success' });
+      }
+    } else if (isSessionActive && mispronouncedList && mispronouncedList.length > 0) {
+      const lastMis = mispronouncedList[mispronouncedList.length - 1];
+      setFeedback({
+        text: `❌ Incorrect word: spoke "${lastMis.heard}" instead of "${lastMis.target}" (${correctCount}/${targetWords.length} correct)`,
+        type: 'progress'
+      });
     } else if (isSessionActive && correctCount > 0) {
       setFeedback({ text: `🎤 Reading: ${correctCount}/${targetWords.length} words correct (${accuracyScore}%) — keep reading!`, type: 'progress' });
     } else {
@@ -601,33 +667,173 @@ const VoicePractice = ({ onComplete }) => {
     // If all words evaluated (no 'pending' left) or user finished speaking all target words
     const hasCompletedReading = (wordStatuses.length > 0 && wordStatuses.every(w => w.status !== 'pending')) || cleanHeardWords.length >= cleanTargetWords.length;
     if (hasCompletedReading && (!isSessionActive || accuracyScore >= PASS_THRESHOLD || cleanHeardWords.length >= cleanTargetWords.length)) {
-      triggerAutoAdvance(2);
+      triggerAutoAdvance(1.5);
     }
-  }, [triggerAutoAdvance]);
+  }, [triggerAutoAdvance, scanForTextProlongations]);
 
   const networkRetryCountRef = useRef(0);
   const isStartedRef = useRef(false);
 
-  // Dynamic audio waveform simulation when microphone is listening
-  // Eliminates hardware collisions by not holding an exclusive getUserMedia audio lock
-  useEffect(() => {
-    let animId;
-    if (isMicListening && isRecording && !isFinished) {
-      let t = 0;
-      const animate = () => {
-        t += 0.2;
-        const baseLevel = 45 + Math.sin(t) * 25 + Math.random() * 15;
-        setMicVolume(Math.round(baseLevel));
-        animId = requestAnimationFrame(animate);
-      };
-      animId = requestAnimationFrame(animate);
-    } else {
-      setMicVolume(0);
+  // ── Layer A: Web Audio API Acoustic Voicing & Prolongation Engine ──
+  const stopAcousticMonitoring = useCallback(() => {
+    isAcousticMonitoringActiveRef.current = false;
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
     }
-    return () => {
-      if (animId) cancelAnimationFrame(animId);
-    };
-  }, [isMicListening, isRecording, isFinished]);
+    if (warningTimeoutRef.current) {
+      clearTimeout(warningTimeoutRef.current);
+      warningTimeoutRef.current = null;
+    }
+    if (sourceRef.current) {
+      try { sourceRef.current.disconnect(); } catch (e) {}
+      sourceRef.current = null;
+    }
+    if (analyserRef.current) {
+      try { analyserRef.current.disconnect(); } catch (e) {}
+      analyserRef.current = null;
+    }
+    if (micStreamRef.current) {
+      try {
+        micStreamRef.current.getTracks().forEach((track) => track.stop());
+      } catch (e) {}
+      micStreamRef.current = null;
+    }
+    if (audioCtxRef.current) {
+      try {
+        if (audioCtxRef.current.state !== 'closed') {
+          audioCtxRef.current.close();
+        }
+      } catch (e) {}
+      audioCtxRef.current = null;
+    }
+    voicedOnsetRef.current = null;
+    hasFlaggedCurrentHoldRef.current = false;
+    unvoicedFramesCountRef.current = 0;
+  }, []);
+
+  const startAcousticMonitoring = useCallback((stream) => {
+    stopAcousticMonitoring();
+    if (!stream) return;
+    micStreamRef.current = stream;
+    isAcousticMonitoringActiveRef.current = true;
+    isRecordingRef.current = true;
+
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    try {
+      const audioCtx = new AudioContextClass();
+      audioCtxRef.current = audioCtx;
+
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 512;
+      analyserRef.current = analyser;
+
+      const source = audioCtx.createMediaStreamSource(stream);
+      source.connect(analyser);
+      sourceRef.current = source;
+
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume().catch((e) => console.warn("[VoicePractice] AudioCtx resume failed:", e));
+      }
+
+      const bufferLength = analyser.fftSize;
+      const timeData = new Float32Array(bufferLength);
+      const RMS_THRESHOLD = 0.012; // Calibrated for built-in and external mics
+      const PROLONGATION_THRESHOLD_MS = 480; // Clinical threshold for sound elongation (480ms)
+
+      const monitorLoop = () => {
+        if (!isAcousticMonitoringActiveRef.current || isFinishedRef.current) {
+          return;
+        }
+
+        if (analyserRef.current) {
+          analyserRef.current.getFloatTimeDomainData(timeData);
+
+          let sumSquares = 0;
+          for (let i = 0; i < bufferLength; i++) {
+            const val = timeData[i];
+            sumSquares += val * val;
+          }
+          const rms = Math.sqrt(sumSquares / bufferLength);
+
+          const now = performance.now();
+
+          if (rms >= RMS_THRESHOLD) {
+            unvoicedFramesCountRef.current = 0;
+            if (voicedOnsetRef.current === null) {
+              voicedOnsetRef.current = now;
+              hasFlaggedCurrentHoldRef.current = false;
+            } else {
+              const holdTimeMs = now - voicedOnsetRef.current;
+              if (holdTimeMs >= PROLONGATION_THRESHOLD_MS) {
+                const curIdx = currentTextIndexRef.current;
+                const sentenceText = practiceSentencesRef.current[curIdx] || '';
+                const tokens = sentenceText.split(/\s+/).filter(Boolean);
+                const curStatuses = liveWordStatusesRef.current || [];
+                const firstPending = curStatuses.find((w) => w.status === 'pending');
+                const targetWord = firstPending?.word || tokens[0] || 'Vowel/Continuant';
+
+                const roundedDuration = Math.round(holdTimeMs);
+
+                if (!hasFlaggedCurrentHoldRef.current) {
+                  hasFlaggedCurrentHoldRef.current = true;
+                  const newEvent = {
+                    word: targetWord,
+                    durationMs: roundedDuration,
+                    type: 'Acoustic Prolongation',
+                    timestamp: Date.now(),
+                    sentenceIndex: curIdx
+                  };
+                  prolongationsListRef.current.push(newEvent);
+
+                  // Immediately flag on active word tile
+                  setLiveWordStatuses((prev) =>
+                    prev.map((w) =>
+                      w.word === targetWord ? { ...w, isProlonged: true } : w
+                    )
+                  );
+                } else {
+                  // Update current active prolongation duration
+                  const last = prolongationsListRef.current[prolongationsListRef.current.length - 1];
+                  if (last && last.type === 'Acoustic Prolongation') {
+                    last.durationMs = roundedDuration;
+                  }
+                }
+
+                setActiveProlongationWarning({
+                  word: targetWord,
+                  durationMs: roundedDuration,
+                  type: 'Acoustic Prolongation'
+                });
+
+                if (warningTimeoutRef.current) clearTimeout(warningTimeoutRef.current);
+                warningTimeoutRef.current = setTimeout(() => {
+                  setActiveProlongationWarning(null);
+                }, 3500);
+              }
+            }
+          } else {
+            // Unvoiced frame or natural closure
+            unvoicedFramesCountRef.current += 1;
+            // 10 consecutive low-energy frames (~160ms) of true silence reset voiced onset
+            if (unvoicedFramesCountRef.current > 10) {
+              voicedOnsetRef.current = null;
+              hasFlaggedCurrentHoldRef.current = false;
+              unvoicedFramesCountRef.current = 0;
+            }
+          }
+        }
+
+        animFrameRef.current = requestAnimationFrame(monitorLoop);
+      };
+
+      animFrameRef.current = requestAnimationFrame(monitorLoop);
+    } catch (err) {
+      console.warn("[VoicePractice] AudioContext / Analyser init error:", err);
+    }
+  }, [stopAcousticMonitoring]);
 
   // Clean, persistent & resilient Speech Recognition session manager
   // Preserves accumulated transcripts across Chrome's automatic onend pause cycles
@@ -638,18 +844,19 @@ const VoicePractice = ({ onComplete }) => {
       return;
     }
 
-    // Guard against concurrent duplicate starts, unless explicit reset requested
-    if (isStartingRef.current || (isStartedRef.current && !resetAccumulator)) {
-      return;
-    }
-
     if (resetAccumulator) {
+      isStartingRef.current = false;
+      isStartedRef.current = false;
       accumulatedTranscriptRef.current = '';
       sessionFinalRef.current = '';
       sessionInterimRef.current = '';
       transcriptRef.current = '';
+      sentenceBaseResultIndexRef.current = 0;
+      lastResultCountRef.current = 0;
       setTranscript('');
       audioCaptureRetryCountRef.current = 0;
+    } else if (isStartingRef.current || isStartedRef.current) {
+      return;
     }
 
     audioCaptureErrorRef.current = false;
@@ -686,6 +893,8 @@ const VoicePractice = ({ onComplete }) => {
 
     recognition.onresult = (event) => {
       networkRetryCountRef.current = 0;
+
+      // Extract results for current sentence session cleanly without stale index offset drops
       let finalPart = '';
       let interimPart = '';
       for (let i = 0; i < event.results.length; i++) {
@@ -711,7 +920,11 @@ const VoicePractice = ({ onComplete }) => {
       transcriptRef.current = fullTranscript;
       setTranscript(fullTranscript);
       analyzeLive(fullTranscript, practiceSentencesRef.current[currentTextIndexRef.current], true);
+
+      // Layer B: Textual Grapheme Elongation Scanner (regex: 3+ identical consecutive characters e.g. "sooo", "aaaaamerica", "aaaaaaa")
+      scanForTextProlongations(fullTranscript, currentTextIndexRef.current);
     };
+
 
     recognition.onerror = (event) => {
       isStartingRef.current = false;
@@ -740,7 +953,7 @@ const VoicePractice = ({ onComplete }) => {
             if (isRecordingRef.current && !isFinishedRef.current && !isStartedRef.current && !isStartingRef.current) {
               startSpeechRecognitionSession(false);
             }
-          }, 1000);
+          }, 800);
           return;
         }
         audioCaptureErrorRef.current = true;
@@ -782,16 +995,11 @@ const VoicePractice = ({ onComplete }) => {
       }
 
       if (isRecordingRef.current && !isFinishedRef.current) {
-        // Auto restart for continuous listening within the current sentence
-        const delay = networkRetryCountRef.current > 0 ? 1200 : 350;
+        // Fast restart for continuous listening: create fresh SpeechRecognition instance so it never hits dead state
+        const delay = networkRetryCountRef.current > 0 ? 600 : 40;
         setTimeout(() => {
-          if (isRecordingRef.current && !isFinishedRef.current && !isStartedRef.current && !isStartingRef.current && !audioCaptureErrorRef.current) {
-            try {
-              recognition.start();
-              isStartingRef.current = true;
-            } catch (e) {
-              isStartingRef.current = false;
-            }
+          if (isRecordingRef.current && !isFinishedRef.current && !audioCaptureErrorRef.current) {
+            startSpeechRecognitionSession(false);
           }
         }, delay);
       } else {
@@ -804,8 +1012,17 @@ const VoicePractice = ({ onComplete }) => {
     try {
       recognition.start();
     } catch (e) {
-      isStartingRef.current = false;
-      isStartedRef.current = false;
+      console.warn("[VoicePractice] recognition.start error, retrying:", e);
+      setTimeout(() => {
+        if (isRecordingRef.current && !isFinishedRef.current && !isStartedRef.current) {
+          try {
+            recognition.start();
+          } catch (e2) {
+            isStartingRef.current = false;
+            isStartedRef.current = false;
+          }
+        }
+      }, 50);
     }
   };
 
@@ -850,6 +1067,14 @@ const VoicePractice = ({ onComplete }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRecording, isFinished]);
 
+  // Clean up Web Audio API resources on component unmount
+  useEffect(() => {
+    return () => {
+      stopAcousticMonitoring();
+    };
+  }, [stopAcousticMonitoring]);
+
+
   // Timer — keeps sessionTimeRef in sync so finishLiveSession has the real value
   useEffect(() => {
     let timer;
@@ -867,6 +1092,8 @@ const VoicePractice = ({ onComplete }) => {
   }, [isRecording, isFinished]);
 
   const startVoiceSession = async () => {
+    isRecordingRef.current = true;
+    prevIsRecordingRef.current = true;
     setAudioErrorMessage(null);
     audioCaptureErrorRef.current = false;
     audioCaptureRetryCountRef.current = 0;
@@ -881,14 +1108,11 @@ const VoicePractice = ({ onComplete }) => {
     sessionTimeRef.current    = 0;
     setSessionTime(0);
 
-    // Pre-Flight Stream Probe: verify device availability, wake up hardware, and release cleanly
+    // Layer A Web Audio Analyser stream acquisition & pre-flight verification
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
-        const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        // Immediately release tracks so recognition can acquire the exclusive input
-        tempStream.getTracks().forEach((track) => track.stop());
-        // Buffer to ensure OS audio pipeline cleanly finishes releasing device
-        await new Promise((r) => setTimeout(r, 120));
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        startAcousticMonitoring(stream);
       } catch (err) {
         console.warn("[VoicePractice] Mic pre-flight check failed:", err);
         if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
@@ -911,6 +1135,7 @@ const VoicePractice = ({ onComplete }) => {
   };
 
   const stopVoiceSession = () => {
+    stopAcousticMonitoring();
     setAudioErrorMessage(null);
     // Record end timestamp BEFORE clearing state
     if (!endTimestampRef.current) {
@@ -930,6 +1155,7 @@ const VoicePractice = ({ onComplete }) => {
         recognitionRef.current.onerror = null;
         recognitionRef.current.onend = null;
         recognitionRef.current.abort();
+
       } catch (e) {}
       recognitionRef.current = null;
     }
@@ -937,8 +1163,21 @@ const VoicePractice = ({ onComplete }) => {
 
   const changeSentence = useCallback((newIndex) => {
     cancelAutoAdvance();
+
+    // 1. Commit the old sentence transcript to reports ref & state
+    const oldIdx = currentTextIndexRef.current;
+    const oldTranscript = transcriptRef.current || '';
+    if (oldTranscript) {
+      const updatedReports = { ...sentenceReportsRef.current, [oldIdx]: oldTranscript };
+      sentenceReportsRef.current = updatedReports;
+      setSentenceReports(updatedReports);
+    }
+
+    // 2. Set new sentence index
     currentTextIndexRef.current = newIndex;
     setCurrentTextIndex(newIndex);
+
+    // 3. Reset transcripts for the new sentence
     accumulatedTranscriptRef.current = '';
     sessionFinalRef.current = '';
     sessionInterimRef.current = '';
@@ -949,29 +1188,16 @@ const VoicePractice = ({ onComplete }) => {
     audioCaptureErrorRef.current = false;
     audioCaptureRetryCountRef.current = 0;
     setAudioErrorMessage(null);
-    setFeedback({ text: 'Next sentence ready. Read aloud into microphone...', type: 'progress' });
+    setFeedback({ text: '🎤 Next sentence ready — Read aloud into microphone!', type: 'progress' });
 
+    // 4. Clean sentence transition:
+    // When changing sentences, cleanly start a fresh speech recognition session for the new sentence!
+    // This resets the Chrome 50-second timeout, clears event.results offset math, and ensures
+    // the microphone is 100% active and listening from index 0 for the new sentence.
     if (isRecordingRef.current && !isFinishedRef.current) {
-      if (recognitionRef.current) {
-        try {
-          recognitionRef.current.onstart = null;
-          recognitionRef.current.onresult = null;
-          recognitionRef.current.onerror = null;
-          recognitionRef.current.onend = null;
-          recognitionRef.current.abort();
-        } catch (e) {}
-        recognitionRef.current = null;
-      }
-      isStartedRef.current = false;
-      isStartingRef.current = false;
-
-      // Small debounce delay (180ms) for Chrome audio pipeline to cleanly unbind
-      setTimeout(() => {
-        if (isRecordingRef.current && !isFinishedRef.current) {
-          startSpeechRecognitionSession(true);
-        }
-      }, 180);
+      startSpeechRecognitionSession(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cancelAutoAdvance]);
 
   const finishLiveSession = async () => {
@@ -996,8 +1222,9 @@ const VoicePractice = ({ onComplete }) => {
     const endTs          = endTimestampRef.current   || Date.now();
 
     // ── SINGLE SOURCE OF TRUTH: one call, one result object ──
-    const report = analyzeReadingEngine(sentences, transcripts, startTs, endTs);
+    const report = analyzeReadingEngine(sentences, transcripts, startTs, endTs, {}, prolongationsListRef.current);
     setFinalReport(report);
+
 
     // Persist progress using real numbers from report
     const { summary } = report;
@@ -1009,6 +1236,20 @@ const VoicePractice = ({ onComplete }) => {
       summary.accuracy,
       `${summary.durationSeconds}s (${computedWpm} WPM)`
     );
+
+    // Persist to Doctor Caseload oral reports registry in localStorage
+    try {
+      const existingRaw = localStorage.getItem('cognilex_oral_reading_reports');
+      const existing = existingRaw ? JSON.parse(existingRaw) : [];
+      const newEntry = {
+        id: 'oral_' + Date.now(),
+        date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ', ' + new Date().toLocaleDateString(),
+        report: report
+      };
+      localStorage.setItem('cognilex_oral_reading_reports', JSON.stringify([newEntry, ...existing].slice(0, 30)));
+    } catch (e) {
+      console.warn("Failed to cache oral reading report for doctor dashboard:", e);
+    }
   };
 
   const handleNext = useCallback(() => {
@@ -1025,6 +1266,7 @@ const VoicePractice = ({ onComplete }) => {
     } else {
       finishLiveSession();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transcript, cancelAutoAdvance, changeSentence]);
 
   useEffect(() => {
@@ -1058,28 +1300,7 @@ const VoicePractice = ({ onComplete }) => {
     });
     setFeedback({ text: '🎤 Retrying — Read the sentence aloud into your microphone!', type: 'progress' });
 
-    // Pre-Flight Stream Probe on retry
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      try {
-        const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        tempStream.getTracks().forEach((track) => track.stop());
-        await new Promise((r) => setTimeout(r, 120));
-      } catch (err) {
-        console.warn("[VoicePractice] Mic retry pre-flight check failed:", err);
-        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-          setAudioErrorMessage("Microphone permission was denied. Please allow microphone access in your browser settings.");
-          setFeedback({ text: '⚠️ Microphone access blocked. Please allow mic in browser settings.', type: 'neutral' });
-        } else {
-          setAudioErrorMessage("Microphone hardware busy or unavailable. Check if another app (Teams, Zoom, Recorder) is using it.");
-          setFeedback({ text: '⚠️ Microphone hardware busy or unavailable.', type: 'neutral' });
-        }
-        setIsRecording(false);
-        setIsMicListening(false);
-        prevIsRecordingRef.current = false;
-        return;
-      }
-    }
-
+    // Immediate clean restart of speech recognition session on retry
     prevIsRecordingRef.current = true;
     if (!isRecording) {
       setIsRecording(true);
@@ -1099,15 +1320,77 @@ const VoicePractice = ({ onComplete }) => {
     <div className="exercise-session live-practice">
       {!isFinished ? (
         <>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem', flexWrap: 'wrap', gap: '8px' }}>
             <h3 style={{ fontSize: '1.15rem', margin: 0, fontWeight: 800 }}>🎤 Live Reading & Voice Recognition Session</h3>
-            {isRecording && (
-              <div className="recording-indicator">
-                <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: isMicListening ? '#14b8a6' : '#f43f5e', marginRight: '4px' }}></span>
-                {isMicListening ? '🎤 MIC ACTIVE' : '● REC'} ({sessionTime}s)
-              </div>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              {/* Dynamic Sound Prolongation Warning Pill */}
+              {activeProlongationWarning && (
+                <div
+                  className="prolongation-warning-pill pulse-prolongation"
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.12)',
+                    border: '1.5px solid #ef4444',
+                    color: '#dc2626',
+                    padding: '3px 10px',
+                    borderRadius: '20px',
+                    fontSize: '0.76rem',
+                    fontWeight: 800,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}
+                >
+                  <span>⚠️ Sound Prolongation: "{activeProlongationWarning.word}" ({activeProlongationWarning.durationMs}ms)</span>
+                </div>
+              )}
+
+              {/* Live Oral Cadence Badge */}
+              {isRecording && (
+                <div
+                  className="cadence-hud-badge"
+                  title={liveCadence.sps ? `Speech Rate: ${liveCadence.sps} syllables/second` : 'Reading Cadence'}
+                  style={{
+                    background: liveCadence.wpm === null
+                      ? 'rgba(100, 116, 139, 0.1)'
+                      : liveCadence.wpm >= 60 && liveCadence.wpm <= 100
+                      ? 'rgba(16, 185, 129, 0.12)'
+                      : 'rgba(245, 158, 11, 0.12)',
+                    color: liveCadence.wpm === null
+                      ? '#64748b'
+                      : liveCadence.wpm >= 60 && liveCadence.wpm <= 100
+                      ? '#059669'
+                      : '#d97706',
+                    border: `1.5px solid ${
+                      liveCadence.wpm === null
+                        ? '#cbd5e1'
+                        : liveCadence.wpm >= 60 && liveCadence.wpm <= 100
+                        ? '#10b981'
+                        : '#f59e0b'
+                    }`,
+                    borderRadius: '8px',
+                    padding: '3px 10px',
+                    fontSize: '0.78rem',
+                    fontWeight: 800
+                  }}
+                >
+                  <span>⏱️ {liveCadence.wpm !== null ? `${liveCadence.wpm} WPM` : '— WPM'}</span>
+                  {liveCadence.sps !== null && (
+                    <span style={{ fontSize: '0.7rem', opacity: 0.85, fontWeight: 700, marginLeft: '3px' }}>
+                      ({liveCadence.sps} SPS)
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {isRecording && (
+                <div className="recording-indicator">
+                  <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: isMicListening ? '#14b8a6' : '#f43f5e', marginRight: '4px' }}></span>
+                  {isMicListening ? '🎤 MIC ACTIVE' : '● REC'} ({sessionTime}s)
+                </div>
+              )}
+            </div>
           </div>
+
 
           <div className="live-practice-grid">
             {/* Mic Feed & Audio Meter */}
@@ -1143,7 +1426,13 @@ const VoicePractice = ({ onComplete }) => {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255, 255, 255, 0.08)', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
                         <small style={{ color: '#14b8a6', fontSize: '0.7rem', fontWeight: 800 }}>MIC INPUT</small>
                         <div style={{ width: '60px', height: '5px', background: 'rgba(255,255,255,0.2)', borderRadius: '3px', overflow: 'hidden' }}>
-                          <div style={{ width: `${Math.max(8, micVolume)}%`, height: '100%', background: micVolume > 30 ? '#14b8a6' : '#818cf8', transition: 'width 0.1s ease' }}></div>
+                          <div style={{
+                            width: isMicListening ? '75%' : '12%',
+                            height: '100%',
+                            background: '#14b8a6',
+                            animation: isMicListening ? 'vpMicLevelPulse 1.4s ease-in-out infinite' : 'none',
+                            transition: 'width 0.2s ease'
+                          }}></div>
                         </div>
                       </div>
                       <span className="badge" style={{ background: 'rgba(20, 184, 166, 0.15)', color: '#14b8a6', fontSize: '0.7rem', fontWeight: 800, padding: '2px 8px' }}>
@@ -1155,15 +1444,20 @@ const VoicePractice = ({ onComplete }) => {
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px', margin: '0.35rem 0' }}>
                       <div style={{ display: 'flex', alignItems: 'flex-end', gap: '3px', height: '36px' }}>
                         {Array.from({ length: 14 }).map((_, i) => {
-                          const barHeight = Math.max(4, (micVolume / 100) * (18 + Math.sin(Date.now() * 0.01 + i * 0.8) * 12 + Math.random() * 6));
+                          const delay = (i * 0.07).toFixed(2);
+                          const duration = (0.55 + (i % 5) * 0.08).toFixed(2);
                           return (
-                            <div key={i} style={{
-                              width: '4px',
-                              height: `${barHeight}px`,
-                              background: micVolume > 30 ? '#14b8a6' : '#818cf8',
-                              borderRadius: '2px',
-                              transition: 'height 0.1s ease'
-                            }} />
+                            <div
+                              key={i}
+                              style={{
+                                width: '4px',
+                                height: isMicListening ? '26px' : '6px',
+                                background: isMicListening ? '#14b8a6' : '#818cf8',
+                                borderRadius: '2px',
+                                animation: isMicListening ? `vpWaveformPulse ${duration}s ease-in-out ${delay}s infinite alternate` : 'none',
+                                transition: 'background 0.2s ease'
+                              }}
+                            />
                           );
                         })}
                       </div>
@@ -1208,26 +1502,112 @@ const VoicePractice = ({ onComplete }) => {
                 </div>
 
                 <div className="interactive-sentence-words" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', fontSize: '1.2rem', fontWeight: 700 }}>
-                  {currentStatuses.map((item, idx) => (
-                    <span 
-                      key={idx} 
-                      className={`word-tile ${item.status}`}
-                      title={item.status === 'mispronounced' ? `Heard: "${item.heard}"` : ''}
-                      style={{
-                        padding: '4px 8px',
-                        borderRadius: '6px',
-                        background: item.status === 'correct' ? 'rgba(20, 184, 166, 0.15)' : item.status === 'mispronounced' ? 'rgba(244, 63, 94, 0.15)' : item.status === 'omitted' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(0, 0, 0, 0.04)',
-                        color: item.status === 'correct' ? '#14b8a6' : item.status === 'mispronounced' ? '#f43f5e' : item.status === 'omitted' ? '#f59e0b' : 'var(--lf-text-primary)',
-                        border: `1px solid ${item.status === 'correct' ? '#14b8a6' : item.status === 'mispronounced' ? '#f43f5e' : item.status === 'omitted' ? '#f59e0b' : 'var(--lf-border)'}`
-                      }}
-                    >
-                      {item.word}
-                      {item.status === 'correct' && ' ✓'}
-                      {item.status === 'mispronounced' && ' ❌'}
-                      {item.status === 'omitted' && ' ⚠️'}
-                    </span>
-                  ))}
+                  {(() => {
+                    const firstPendingIdx = currentStatuses.findIndex(w => w.status === 'pending');
+                    return currentStatuses.map((item, idx) => {
+                      const isActiveWord = isMicListening && isRecording && idx === firstPendingIdx;
+                      const isProlongedWord = item.isProlonged;
+                      return (
+                        <span 
+                          key={idx} 
+                          className={`word-tile ${item.status} ${isActiveWord ? 'active-reading' : ''} ${isProlongedWord ? 'prolonged-word' : ''}`}
+                          title={
+                            item.status === 'mispronounced'
+                              ? `Heard: "${item.heard}"`
+                              : isProlongedWord
+                              ? `Phonetic Prolongation: sound dragged (${item.heard ? `spoken as "${item.heard}"` : 'elongated phoneme hold'})`
+                              : ''
+                          }
+                          style={{
+                            padding: '4px 8px',
+                            borderRadius: '6px',
+                            background: isProlongedWord
+                              ? 'rgba(245, 158, 11, 0.16)'
+                              : item.status === 'correct'
+                              ? 'rgba(20, 184, 166, 0.15)'
+                              : item.status === 'mispronounced'
+                              ? 'rgba(244, 63, 94, 0.15)'
+                              : item.status === 'omitted'
+                              ? 'rgba(245, 158, 11, 0.15)'
+                              : isActiveWord
+                              ? 'rgba(13, 148, 136, 0.08)'
+                              : 'rgba(0, 0, 0, 0.04)',
+                            color: isProlongedWord
+                              ? '#b45309'
+                              : item.status === 'correct'
+                              ? '#14b8a6'
+                              : item.status === 'mispronounced'
+                              ? '#f43f5e'
+                              : item.status === 'omitted'
+                              ? '#f59e0b'
+                              : isActiveWord
+                              ? '#0f766e'
+                              : 'var(--lf-text-primary)',
+                            border: `2px ${isProlongedWord ? 'dashed #f59e0b' : 'solid'} ${
+                              isProlongedWord
+                                ? '#f59e0b'
+                                : item.status === 'correct'
+                                ? '#14b8a6'
+                                : item.status === 'mispronounced'
+                                ? '#f43f5e'
+                                : item.status === 'omitted'
+                                ? '#f59e0b'
+                                : isActiveWord
+                                ? '#0d9488'
+                                : 'var(--lf-border)'
+                            }`,
+                            boxShadow: isProlongedWord ? '0 0 10px rgba(245, 158, 11, 0.25)' : 'none',
+                            transition: 'all 0.15s ease',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <span>{item.word}</span>
+                          {isProlongedWord && (
+                            <span
+                              className="pulse-prolongation"
+                              style={{
+                                fontSize: '0.66rem',
+                                background: '#f59e0b',
+                                color: '#ffffff',
+                                padding: '1px 5px',
+                                borderRadius: '4px',
+                                fontWeight: 800,
+                                letterSpacing: '0.02em',
+                                boxShadow: '0 1px 3px rgba(245, 158, 11, 0.4)'
+                              }}
+                            >
+                              〰️ Dragged
+                            </span>
+                          )}
+                          {item.status === 'correct' && ' ✓'}
+                          {item.status === 'mispronounced' && ' ❌'}
+                          {item.status === 'omitted' && ' ⚠️'}
+                        </span>
+                      );
+                    });
+                  })()}
                 </div>
+
+                {/* Prolongation Warning Banner right in Sentence Card */}
+                {currentStatuses.some(w => w.isProlonged) && (
+                  <div style={{ marginTop: '0.85rem', padding: '0.65rem 0.85rem', background: 'rgba(245, 158, 11, 0.12)', borderRadius: '8px', border: '1.5px solid #f59e0b', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '1.25rem' }}>⚠️</span>
+                    <div>
+                      <strong style={{ color: '#b45309', display: 'block', fontSize: '0.86rem' }}>
+                        Sound Prolongation / Word Dragging Detected:
+                      </strong>
+                      <span style={{ color: '#78350f', fontSize: '0.8rem' }}>
+                        Word{currentStatuses.filter(w => w.isProlonged).length > 1 ? 's' : ''}{' '}
+                        {currentStatuses.filter(w => w.isProlonged).map((w, i) => (
+                          <strong key={i}>"{w.word}" {w.heard && w.heard !== w.word.toLowerCase() ? `(spoken: "${w.heard}")` : ''} </strong>
+                        ))}
+                        decoded correctly, but spoken with compensatory phonetic sound elongation.
+                      </span>
+                    </div>
+                  </div>
+                )}
 
                 {liveWordStatuses.some(w => w.status === 'mispronounced') && (
                   <div style={{ marginTop: '1rem', padding: '0.65rem', background: 'rgba(244,63,94,0.08)', borderRadius: '8px', border: '1px solid rgba(244,63,94,0.2)', fontSize: '0.8rem' }}>
@@ -1271,14 +1651,11 @@ const VoicePractice = ({ onComplete }) => {
                         const curIdx = currentTextIndexRef.current;
                         const words = (practiceSentences[curIdx] || '').split(" ").filter(Boolean);
                         let misSample = practiceSentences[curIdx];
-                        if (words.length > 2) {
-                          // Change one letter in word 2 to simulate a natural oral mispronunciation
-                          const targetWord = words[2];
-                          if (targetWord.length >= 4) {
-                            words[2] = 'b' + targetWord.slice(1);
-                          } else {
-                            words[2] = targetWord + 's';
-                          }
+                        if (words.length > 1) {
+                          // Change a word to simulate a natural oral reading miscue / mispronunciation
+                          const targetIdx = words.length > 2 ? 1 : 0;
+                          const targetWord = words[targetIdx].replace(/[^\w]/g, '').toLowerCase();
+                          words[targetIdx] = targetWord === 'sun' ? 'moon' : targetWord.length >= 4 ? 'b' + targetWord.slice(1) : targetWord + 's';
                           misSample = words.join(" ");
                         } else {
                           misSample = practiceSentences[curIdx] + " extra";
@@ -1294,6 +1671,37 @@ const VoicePractice = ({ onComplete }) => {
                       style={{ background: 'rgba(244, 63, 94, 0.1)', color: '#f43f5e', border: '1px solid rgba(244, 63, 94, 0.25)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer' }}
                     >
                       🧪 Test Mispronunciation
+                    </button>
+                    <button
+                      type="button"
+                      id="btn-test-prolongation"
+                      onClick={() => {
+                        const curIdx = currentTextIndexRef.current;
+                        const words = (practiceSentences[curIdx] || '').split(" ").filter(Boolean);
+                        // Prolong vowels/continuants in target sentence, e.g. "a" -> "aaaaaaa", "sun" -> "ssssun", "space" -> "sssspace"
+                        const prolongedWords = words.map((w, idx) => {
+                          const clean = w.toLowerCase().replace(/[^a-z]/g, '');
+                          if (clean === 'a' || clean === 'i') {
+                            return clean.repeat(7); // "aaaaaaa"
+                          }
+                          if (idx === 1 || idx === words.length - 1) {
+                            return clean[0].repeat(5) + clean.slice(1); // "ssssun", "bbbooks", "ssssspace"
+                          }
+                          return w;
+                        });
+                        const prolongedSample = prolongedWords.join(" ");
+                        setTranscript(prolongedSample);
+                        transcriptRef.current = prolongedSample;
+                        accumulatedTranscriptRef.current = prolongedSample;
+                        sessionFinalRef.current = '';
+                        sessionInterimRef.current = '';
+                        scanForTextProlongations(prolongedSample, curIdx);
+                        analyzeLive(prolongedSample, practiceSentences[curIdx], false);
+                        triggerAutoAdvance(2.5);
+                      }}
+                      style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.35)', padding: '2px 8px', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      🧪 Test Prolongation ("aaaaaaa" / Dragging)
                     </button>
                   </div>
                 </div>
@@ -1793,7 +2201,105 @@ const VoicePractice = ({ onComplete }) => {
                       </div>
                     )}
 
+                    {/* ── SPEECH CADENCE & PHONETIC PROLONGATION (PROSODY) PANEL ── */}
+                    {summary.cadenceAndProlongation && (
+                      <div style={{ background: '#ffffff', padding: '1.25rem', borderRadius: '14px', border: '1.5px solid #e2e8f0', marginBottom: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '8px' }}>
+                          <div>
+                            <h4 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 800, color: '#0f172a' }}>
+                              ⏱️ Speech Cadence, Prosody & Phonetic Prolongation Analysis
+                            </h4>
+                            <small style={{ color: '#64748b', fontSize: '0.74rem' }}>
+                              Dual-stream acoustic energy tracking (Web Audio RMS ≥ 650ms) + textual graphemic repetition scanning
+                            </small>
+                          </div>
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <span className="badge" style={{
+                              background: summary.cadenceAndProlongation.cadenceCategory === 'Fluent' ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
+                              color: summary.cadenceAndProlongation.cadenceCategory === 'Fluent' ? '#059669' : '#d97706',
+                              fontWeight: 800,
+                              padding: '4px 10px',
+                              fontSize: '0.75rem'
+                            }}>
+                              Cadence: {summary.cadenceAndProlongation.cadenceCategory} ({summary.wpm || 0} WPM)
+                            </span>
+                            <span className="badge" style={{
+                              background: summary.cadenceAndProlongation.totalDrags === 0 ? 'rgba(16,185,129,0.12)' : summary.cadenceAndProlongation.totalDrags <= 2 ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.12)',
+                              color: summary.cadenceAndProlongation.totalDrags === 0 ? '#059669' : summary.cadenceAndProlongation.totalDrags <= 2 ? '#d97706' : '#dc2626',
+                              fontWeight: 800,
+                              padding: '4px 10px',
+                              fontSize: '0.75rem'
+                            }}>
+                              {summary.cadenceAndProlongation.severity}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Metrics Strip */}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.75rem', marginBottom: '1rem' }}>
+                          <div style={{ background: '#f8fafc', padding: '10px', borderRadius: '10px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Reading Speed</div>
+                            <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#2563eb' }}>{summary.wpm || 0} WPM</div>
+                            <small style={{ fontSize: '0.7rem', color: '#64748b' }}>Cadence</small>
+                          </div>
+                          <div style={{ background: '#f8fafc', padding: '10px', borderRadius: '10px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Syllable Rate</div>
+                            <div style={{ fontSize: '1.25rem', fontWeight: 900, color: '#0f766e' }}>{summary.cadenceAndProlongation.sps} SPS</div>
+                            <small style={{ fontSize: '0.7rem', color: '#64748b' }}>Syllables/sec</small>
+                          </div>
+                          <div style={{ background: '#f8fafc', padding: '10px', borderRadius: '10px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Total Prolongations</div>
+                            <div style={{ fontSize: '1.25rem', fontWeight: 900, color: summary.cadenceAndProlongation.totalDrags > 0 ? '#ef4444' : '#10b981' }}>
+                              {summary.cadenceAndProlongation.totalDrags}
+                            </div>
+                            <small style={{ fontSize: '0.7rem', color: '#64748b' }}>Elongation events</small>
+                          </div>
+                          <div style={{ background: '#f8fafc', padding: '10px', borderRadius: '10px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Prolongation Index</div>
+                            <div style={{ fontSize: '1.25rem', fontWeight: 900, color: summary.cadenceAndProlongation.prolongationIndex > 15 ? '#ef4444' : '#059669' }}>
+                              {summary.cadenceAndProlongation.prolongationIndex}%
+                            </div>
+                            <small style={{ fontSize: '0.7rem', color: '#64748b' }}>Words elongated</small>
+                          </div>
+                          <div style={{ background: '#f8fafc', padding: '10px', borderRadius: '10px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
+                            <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: 700, textTransform: 'uppercase' }}>Cadence Category</div>
+                            <div style={{ fontSize: '1.05rem', fontWeight: 900, color: '#334155', marginTop: '3px' }}>
+                              {summary.cadenceAndProlongation.cadenceCategory}
+                            </div>
+                            <small style={{ fontSize: '0.7rem', color: '#64748b' }}>Tempo classification</small>
+                          </div>
+                        </div>
+
+                        {/* Clinical Rationale Note */}
+                        <div style={{ background: 'rgba(79, 70, 229, 0.05)', border: '1px solid rgba(79, 70, 229, 0.18)', borderRadius: '10px', padding: '0.85rem 1rem', marginBottom: summary.cadenceAndProlongation.prolongationsList.length > 0 ? '0.75rem' : 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                            <strong style={{ fontSize: '0.82rem', color: '#4338ca' }}>🩺 Neurological Rationale & SLP Interpretation:</strong>
+                          </div>
+                          <p style={{ margin: 0, fontSize: '0.8rem', color: '#334155', lineHeight: '1.5' }}>
+                            {summary.cadenceAndProlongation.clinicalRationale}
+                          </p>
+                        </div>
+
+                        {/* Detailed list of prolongation events if any */}
+                        {summary.cadenceAndProlongation.prolongationsList.length > 0 && (
+                          <div style={{ marginTop: '0.75rem', background: '#f8fafc', padding: '0.65rem 0.85rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                            <small style={{ fontWeight: 800, color: '#475569', fontSize: '0.74rem', display: 'block', marginBottom: '4px' }}>
+                              Logged Prolongation Events:
+                            </small>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                              {summary.cadenceAndProlongation.prolongationsList.map((item, idx) => (
+                                <span key={idx} style={{ background: '#ffffff', color: '#dc2626', border: '1px solid #fecaca', padding: '2px 8px', borderRadius: '4px', fontSize: '0.72rem', fontWeight: 700 }}>
+                                  ⚠️ "{item.word}" ({item.type}, {item.durationMs}ms)
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {/* Standardized Grade Benchmark Comparison Table (Hasbrouck & Tindal) */}
+
                     {summary.clinicalDiagnostics?.gradeNorms && (
                       <div style={{ background: '#ffffff', padding: '1.25rem', borderRadius: '14px', border: '1.5px solid #e2e8f0', marginBottom: '1.5rem', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '6px' }}>
@@ -1885,42 +2391,45 @@ const VoicePractice = ({ onComplete }) => {
                               </tr>
                             </thead>
                             <tbody>
-                              {summary.clinicalDiagnostics.allWordMiscues.map((item, i) => (
-                                <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                  <td style={{ padding: '8px 10px', fontWeight: 800, color: '#0f172a' }}>"{item.expected}"</td>
-                                  <td style={{ padding: '8px 10px', fontWeight: 700, color: '#f43f5e' }}>
-                                    {item.spoken ? `"${item.spoken}"` : '— (Omitted)'}
-                                  </td>
-                                  <td style={{ padding: '8px 10px' }}>
-                                    <span style={{
-                                      background: item.miscue?.type === 'visual_reversal' || item.miscue?.type === 'kinetic_reversal' ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)',
-                                      color: item.miscue?.type === 'visual_reversal' || item.miscue?.type === 'kinetic_reversal' ? '#dc2626' : '#d97706',
-                                      padding: '2px 8px',
-                                      borderRadius: '4px',
-                                      fontWeight: 800,
-                                      fontSize: '0.72rem'
-                                    }}>
-                                      {item.miscue?.label || item.status}
-                                    </span>
-                                  </td>
-                                  <td style={{ padding: '8px 10px', fontSize: '0.74rem', color: '#64748b' }}>
-                                    {item.miscue?.pathway || 'Dorsal Stream'}
-                                  </td>
-                                  <td style={{ padding: '8px 10px' }}>
-                                    <span style={{
-                                      textTransform: 'uppercase',
-                                      fontWeight: 800,
-                                      fontSize: '0.68rem',
-                                      color: item.miscue?.severity === 'high' ? '#ef4444' : item.miscue?.severity === 'moderate' ? '#f59e0b' : '#3b82f6'
-                                    }}>
-                                      {item.miscue?.severity || 'moderate'}
-                                    </span>
-                                  </td>
-                                  <td style={{ padding: '8px 10px', fontSize: '0.75rem', color: '#334155', maxWidth: '240px', lineHeight: '1.35' }}>
-                                    {item.miscue?.details || 'Oral decoding miscue.'}
-                                  </td>
-                                </tr>
-                              ))}
+                                {summary.clinicalDiagnostics.allWordMiscues.map((item, i) => {
+                                  const isProlong = item.status === 'correct' && (item.prolongation || item.miscue?.type === 'prolonged_reading');
+                                  return (
+                                  <tr key={i} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                                    <td style={{ padding: '8px 10px', fontWeight: 800, color: '#0f172a' }}>"{item.expected}"</td>
+                                    <td style={{ padding: '8px 10px', fontWeight: 700, color: isProlong ? '#d97706' : '#f43f5e' }}>
+                                      {item.spoken ? `"${item.spoken}"` : isProlong ? `"${item.expected}" (Prolonged 〰️)` : '— (Omitted)'}
+                                    </td>
+                                    <td style={{ padding: '8px 10px' }}>
+                                      <span style={{
+                                        background: isProlong ? 'rgba(245, 158, 11, 0.16)' : item.miscue?.type === 'visual_reversal' || item.miscue?.type === 'kinetic_reversal' ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)',
+                                        color: isProlong ? '#b45309' : item.miscue?.type === 'visual_reversal' || item.miscue?.type === 'kinetic_reversal' ? '#dc2626' : '#d97706',
+                                        padding: '2px 8px',
+                                        borderRadius: '4px',
+                                        fontWeight: 800,
+                                        fontSize: '0.72rem'
+                                      }}>
+                                        {item.miscue?.label || item.status}
+                                      </span>
+                                    </td>
+                                    <td style={{ padding: '8px 10px', fontSize: '0.74rem', color: '#64748b' }}>
+                                      {item.miscue?.pathway || 'Dorsal Stream'}
+                                    </td>
+                                    <td style={{ padding: '8px 10px' }}>
+                                      <span style={{
+                                        textTransform: 'uppercase',
+                                        fontWeight: 800,
+                                        fontSize: '0.68rem',
+                                        color: item.miscue?.severity === 'high' ? '#ef4444' : item.miscue?.severity === 'moderate' ? '#f59e0b' : '#d97706'
+                                      }}>
+                                        {item.miscue?.severity || (isProlong ? 'mild' : 'moderate')}
+                                      </span>
+                                    </td>
+                                    <td style={{ padding: '8px 10px', fontSize: '0.75rem', color: '#334155', maxWidth: '240px', lineHeight: '1.35' }}>
+                                      {item.miscue?.details || 'Oral decoding miscue.'}
+                                    </td>
+                                  </tr>
+                                  );
+                                })}
                             </tbody>
                           </table>
                         </div>
@@ -2064,6 +2573,65 @@ const VoicePractice = ({ onComplete }) => {
                       </div>
                     </div>
 
+
+                    {/* Child-Friendly Smooth Reading Meter & Steady Pacing Star */}
+                    {summary.cadenceAndProlongation?.childView && (
+                      <div style={{
+                        background: 'linear-gradient(135deg, rgba(20, 184, 166, 0.08) 0%, rgba(59, 130, 246, 0.08) 100%)',
+                        border: '2px solid rgba(20, 184, 166, 0.25)',
+                        borderRadius: '16px',
+                        padding: '1.25rem 1.4rem',
+                        marginBottom: '1.75rem',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                        gap: '1rem',
+                        boxShadow: '0 4px 15px rgba(20, 184, 166, 0.05)'
+                      }}>
+                        <div style={{ flex: 1, minWidth: '260px' }}>
+                          <span style={{
+                            background: '#10b981',
+                            color: '#ffffff',
+                            fontSize: '0.78rem',
+                            fontWeight: 800,
+                            padding: '3px 10px',
+                            borderRadius: '8px',
+                            marginBottom: '6px',
+                            display: 'inline-block'
+                          }}>
+                            {summary.cadenceAndProlongation.childView.badge}
+                          </span>
+                          <h3 style={{ margin: '0 0 4px 0', fontSize: '1.3rem', fontWeight: 900, color: '#0f766e' }}>
+                            {summary.cadenceAndProlongation.childView.title}
+                          </h3>
+                          <p style={{ margin: 0, fontSize: '0.88rem', color: '#475569', fontWeight: 600 }}>
+                            {summary.cadenceAndProlongation.childView.message}
+                          </p>
+                        </div>
+                        <div style={{
+                          textAlign: 'center',
+                          background: '#ffffff',
+                          padding: '0.85rem 1.4rem',
+                          borderRadius: '12px',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                          border: '1.5px solid #ccfbf1',
+                          minWidth: '140px'
+                        }}>
+                          <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#0d9488', textTransform: 'uppercase', marginBottom: '2px' }}>
+                            Smooth Reading Meter
+                          </div>
+                          <div style={{ fontSize: '1.6rem', fontWeight: 900, color: '#0f766e' }}>
+                            {summary.cadenceAndProlongation.childView.meterScore}%
+                          </div>
+                          <div style={{ width: '90px', height: '6px', background: '#e2e8f0', borderRadius: '3px', margin: '4px auto 0 auto', overflow: 'hidden' }}>
+                            <div style={{ width: `${summary.cadenceAndProlongation.childView.meterScore}%`, height: '100%', background: '#10b981', borderRadius: '3px' }}></div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+
                     {/* Diagnostic Banner */}
                     {summary.diagnostic && summary.diagnostic.type !== 'no_data' && (
                       <div style={{ background: 'linear-gradient(135deg, rgba(79,70,229,0.06) 0%, rgba(13,148,136,0.06) 100%)', padding: '1.25rem', borderRadius: '14px', border: '1.5px solid rgba(79,70,229,0.18)', marginBottom: '1.75rem' }}>
@@ -2170,7 +2738,12 @@ const VoicePractice = ({ onComplete }) => {
                     setTranscript('');
                     transcriptRef.current = '';
                     accumulatedTranscriptRef.current = '';
+                    prolongationsListRef.current = [];
+                    loggedTextDragsRef.current.clear();
+                    setActiveProlongationWarning(null);
+                    setLiveCadence({ wpm: null, sps: null });
                   }}>🔄 Practice New Sentence Set</button>
+
                   <button className="btn-primary" style={{ padding: '0.75rem 1.75rem', fontWeight: 700 }} onClick={onComplete}>Complete & View Dashboard →</button>
                 </div>
               </>

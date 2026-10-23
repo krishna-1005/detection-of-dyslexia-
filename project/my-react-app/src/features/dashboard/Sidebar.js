@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import './Sidebar.css';
 
@@ -17,6 +17,12 @@ const guides = {
     { title: '1. Source Content', content: 'Paste any complex text into the input area to begin the transformation.' },
     { title: '2. AI Simplification', content: 'Click "AI Simplify" to let Gemini rewrite the text into shorter, clearer sentences.' },
     { title: '3. Personalize View', content: 'Adjust font size, spacing, and toggle Bionic Reading or the Focus Ruler for your comfort.' }
+  ],
+  '/eye-tracking': [
+    { title: '1. Position & Camera', content: 'Align your face in the oval guide and ensure room lighting is steady.' },
+    { title: '2. 9-Point Calibration', content: 'Focus on each pulsing red target and click it to train the gaze coordinates.' },
+    { title: '3. Natural Reading Session', content: 'Read the paragraph naturally. The live tracker monitors fixation dwell time and regressions.' },
+    { title: '4. Ocular Report & Heatmap', content: 'Review your Ocular Dyslexia Risk Index, scanpath map, and backward saccade bottlenecks.' }
   ]
 };
 
@@ -38,6 +44,7 @@ const Sidebar = () => {
     { path: '/dashboard', label: 'Overview', icon: '📊' },
     { path: '/detect', label: 'Diagnostic Engine', icon: '🧬' },
     { path: '/reading-test', label: 'Reading Test', icon: '🎤' },
+    { path: '/eye-tracking', label: 'Eye-Tracking Test', icon: '👁️' },
     { path: '/quiz', label: 'Symptoms Quiz', icon: '📋' },
     { path: '/reader', label: 'Smart AI Reader', icon: '✨' },
   ];
@@ -157,9 +164,10 @@ const Sidebar = () => {
         <Link 
           key={link.label} 
           to={link.path} 
-          className="sidebar-item"
+          className={`sidebar-item ${location.pathname === link.path ? 'active' : ''}`}
         >
           <span><span className="sidebar-icon">{link.icon}</span> {link.label}</span>
+          {visited[link.path] && location.pathname !== link.path && <span className="visited-tick">✓</span>}
         </Link>
       ))}
 
