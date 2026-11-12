@@ -13,6 +13,177 @@
       },
       "history": [
         {
+          "id": 1792820097329,
+          "date": "10/24/2026 11:04 AM",
+          "isoDate": "2026-10-24T05:34:57.329Z",
+          "type": "Linguistic Text Analysis",
+          "score": 50,
+          "riskLevel": "Moderate",
+          "status": "Completed",
+          "details": {
+            "analysis_feedback": "The input exhibits common dyslexic patterns including letter transposition (mkae, hihg) and phonetic confusion at word endings (Birts).",
+            "classifier_model": "Random Forest Ensemble - 100 Trees",
+            "confidence_score": 90.2,
+            "corrected_sentence": "Birds make nests in high trees.",
+            "linguistic_patterns": [
+              {
+                "category": "Transposition",
+                "example": "mkae -> make",
+                "level": "High"
+              },
+              {
+                "category": "Phonetic Substitution",
+                "example": "Birts -> Birds",
+                "level": "Med"
+              }
+            ],
+            "misspelled_count": 3,
+            "misspelled_words": [
+              {
+                "original": "Birts",
+                "reason": "Final /ts/ sound confused with /dz/",
+                "suggested": "Birds",
+                "type": "Phonetic Substitution / Consonant Confusion"
+              },
+              {
+                "original": "mkae",
+                "reason": "Internal letters 'k' and 'a' swapped",
+                "suggested": "make",
+                "type": "Transposition"
+              },
+              {
+                "original": "hihg",
+                "reason": "Final letters 'h' and 'g' swapped",
+                "suggested": "high",
+                "type": "Transposition / Visual Reversal"
+              }
+            ],
+            "model_used": "Random Forest Ensemble - 100 Trees",
+            "polarity": 0,
+            "risk_score": 0.5,
+            "subjectivity": 0,
+            "suggestions_for_improvement": [
+              "Practice visual tracking exercises to reduce letter transpositions.",
+              "Use spell-check tools that account for phonetic spelling variations."
+            ],
+            "telemetry": {
+              "accuracy_raw": 50,
+              "feature_vector": [
+                3780,
+                3750,
+                0,
+                250,
+                50
+              ],
+              "jitter_px": 250,
+              "rei_percent": 0,
+              "t_hesitate_ms": 3750,
+              "t_task_ms": 3780
+            },
+            "total_words": 6
+          },
+          "timestamp": "d8f9dffa"
+        },
+        {
+          "id": 1792820016667,
+          "date": "10/24/2026 11:03 AM",
+          "isoDate": "2026-10-24T05:33:36.658Z",
+          "type": "Linguistic Text Analysis",
+          "score": 83,
+          "riskLevel": "High",
+          "status": "Completed",
+          "details": {
+            "analysis_feedback": "The input demonstrates common dyslexic patterns including letter transpositions, vowel omissions, and unnecessary letter insertions.",
+            "classifier_model": "Random Forest Ensemble - 100 Trees",
+            "confidence_score": 87.6,
+            "corrected_sentence": "The quick brown fox jumps over",
+            "linguistic_patterns": [
+              {
+                "category": "Transposition",
+                "example": "Teh -> The",
+                "level": "High"
+              },
+              {
+                "category": "Transposition",
+                "example": "borwn -> brown",
+                "level": "High"
+              },
+              {
+                "category": "Insertion",
+                "example": "qwuick -> quick",
+                "level": "Med"
+              },
+              {
+                "category": "Omission",
+                "example": "jmps -> jumps",
+                "level": "High"
+              },
+              {
+                "category": "Omission",
+                "example": "ovr -> over",
+                "level": "High"
+              }
+            ],
+            "misspelled_count": 5,
+            "misspelled_words": [
+              {
+                "original": "Teh",
+                "reason": "Letter order inversion ('eh' to 'he')",
+                "suggested": "The",
+                "type": "Transposition"
+              },
+              {
+                "original": "qwuick",
+                "reason": "Extra 'w' inserted",
+                "suggested": "quick",
+                "type": "Insertion/Substitution"
+              },
+              {
+                "original": "borwn",
+                "reason": "Letter order inversion ('rw' to 'wr')",
+                "suggested": "brown",
+                "type": "Transposition"
+              },
+              {
+                "original": "jmps",
+                "reason": "Missing vowel 'u'",
+                "suggested": "jumps",
+                "type": "Omission"
+              },
+              {
+                "original": "ovr",
+                "reason": "Missing vowel 'e'",
+                "suggested": "over",
+                "type": "Omission"
+              }
+            ],
+            "model_used": "Random Forest Ensemble - 100 Trees",
+            "polarity": 0,
+            "risk_score": 0.83,
+            "subjectivity": 0,
+            "suggestions_for_improvement": [
+              "Use spell-check tools that account for phonetic approximations and transpositions.",
+              "Practice slow, deliberate proofreading focusing on word endings and vowel placement."
+            ],
+            "telemetry": {
+              "accuracy_raw": 16.7,
+              "feature_vector": [
+                3780,
+                6250,
+                0,
+                330,
+                16.7
+              ],
+              "jitter_px": 330,
+              "rei_percent": 0,
+              "t_hesitate_ms": 6250,
+              "t_task_ms": 3780
+            },
+            "total_words": 6
+          },
+          "timestamp": "e39712d3"
+        },
+        {
           "id": 1792653469219,
           "date": "10/22/2026 12:47 PM",
           "isoDate": "2026-10-22T07:17:49.219Z",
@@ -6747,14 +6918,425 @@
         "riskLevel": "None",
         "progress": 0
       },
-      "history": [],
+      "history": [
+        {
+          "id": 1792827300477,
+          "date": "10/24/2026 01:05 PM",
+          "isoDate": "2026-10-24T07:35:00.477Z",
+          "type": "Linguistic Text Analysis",
+          "score": 83,
+          "riskLevel": "High",
+          "status": "Completed",
+          "details": {
+            "analysis_feedback": "The input exhibits multiple characteristic dyslexia-related patterns including letter transpositions, vowel omissions, and phonetic insertions.",
+            "classifier_model": "Random Forest Ensemble - 100 Trees",
+            "confidence_score": 87.6,
+            "corrected_sentence": "The quick brown fox jumps over",
+            "linguistic_patterns": [
+              {
+                "category": "Transposition",
+                "example": "Teh -> The",
+                "level": "High"
+              },
+              {
+                "category": "Transposition",
+                "example": "borwn -> brown",
+                "level": "High"
+              },
+              {
+                "category": "Vowel Omission",
+                "example": "jmps -> jumps",
+                "level": "High"
+              },
+              {
+                "category": "Vowel Omission",
+                "example": "ovr -> over",
+                "level": "High"
+              },
+              {
+                "category": "Phonetic Insertion",
+                "example": "qwuick -> quick",
+                "level": "Med"
+              }
+            ],
+            "misspelled_count": 5,
+            "misspelled_words": [
+              {
+                "original": "Teh",
+                "reason": "Letter order reversal",
+                "suggested": "The",
+                "type": "Transposition"
+              },
+              {
+                "original": "qwuick",
+                "reason": "Extra 'w' and phonetic spelling",
+                "suggested": "quick",
+                "type": "Insertion / Substitution"
+              },
+              {
+                "original": "borwn",
+                "reason": "Adjacent letter swap ('rw' to 'wr')",
+                "suggested": "brown",
+                "type": "Transposition"
+              },
+              {
+                "original": "jmps",
+                "reason": "Missing vowel ('u')",
+                "suggested": "jumps",
+                "type": "Omission"
+              },
+              {
+                "original": "ovr",
+                "reason": "Missing vowel ('e')",
+                "suggested": "over",
+                "type": "Omission"
+              }
+            ],
+            "model_used": "Random Forest Ensemble - 100 Trees",
+            "polarity": 0,
+            "risk_score": 0.83,
+            "subjectivity": 0,
+            "suggestions_for_improvement": [
+              "Double-check letter sequences in common short words.",
+              "Ensure all necessary vowels are included in consonant clusters."
+            ],
+            "telemetry": {
+              "accuracy_raw": 16.7,
+              "feature_vector": [
+                3780,
+                6250,
+                0,
+                330,
+                16.7
+              ],
+              "jitter_px": 330,
+              "rei_percent": 0,
+              "t_hesitate_ms": 6250,
+              "t_task_ms": 3780
+            },
+            "total_words": 6
+          },
+          "timestamp": "632d8c7a"
+        },
+        {
+          "id": 1792825161470,
+          "date": "10/24/2026 12:29 PM",
+          "isoDate": "2026-10-24T06:59:21.470Z",
+          "type": "Linguistic Text Analysis",
+          "score": 83,
+          "riskLevel": "High",
+          "status": "Completed",
+          "details": {
+            "analysis_feedback": "The input demonstrates common dyslexic patterns including letter transpositions, vowel omissions, and internal letter insertions in rapid typing sequences.",
+            "classifier_model": "Random Forest Ensemble - 100 Trees",
+            "confidence_score": 87.6,
+            "corrected_sentence": "The quick brown fox jumps over",
+            "linguistic_patterns": [
+              {
+                "category": "Transposition",
+                "example": "Teh -> The",
+                "level": "High"
+              },
+              {
+                "category": "Insertion",
+                "example": "qwuick -> quick",
+                "level": "Low"
+              },
+              {
+                "category": "Transposition",
+                "example": "borwn -> brown",
+                "level": "High"
+              },
+              {
+                "category": "Omission",
+                "example": "jmps -> jumps",
+                "level": "Med"
+              },
+              {
+                "category": "Omission",
+                "example": "ovr -> over",
+                "level": "Med"
+              }
+            ],
+            "misspelled_count": 5,
+            "misspelled_words": [
+              {
+                "original": "Teh",
+                "reason": "Reversal of adjacent letters (h and e).",
+                "suggested": "The",
+                "type": "transposition"
+              },
+              {
+                "original": "qwuick",
+                "reason": "Intrusion of an unnecessary letter ('w').",
+                "suggested": "quick",
+                "type": "insertion"
+              },
+              {
+                "original": "borwn",
+                "reason": "Swapping of internal adjacent letters (r and w).",
+                "suggested": "brown",
+                "type": "transposition"
+              },
+              {
+                "original": "jmps",
+                "reason": "Deletion of a vowel ('u').",
+                "suggested": "jumps",
+                "type": "omission"
+              },
+              {
+                "original": "ovr",
+                "reason": "Deletion of a vowel ('e').",
+                "suggested": "over",
+                "type": "omission"
+              }
+            ],
+            "model_used": "Random Forest Ensemble - 100 Trees",
+            "polarity": 0,
+            "risk_score": 0.83,
+            "subjectivity": 0,
+            "suggestions_for_improvement": [
+              "Double-check letter order for common sight words like 'the' and 'brown'.",
+              "Slow down typing pace to prevent vowel omissions in words like 'jumps' and 'over'."
+            ],
+            "telemetry": {
+              "accuracy_raw": 16.7,
+              "feature_vector": [
+                3780,
+                6250,
+                0,
+                330,
+                16.7
+              ],
+              "jitter_px": 330,
+              "rei_percent": 0,
+              "t_hesitate_ms": 6250,
+              "t_task_ms": 3780
+            },
+            "total_words": 6
+          },
+          "timestamp": "89d4df74"
+        },
+        {
+          "id": 1792825131865,
+          "date": "10/24/2026 12:28 PM",
+          "isoDate": "2026-10-24T06:58:51.865Z",
+          "type": "Linguistic Text Analysis",
+          "score": 100,
+          "riskLevel": "High",
+          "status": "Completed",
+          "details": {
+            "classifier_model": "Random Forest Ensemble - 100 Trees",
+            "confidence_score": 92.4,
+            "corrected_sentence": "the quick born fox jumps or",
+            "linguistic_patterns": [
+              {
+                "category": "Visual Transposition",
+                "example": "Letter swapping detected",
+                "level": "High"
+              },
+              {
+                "category": "Phonetic Decoding",
+                "example": "Detected 5 unconventional spellings",
+                "level": "Med"
+              }
+            ],
+            "misspelled_count": 5,
+            "misspelled_words": [
+              {
+                "original": "Teh",
+                "reason": "Probable dyslexic transposition or phonetic error",
+                "suggested": "the",
+                "type": "Spelling"
+              },
+              {
+                "original": "qwuick",
+                "reason": "Probable dyslexic transposition or phonetic error",
+                "suggested": "quick",
+                "type": "Spelling"
+              },
+              {
+                "original": "borwn",
+                "reason": "Probable dyslexic transposition or phonetic error",
+                "suggested": "born",
+                "type": "Spelling"
+              },
+              {
+                "original": "jmps",
+                "reason": "Probable dyslexic transposition or phonetic error",
+                "suggested": "jumps",
+                "type": "Spelling"
+              },
+              {
+                "original": "ovr",
+                "reason": "Probable dyslexic transposition or phonetic error",
+                "suggested": "or",
+                "type": "Spelling"
+              }
+            ],
+            "model_used": "Random Forest Ensemble - 100 Trees",
+            "polarity": 0,
+            "risk_score": 1,
+            "subjectivity": 0,
+            "telemetry": {
+              "accuracy_raw": 16.7,
+              "feature_vector": [
+                9530,
+                13250,
+                83.3,
+                770,
+                16.7
+              ],
+              "jitter_px": 770,
+              "rei_percent": 83.3,
+              "t_hesitate_ms": 13250,
+              "t_task_ms": 9530
+            },
+            "total_words": 6,
+            "transposition_count": 5,
+            "warning": "AI Error: All Gemini models failed: ConnectError: [Errno 11001] getaddrinfo failed"
+          },
+          "timestamp": "14b7b3d7"
+        },
+        {
+          "id": 1792824786416,
+          "date": "10/24/2026 12:23 PM",
+          "isoDate": "2026-10-24T06:53:06.415Z",
+          "type": "Linguistic Text Analysis",
+          "score": 71,
+          "riskLevel": "High",
+          "status": "Completed",
+          "details": {
+            "analysis_feedback": "The input exhibits classic dyslexia-related patterns including letter transpositions, vowel omissions, and phonetic over-spellings.",
+            "classifier_model": "Random Forest Ensemble - 100 Trees",
+            "confidence_score": 88.5,
+            "corrected_sentence": "The quick brown fox jumps over",
+            "linguistic_patterns": [
+              {
+                "category": "Letter Transposition",
+                "example": "Teh -> The, borwn -> brown",
+                "level": "High"
+              },
+              {
+                "category": "Vowel Omission",
+                "example": "jmps -> jumps, ovr -> over",
+                "level": "High"
+              },
+              {
+                "category": "Phonetic Spelling / Insertion",
+                "example": "qwuick -> quick",
+                "level": "Med"
+              }
+            ],
+            "misspelled_count": 5,
+            "misspelled_words": [
+              {
+                "original": "Teh",
+                "reason": "Letters 'e' and 'h' are swapped.",
+                "suggested": "The",
+                "type": "Transposition"
+              },
+              {
+                "original": "qwuick",
+                "reason": "Extra 'w' inserted and vowel misplaced.",
+                "suggested": "quick",
+                "type": "Insertion/Substitution"
+              },
+              {
+                "original": "borwn",
+                "reason": "Letters 'r' and 'w' are swapped.",
+                "suggested": "brown",
+                "type": "Transposition"
+              },
+              {
+                "original": "jmps",
+                "reason": "Vowel 'u' is missing.",
+                "suggested": "jumps",
+                "type": "Omission"
+              },
+              {
+                "original": "ovr",
+                "reason": "Vowel 'e' is missing.",
+                "suggested": "over",
+                "type": "Omission"
+              }
+            ],
+            "model_used": "Random Forest Ensemble - 100 Trees",
+            "polarity": 0,
+            "risk_score": 0.71,
+            "subjectivity": 0,
+            "suggestions_for_improvement": [
+              "Double-check vowel placement in middle syllables.",
+              "Slow down typing speed to reduce adjacent-letter transpositions."
+            ],
+            "telemetry": {
+              "accuracy_raw": 28.6,
+              "feature_vector": [
+                4260,
+                6250,
+                0,
+                330,
+                28.6
+              ],
+              "jitter_px": 330,
+              "rei_percent": 0,
+              "t_hesitate_ms": 6250,
+              "t_task_ms": 4260
+            },
+            "total_words": 7
+          },
+          "timestamp": "235c3723"
+        },
+        {
+          "id": 1792820788971,
+          "date": "10/24/2026 11:16 AM",
+          "isoDate": "2026-10-24T05:46:28.971Z",
+          "type": "Therapy: Live Voice Practice",
+          "score": 76,
+          "riskLevel": "Low",
+          "status": "Completed",
+          "mode": "assessment",
+          "details": {
+            "type": "voice",
+            "score": 228,
+            "accuracy": 76,
+            "timeTaken": "74.3s (15.3 WPM)",
+            "mode": "assessment",
+            "date": "10/24/2026 11:16 AM",
+            "timestamp": 1792820788971
+          },
+          "timestamp": "c9dbf715"
+        }
+      ],
       "reading_progress": {},
-      "therapy_sessions": [],
+      "therapy_sessions": [
+        {
+          "id": "ba641bae-5f46-4494-a9f7-d10dbdf3c3de",
+          "type": "voice",
+          "score": 228,
+          "accuracy": 76,
+          "date": "10/24/2026 11:16 AM",
+          "timeTaken": "74.3s (15.3 WPM)",
+          "status": "Completed"
+        }
+      ],
       "recommendations": [
         "Complete initial diagnostic text analysis",
         "Practice Phoneme Matching exercise daily",
         "Utilize Smart AI Reader for complex documents"
-      ]
+      ],
+      "therapy_progress": {
+        "voice": {
+          "type": "voice",
+          "sessions": 1,
+          "accuracy": "76%",
+          "pb": "228 pts",
+          "pb_val": 228,
+          "lastPlayed": "10/24/2026 11:16 AM",
+          "trend": "Stable"
+        }
+      },
+      "last_played_module": "voice"
     },
     "mCqYmHqYlaZvlWBG04tj17DeVHd2": {
       "profile": {

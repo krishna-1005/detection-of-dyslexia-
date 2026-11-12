@@ -1,0 +1,33 @@
+{
+  "total_annotated_samples": 10,
+  "valid_records_count": 10,
+  "invalid_records_count": 0,
+  "validation_errors": [],
+  "participants_count": 5,
+  "unique_participants": [
+    "SYNTH_P01",
+    "SYNTH_P02",
+    "SYNTH_P03",
+    "SYNTH_P04",
+    "SYNTH_P05"
+  ],
+  "participant_group_distribution": {
+    "synthetic_control": 10
+  },
+  "annotation_status_distribution": {
+    "synthetic_calibration": 10
+  },
+  "dimensions_summary": {
+    "min_width": 384,
+    "max_width": 384,
+    "mean_width": 384.0,
+    "min_height": 128,
+    "max_height": 128,
+    "mean_height": 128.0
+  },
+  "corrupt_images": [],
+  "missing_image_files": [],
+  "orphaned_raw_images": [],
+  "synthetic_count": 10,
+  "clinical_real_count": 0
+}

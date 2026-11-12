@@ -1,0 +1,345 @@
+/* ═══════════════════════════════════════════════════════
+   Handwriting Intelligence Page Styling
+   Clinical Precision + Kid-Friendly Cognitive Ergonomics
+   ═══════════════════════════════════════════════════════ */
+
+.handwriting-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Live Telemetry Bar ── */
+.handwriting-telemetry-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-radius: 9999px;
+  padding: 4px 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #4f46e5;
+}
+
+.handwriting-telemetry-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
+}
+
+.handwriting-telemetry-dot.offline {
+  background: #f59e0b;
+  box-shadow: 0 0 6px #f59e0b;
+}
+
+/* ── Upload & Canvas Card ── */
+.handwriting-workspace-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 960px) {
+  .handwriting-workspace-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.handwriting-dropzone {
+  border: 2px dashed #cbd5e1;
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  background: rgba(248, 250, 252, 0.7);
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 220px;
+}
+
+.handwriting-dropzone:hover,
+.handwriting-dropzone.drag-active {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.04);
+  transform: translateY(-2px);
+}
+
+.handwriting-dropzone-icon {
+  font-size: 2.5rem;
+}
+
+.handwriting-dropzone-title {
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #1e293b;
+  margin: 0;
+}
+
+.handwriting-dropzone-subtitle {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin: 0;
+}
+
+/* ── Image Preview Box ── */
+.handwriting-preview-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.handwriting-preview-img {
+  max-width: 100%;
+  max-height: 180px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+/* ── Sample Selector Pills ── */
+.sample-pills-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.sample-pill-btn {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sample-pill-btn:hover {
+  background: #f1f5f9;
+  border-color: #6366f1;
+  color: #4f46e5;
+  transform: translateY(-1px);
+}
+
+.sample-pill-btn.active {
+  background: #eef2ff;
+  border-color: #6366f1;
+  color: #4f46e5;
+}
+
+/* ── Input Group ── */
+.hw-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+.hw-input-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hw-input-text {
+  padding: 0.75rem 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 1rem;
+  color: #0f172a;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.hw-input-text:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+}
+
+/* ── Recognition Hero Result Card ── */
+.hw-result-hero {
+  background: linear-gradient(135deg, #ffffff 0%, #f8faff 100%);
+  border: 1.5px solid #e0e7ff;
+  border-radius: 18px;
+  padding: 1.75rem;
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.08);
+}
+
+.hw-word-display {
+  font-size: 2.75rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #1e1b4b;
+  font-family: var(--kids-font-display, 'Fredoka', sans-serif);
+  margin: 0.25rem 0;
+  text-transform: uppercase;
+}
+
+.hw-comparison-box {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.25rem;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  margin-top: 1rem;
+}
+
+.hw-comparison-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.hw-comparison-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+
+.hw-comparison-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  font-family: monospace;
+}
+
+/* ── Metrics Grid ── */
+.hw-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.hw-metric-card {
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.hw-metric-title {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.hw-metric-stat {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.hw-metric-note {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+/* ── Uncertainty Alert ── */
+.hw-uncertainty-alert {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.8) 0%, rgba(253, 230, 138, 0.6) 100%);
+  border: 1.5px solid #f59e0b;
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  margin-top: 1.25rem;
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+}
+
+.hw-uncertainty-alert h4 {
+  margin: 0 0 0.25rem 0;
+  font-size: 0.92rem;
+  color: #92400e;
+  font-weight: 800;
+}
+
+.hw-uncertainty-alert p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #78350f;
+  line-height: 1.45;
+}
+
+/* ── Observations & Letter Breakdown ── */
+.hw-char-chip-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.hw-char-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  min-width: 44px;
+}
+
+.hw-char-chip.match {
+  background: #ecfdf5;
+  border-color: #10b981;
+  color: #065f46;
+}
+
+.hw-char-chip.mismatch {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #991b1b;
+}
+
+.hw-char-chip.reversal {
+  background: #fdf4ff;
+  border-color: #d946ef;
+  color: #86198f;
+}
+
+.hw-char-char {
+  font-size: 1.25rem;
+  font-weight: 900;
+  font-family: monospace;
+}
+
+.hw-char-subtext {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}

@@ -75,6 +75,9 @@ const Navbar = ({ user: propUser, showDropdown, setShowDropdown }) => {
             <Link to="/detect" className={`nav-item ${location.pathname === '/detect' ? 'active' : ''}`}>
               <span>🧬 Diagnostic Engine</span>
             </Link>
+            <Link to="/handwriting" className={`nav-item ${location.pathname === '/handwriting' ? 'active' : ''}`}>
+              <span>✍️ Handwriting</span>
+            </Link>
           </>
         ) : (
           <>
@@ -83,6 +86,9 @@ const Navbar = ({ user: propUser, showDropdown, setShowDropdown }) => {
             </Link>
             <Link to="/detect" className={`nav-item ${location.pathname === '/detect' ? 'active' : ''}`}>
               <span>🧬 Diagnostic Engine</span>
+            </Link>
+            <Link to="/handwriting" className={`nav-item ${location.pathname === '/handwriting' ? 'active' : ''}`}>
+              <span>✍️ Handwriting</span>
             </Link>
             <Link to="/reading-test" className={`nav-item ${location.pathname === '/reading-test' ? 'active' : ''}`}>
               <span>🎤 Reading Test</span>

@@ -13,6 +13,11 @@ const guides = {
     { title: '2. Visual Focus Settings', content: 'Apply a color overlay, adjust letter spacing, or toggle Simulated Crowding/Focus Ruler.' },
     { title: '3. Run Spelling Analysis', content: 'Click "Run Spelling Analysis" to detect spelling pattern indicators and download reports.' }
   ],
+  '/handwriting': [
+    { title: '1. Select or Upload Image', content: 'Upload a handwriting image or click any of the calibration samples (e.g. SCOOL, BEAR, PLAY).' },
+    { title: '2. Specify Expected Word (Optional)', content: 'Enter the target word to measure spelling alignment, letter reversals, and CER.' },
+    { title: '3. Run Handwriting Intelligence', content: 'Click "Analyze Handwriting" to trigger TrOCR recognition, deskewing, and uncertainty scoring.' }
+  ],
   '/reader': [
     { title: '1. Source Content', content: 'Paste any complex text into the input area to begin the transformation.' },
     { title: '2. AI Simplification', content: 'Click "AI Simplify" to let Gemini rewrite the text into shorter, clearer sentences.' },
@@ -43,6 +48,7 @@ const Sidebar = () => {
   const mainLinks = [
     { path: '/dashboard', label: 'Overview', icon: '📊' },
     { path: '/detect', label: 'Diagnostic Engine', icon: '🧬' },
+    { path: '/handwriting', label: 'Handwriting Intelligence', icon: '✍️' },
     { path: '/reading-test', label: 'Reading Test', icon: '🎤' },
     { path: '/eye-tracking', label: 'Eye-Tracking Test', icon: '👁️' },
     { path: '/quiz', label: 'Symptoms Quiz', icon: '📋' },

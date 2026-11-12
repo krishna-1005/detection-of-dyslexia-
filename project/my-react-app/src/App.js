@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./features/home/Home";
 import DetectPage from "./features/detection/Detectpage.js";
+import HandwritingIntelligence from "./features/handwriting/HandwritingIntelligence";
 import Dashboard from "./features/dashboard/Dashboard";
 import SmartReader from "./features/reader/SmartReader";
 import TherapyPage from "./features/therapy/TherapyPage";
@@ -34,6 +35,7 @@ function App() {
             
             {/* Protected Routes requiring Authentication */}
             <Route path="/detect" element={<ProtectedRoute><DetectPage /></ProtectedRoute>} />
+            <Route path="/handwriting" element={<ProtectedRoute><HandwritingIntelligence /></ProtectedRoute>} />
             <Route path="/dashboard" element={<ProtectedRoute allowedRole="patient"><Dashboard /></ProtectedRoute>} />
             <Route path="/doctor/dashboard" element={<ProtectedRoute allowedRole="doctor"><DoctorDashboard /></ProtectedRoute>} />
             <Route path="/doctor" element={<ProtectedRoute allowedRole="doctor"><DoctorDashboard /></ProtectedRoute>} />

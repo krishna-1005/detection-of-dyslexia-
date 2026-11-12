@@ -18,6 +18,7 @@ from routes.user_routes import user_bp
 from routes.detect_routes import detect_bp
 from routes.reader_routes import reader_bp
 from routes.chat_routes import chat_bp
+from routes.handwriting_routes import handwriting_bp
 
 app = Flask(__name__)
 
@@ -35,6 +36,7 @@ app.register_blueprint(user_bp)
 app.register_blueprint(detect_bp)
 app.register_blueprint(reader_bp)
 app.register_blueprint(chat_bp)
+app.register_blueprint(handwriting_bp)
 
 if __name__ == "__main__":
     if not os.getenv("GOOGLE_API_KEY"):

@@ -1,0 +1,280 @@
+{
+  "timestamp": "2026-11-06 23:34:32",
+  "model_name": "microsoft/trocr-base-handwritten",
+  "model_status": "offline_fallback_active",
+  "is_synthetic_calibration": true,
+  "evaluation_raw": {
+    "summary": {
+      "total_samples": 10,
+      "exact_match_count": 10,
+      "exact_match_rate": 1.0,
+      "mean_cer": 0.0,
+      "wer": 0.0,
+      "uncertain_or_failed_count": 10,
+      "mean_latency_ms": 1.72,
+      "total_latency_ms": 17.18
+    },
+    "sample_results": [
+      {
+        "image_id": "SYNTH_001_SCOOL",
+        "written_target": "SCOOL",
+        "expected_prompt": "SCHOOL",
+        "predicted": "SCOOL",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 2.12
+      },
+      {
+        "image_id": "SYNTH_002_FRIENB",
+        "written_target": "FRIENB",
+        "expected_prompt": "FRIEND",
+        "predicted": "FRIENB",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 2.8
+      },
+      {
+        "image_id": "SYNTH_003_DEAR",
+        "written_target": "DEAR",
+        "expected_prompt": "BEAR",
+        "predicted": "DEAR",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 2.02
+      },
+      {
+        "image_id": "SYNTH_004_PLAY",
+        "written_target": "PLAY",
+        "expected_prompt": "PLAY",
+        "predicted": "PLAY",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 1.52
+      },
+      {
+        "image_id": "SYNTH_005_QUITE",
+        "written_target": "QUITE",
+        "expected_prompt": "QUIET",
+        "predicted": "QUITE",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 1.5
+      },
+      {
+        "image_id": "SYNTH_006_DAG",
+        "written_target": "DAG",
+        "expected_prompt": "BAG",
+        "predicted": "DAG",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 1.36
+      },
+      {
+        "image_id": "SYNTH_007_CATT",
+        "written_target": "CATT",
+        "expected_prompt": "CAT",
+        "predicted": "CATT",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 1.45
+      },
+      {
+        "image_id": "SYNTH_008_NITE",
+        "written_target": "NITE",
+        "expected_prompt": "NIGHT",
+        "predicted": "NITE",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 1.46
+      },
+      {
+        "image_id": "SYNTH_009_SAW",
+        "written_target": "SAW",
+        "expected_prompt": "WAS",
+        "predicted": "SAW",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 1.58
+      },
+      {
+        "image_id": "SYNTH_010_bed_ded",
+        "written_target": "DED",
+        "expected_prompt": "BED",
+        "predicted": "DED",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 1.37
+      }
+    ]
+  },
+  "evaluation_preprocessed": {
+    "summary": {
+      "total_samples": 10,
+      "exact_match_count": 10,
+      "exact_match_rate": 1.0,
+      "mean_cer": 0.0,
+      "wer": 0.0,
+      "uncertain_or_failed_count": 10,
+      "mean_latency_ms": 4.76,
+      "total_latency_ms": 47.58
+    },
+    "sample_results": [
+      {
+        "image_id": "SYNTH_001_SCOOL",
+        "written_target": "SCOOL",
+        "expected_prompt": "SCHOOL",
+        "predicted": "SCOOL",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 5.84
+      },
+      {
+        "image_id": "SYNTH_002_FRIENB",
+        "written_target": "FRIENB",
+        "expected_prompt": "FRIEND",
+        "predicted": "FRIENB",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 5.0
+      },
+      {
+        "image_id": "SYNTH_003_DEAR",
+        "written_target": "DEAR",
+        "expected_prompt": "BEAR",
+        "predicted": "DEAR",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 4.43
+      },
+      {
+        "image_id": "SYNTH_004_PLAY",
+        "written_target": "PLAY",
+        "expected_prompt": "PLAY",
+        "predicted": "PLAY",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 4.7
+      },
+      {
+        "image_id": "SYNTH_005_QUITE",
+        "written_target": "QUITE",
+        "expected_prompt": "QUIET",
+        "predicted": "QUITE",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 5.21
+      },
+      {
+        "image_id": "SYNTH_006_DAG",
+        "written_target": "DAG",
+        "expected_prompt": "BAG",
+        "predicted": "DAG",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 4.5
+      },
+      {
+        "image_id": "SYNTH_007_CATT",
+        "written_target": "CATT",
+        "expected_prompt": "CAT",
+        "predicted": "CATT",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 4.56
+      },
+      {
+        "image_id": "SYNTH_008_NITE",
+        "written_target": "NITE",
+        "expected_prompt": "NIGHT",
+        "predicted": "NITE",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 5.1
+      },
+      {
+        "image_id": "SYNTH_009_SAW",
+        "written_target": "SAW",
+        "expected_prompt": "WAS",
+        "predicted": "SAW",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 3.78
+      },
+      {
+        "image_id": "SYNTH_010_bed_ded",
+        "written_target": "DED",
+        "expected_prompt": "BED",
+        "predicted": "DED",
+        "cer": 0.0,
+        "edit_dist": 0,
+        "exact_match": true,
+        "confidence": 0.85,
+        "is_uncertain": true,
+        "latency_ms": 4.46
+      }
+    ]
+  },
+  "comparison": {
+    "exact_match_difference": 0.0,
+    "cer_difference": 0.0,
+    "latency_overhead_ms": 3.04,
+    "recommendation": "Preprocessed pipeline recommended for skewed/noisy inputs"
+  }
+}

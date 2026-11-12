@@ -1,0 +1,11 @@
+image_id,participant_id,expected_word,transcribed_word,participant_group,annotation_status,image_path,is_synthetic,error_type,notes,simulated_tilt_deg
+SYNTH_001_SCOOL,SYNTH_P01,SCHOOL,SCOOL,synthetic_control,synthetic_calibration,test_samples/SYNTH_001_SCOOL.png,True,character_deletion,Missing character 'H' at position 4,-2.5
+SYNTH_002_FRIENB,SYNTH_P01,FRIEND,FRIENB,synthetic_control,synthetic_calibration,test_samples/SYNTH_002_FRIENB.png,True,character_substitution,Substituted 'D' with 'B' at position 6,1.8
+SYNTH_003_DEAR,SYNTH_P02,BEAR,DEAR,synthetic_control,synthetic_calibration,test_samples/SYNTH_003_DEAR.png,True,letter_reversal,Reversed letter 'B' into 'D' at position 1,-3.2
+SYNTH_004_PLAY,SYNTH_P02,PLAY,PLAY,synthetic_control,synthetic_calibration,test_samples/SYNTH_004_PLAY.png,True,correct_match,Accurate spelling benchmark control,0.0
+SYNTH_005_QUITE,SYNTH_P03,QUIET,QUITE,synthetic_control,synthetic_calibration,test_samples/SYNTH_005_QUITE.png,True,character_transposition,Transposed letters 'E' and 'T' at positions 4-5,2.1
+SYNTH_006_DAG,SYNTH_P03,BAG,DAG,synthetic_control,synthetic_calibration,test_samples/SYNTH_006_DAG.png,True,letter_reversal,Reversed letter 'B' into 'D' at position 1,-1.5
+SYNTH_007_CATT,SYNTH_P04,CAT,CATT,synthetic_control,synthetic_calibration,test_samples/SYNTH_007_CATT.png,True,character_insertion,Extra character 'T' at position 4,3.0
+SYNTH_008_NITE,SYNTH_P04,NIGHT,NITE,synthetic_control,synthetic_calibration,test_samples/SYNTH_008_NITE.png,True,phonetic_substitution,Phonetic simplification of 'IGH' to 'I',-2.0
+SYNTH_009_SAW,SYNTH_P05,WAS,SAW,synthetic_control,synthetic_calibration,test_samples/SYNTH_009_SAW.png,True,visual_transposition,Full visual reversal of word 'WAS' into 'SAW',0.5
+SYNTH_010_bed_ded,SYNTH_P05,bed,ded,synthetic_control,synthetic_calibration,test_samples/SYNTH_010_bed_ded.png,True,letter_reversal,Lowercase letter reversal 'b' -> 'd' at position 1,-1.0

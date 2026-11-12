@@ -234,6 +234,12 @@ const GuideMe = () => {
       { title: '🤖 Step 3: Run AI Diagnostic', content: 'Click "Analyze Reading" to let our machine learning models calculate your risk profile.' },
       { title: '📊 Step 4: Review Risk Breakdown', content: 'Inspect percentage scores for phonological, spatial reversal, and rapid naming markers.' }
     ],
+    '/handwriting': [
+      { title: '✍️ Step 1: Upload Word Image or Sample', content: 'Upload a picture of handwritten words or click one of our calibration test buttons like SCOOL or PLAY.' },
+      { title: '🎯 Step 2: Target Word (Optional)', content: 'Type the word you expected the student to write to compare spelling, letter reversals, and errors.' },
+      { title: '🔬 Step 3: Run AI Handwriting Intelligence', content: 'Click "Analyze Handwriting" to use vision transformers to transcribe strokes and examine uncertainty.' },
+      { title: '📊 Step 4: Review Observations', content: 'Inspect the big recognized word, letter match status, Character Error Rate, and potential b/d reversals!' }
+    ],
     '/dashboard': [
       { title: '📈 Step 1: Clinical Risk Trends', content: 'Monitor your diagnostic risk category (Low, Moderate, High) and progress over practice sessions.' },
       { title: '🎯 Step 2: Custom Recommended Drills', content: 'Select target therapy shortcuts generated specifically for your identified reading challenges.' },
